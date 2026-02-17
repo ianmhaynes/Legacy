@@ -1399,6 +1399,14 @@
 
                 const countText = data.length + ' photo' + (data.length !== 1 ? 's' : '')
                 if (photoCount) photoCount.textContent = countText + ' preserved in your vault forever'
+                const photosHeader = document.getElementById('photos-count-header')
+                if (photosHeader) photosHeader.textContent = countText
+                if (data.length > 0) {
+                    const pb = document.getElementById('photos-body')
+                    const pa = document.getElementById('photos-arrow')
+                    if (pb) pb.style.display = 'block'
+                    if (pa) pa.textContent = '▼'
+                }
                 const headerCount = document.getElementById('photos-count-header')
                 if (headerCount) headerCount.textContent = countText
                 // Auto-expand if photos exist
@@ -1554,9 +1562,12 @@
             count.textContent = contactCountText + ' preserved' + (filter ? ' (' + filtered.length + ' shown)' : '')
             const contactsHeaderCount = document.getElementById('contacts-count-header')
             if (contactsHeaderCount) contactsHeaderCount.textContent = contactCountText
-            // Auto-expand if contacts exist
-            const contactsBody = document.getElementById('contacts-body')
-            if (contactsBody && savedContacts.length > 0) contactsBody.style.display = 'block'
+            if (savedContacts.length > 0) {
+                const cb = document.getElementById('contacts-body')
+                const ca = document.getElementById('contacts-arrow')
+                if (cb) cb.style.display = 'block'
+                if (ca) ca.textContent = '▼'
+            }
 
             if (filtered.length === 0) {
                 list.innerHTML = '<p style="color:#9ca3af; text-align:center; padding:1rem;">No contacts match your search</p>'
@@ -1617,13 +1628,12 @@
             const body = document.getElementById(bodyId)
             const arrow = document.getElementById(arrowId)
             if (!body) return
-
             if (body.style.display === 'none') {
                 body.style.display = 'block'
-                if (arrow) arrow.style.transform = 'rotate(0deg)'
+                if (arrow) arrow.textContent = '▼'
             } else {
                 body.style.display = 'none'
-                if (arrow) arrow.style.transform = 'rotate(-90deg)'
+                if (arrow) arrow.textContent = '▶'
             }
         }
 
