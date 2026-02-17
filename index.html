@@ -1337,6 +1337,144 @@
             })
         }
 
+        // Contacts handling
+        let savedContacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]')
+
+        function showAddContactForm() {
+            const form = document.getElementById('add-contact-form')
+            form.style.display = form.style.display === 'none' ? 'block' : 'none'
+        }
+
+        function saveContact() {
+            const name = document.getElementById('contact-name').value.trim()
+            if (!name) { showNotification('Please enter a name!'); return }
+
+            const contact = {
+                id: Date.now(),
+                name: name,
+                phone: document.getElementById('contact-phone').value.trim(),
+                email: document.getElementById('contact-email').value.trim(),
+                relation: document.getElementById('contact-relation').value.trim(),
+                note: document.getElementById('contact-note').value.trim(),
+                addedAt: new Date().toISOString()
+            }
+
+            savedContacts.push(contact)
+            localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
+            renderContacts()
+            showNotification('👥 Contact saved: ' + name)
+
+            // Clear form
+            document.getElementById('contact-name').value = ''
+            document.getElementById('contact-phone').value = ''
+            document.getElementById('contact-email').value = ''
+            document.getElementById('contact-relation').value = ''
+            document.getElementById('contact-note').value = ''
+            document.getElementById('add-contact-form').style.display = 'none'
+        }
+
+        function deleteContact(id) {
+            savedContacts = savedContacts.filter(c => c.id !== id)
+            localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
+            renderContacts()
+            showNotification('Contact removed')
+        }
+
+        function handleContactsUpload(input) {
+            const file = input.files[0]
+            if (!file) return
+
+            const reader = new FileReader()
+            reader.onload = function(e) {
+                const text = e.target.result
+                let parsed = []
+
+                if (file.name.endsWith('.vcf')) {
+                    parsed = parseVCF(text)
+                } else if (file.name.endsWith('.csv')) {
+                    parsed = parseCSV(text)
+                }
+
+                if (parsed.length === 0) {
+                    showNotification('No contacts found in file')
+                    return
+                }
+
+                savedContacts = [...savedContacts, ...parsed]
+                localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
+                renderContacts()
+                showNotification('👥 ' + parsed.length + ' contacts imported!')
+            }
+            reader.readAsText(file)
+        }
+
+        function parseVCF(text) {
+            const contacts = []
+            const cards = text.split('BEGIN:VCARD')
+            cards.forEach(card => {
+                if (!card.trim()) return
+                const name = (card.match(/FN:(.+)/)?.[1] || '').trim()
+                const phone = (card.match(/TEL[^:]*:(.+)/)?.[1] || '').trim()
+                const email = (card.match(/EMAIL[^:]*:(.+)/)?.[1] || '').trim()
+                if (name) {
+                    contacts.push({ id: Date.now() + Math.random(), name, phone, email, relation: '', note: '', addedAt: new Date().toISOString() })
+                }
+            })
+            return contacts
+        }
+
+        function parseCSV(text) {
+            const contacts = []
+            const lines = text.split('\n').slice(1)
+            lines.forEach(line => {
+                const cols = line.split(',')
+                const name = (cols[0] || '').replace(/"/g, '').trim()
+                const phone = (cols[1] || '').replace(/"/g, '').trim()
+                const email = (cols[2] || '').replace(/"/g, '').trim()
+                if (name) {
+                    contacts.push({ id: Date.now() + Math.random(), name, phone, email, relation: '', note: '', addedAt: new Date().toISOString() })
+                }
+            })
+            return contacts
+        }
+
+        function renderContacts() {
+            const list = document.getElementById('contacts-list')
+            const count = document.getElementById('contacts-count')
+            if (!list) return
+
+            if (savedContacts.length === 0) {
+                list.innerHTML = ''
+                count.textContent = 'No contacts added yet'
+                return
+            }
+
+            count.textContent = savedContacts.length + ' contact' + (savedContacts.length !== 1 ? 's' : '') + ' preserved in your vault'
+
+            list.innerHTML = savedContacts.map(c => `
+                <div style="background:white; border-radius:8px; padding:1rem; display:flex; align-items:center; gap:1rem; border:1px solid #e5e7eb;">
+                    <div style="width:45px; height:45px; border-radius:50%; background:#8b5cf6; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:1.1rem; flex-shrink:0;">
+                        ${c.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-weight:600; color:#1e3a8a;">${c.name}</div>
+                        <div style="color:#6b7280; font-size:0.85rem;">
+                            ${c.relation ? '<span style="background:#ede9fe; color:#6d28d9; padding:0.1rem 0.4rem; border-radius:4px; margin-right:0.5rem;">' + c.relation + '</span>' : ''}
+                            ${c.phone || ''} ${c.email ? '• ' + c.email : ''}
+                        </div>
+                        ${c.note ? '<div style="color:#9ca3af; font-size:0.8rem; margin-top:0.2rem;">' + c.note + '</div>' : ''}
+                    </div>
+                    <button onclick="deleteContact(${c.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem; flex-shrink:0;">🗑️</button>
+                </div>
+            `).join('')
+        }
+
+        // Load contacts on startup
+        function loadContacts() {
+            savedContacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]')
+            renderContacts()
+        }
+
         function reconnectSpotify() {
             localStorage.removeItem('spotify_token')
             connectSpotify()
@@ -1678,15 +1816,52 @@
                     <p id="photo-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;">No photos uploaded yet</p>
                 </div>
 
-                <!-- Contacts Card - Coming Soon -->
-                <div style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #d1d5db; margin-bottom:1rem; opacity:0.7;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                <!-- Contacts Card -->
+                <div style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #8b5cf6; margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
                         <div>
-                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">👥 Contacts</h4>
+                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">👥 Contacts & People</h4>
                             <p style="color:#6b7280;">Preserve the people who mattered in your life</p>
                         </div>
-                        <span style="background:#e5e7eb; color:#6b7280; padding:0.5rem 1.5rem; border-radius:8px; font-weight:600;">Coming Soon</span>
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                            <button class="action-button" onclick="document.getElementById('vcf-upload-input').click()" style="background:#8b5cf6;">
+                                📁 Upload Contacts File
+                            </button>
+                            <button class="action-button" onclick="showAddContactForm()" style="background:#6d28d9;">
+                                ➕ Add Manually
+                            </button>
+                        </div>
                     </div>
+
+                    <!-- Hidden VCF file input -->
+                    <input type="file" id="vcf-upload-input" accept=".vcf,.csv" style="display:none;" onchange="handleContactsUpload(this)">
+
+                    <!-- How to export contacts tip -->
+                    <div id="contacts-tip" style="background:#f3e8ff; border-radius:8px; padding:1rem; margin-bottom:1rem; font-size:0.85rem; color:#6d28d9;">
+                        <strong>📱 How to export your iPhone contacts:</strong><br>
+                        On Mac: Open <strong>Contacts app</strong> → Select All (Cmd+A) → File → Export → Export vCard<br>
+                        Then upload the .vcf file here!
+                    </div>
+
+                    <!-- Add contact form (hidden by default) -->
+                    <div id="add-contact-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
+                        <h4 style="color:#1e3a8a; margin-bottom:1rem;">Add a Contact</h4>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
+                            <input id="contact-name" placeholder="Full Name *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                            <input id="contact-phone" placeholder="Phone Number" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                            <input id="contact-email" placeholder="Email Address" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                            <input id="contact-relation" placeholder="Relationship (e.g. Son, Friend)" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                        </div>
+                        <textarea id="contact-note" placeholder="A note about this person... (optional)" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:60px; resize:vertical;"></textarea>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button class="action-button" onclick="saveContact()" style="background:#8b5cf6;">Save Contact</button>
+                            <button class="action-button secondary" onclick="document.getElementById('add-contact-form').style.display='none'">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Contacts list -->
+                    <div id="contacts-list" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+                    <p id="contacts-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;">No contacts added yet</p>
                 </div>
 
                 <!-- Stories Card - Coming Soon -->
@@ -1874,6 +2049,9 @@
                     if (spotifyCard) updateSpotifyUI(0, 0, spotifyToken);
                 }, 300);
             }
+
+            // Load contacts
+            setTimeout(() => loadContacts(), 400);
         }
 
         function updateUIForLoggedOut() {
