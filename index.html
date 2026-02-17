@@ -1301,7 +1301,8 @@
 
                     // Upload to Supabase Storage
                     try {
-                        const userEmail = user ? user.email.replace('@','_').replace('.','_') : 'anonymous'
+                        const currentUser = JSON.parse(localStorage.getItem('user') || 'null')
+                        const userEmail = currentUser ? currentUser.email.replace('@','_').replace(/\./g,'_') : 'anonymous'
                         const fileName = userEmail + '/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
                         
                         const { data, error } = await supabaseClient.storage
@@ -1354,10 +1355,11 @@
         async function loadSavedPhotos() {
             const grid = document.getElementById('photo-grid')
             const photoCount = document.getElementById('photo-count')
-            if (!grid || !user) return
+            const currentUser = JSON.parse(localStorage.getItem('user') || 'null')
+            if (!grid || !currentUser) return
 
             try {
-                const userEmail = user.email.replace('@','_').replace('.','_')
+                const userEmail = currentUser.email.replace('@','_').replace(/\./g,'_')
                 
                 const { data, error } = await supabaseClient.storage
                     .from('vault-photos')
@@ -2066,7 +2068,7 @@
 
     <script>
         // State management
-        let user = null;
+        let user = JSON.parse(localStorage.getItem('user') || 'null');
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -2202,3 +2204,4 @@
     </script>
 </body>
 </html>
+
