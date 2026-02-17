@@ -1397,7 +1397,13 @@
                     grid.appendChild(div)
                 }
 
-                if (photoCount) photoCount.textContent = data.length + ' photo' + (data.length !== 1 ? 's' : '') + ' preserved in your vault forever'
+                const countText = data.length + ' photo' + (data.length !== 1 ? 's' : '')
+                if (photoCount) photoCount.textContent = countText + ' preserved in your vault forever'
+                const headerCount = document.getElementById('photos-count-header')
+                if (headerCount) headerCount.textContent = countText
+                // Auto-expand if photos exist
+                const photosBody = document.getElementById('photos-body')
+                if (photosBody && data.length > 0) photosBody.style.display = 'block'
                 console.log('Loaded ' + data.length + ' photos from Supabase!')
 
             } catch(e) {
@@ -1544,7 +1550,13 @@
                 filtered.sort((a, b) => a.name.localeCompare(b.name))
             }
 
-            count.textContent = savedContacts.length + ' contact' + (savedContacts.length !== 1 ? 's' : '') + ' preserved' + (filter ? ' (' + filtered.length + ' shown)' : '')
+            const contactCountText = savedContacts.length + ' contact' + (savedContacts.length !== 1 ? 's' : '')
+            count.textContent = contactCountText + ' preserved' + (filter ? ' (' + filtered.length + ' shown)' : '')
+            const contactsHeaderCount = document.getElementById('contacts-count-header')
+            if (contactsHeaderCount) contactsHeaderCount.textContent = contactCountText
+            // Auto-expand if contacts exist
+            const contactsBody = document.getElementById('contacts-body')
+            if (contactsBody && savedContacts.length > 0) contactsBody.style.display = 'block'
 
             if (filtered.length === 0) {
                 list.innerHTML = '<p style="color:#9ca3af; text-align:center; padding:1rem;">No contacts match your search</p>'
@@ -1578,6 +1590,41 @@
         function loadContacts() {
             savedContacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]')
             renderContacts()
+        }
+
+        // Universal vault search
+        function searchVault(term) {
+            const t = term.toLowerCase().trim()
+
+            // Search contacts
+            searchContacts(t)
+
+            // Expand sections if searching
+            if (t) {
+                const photosBody = document.getElementById('photos-body')
+                const contactsBody = document.getElementById('contacts-body')
+                if (photosBody) photosBody.style.display = 'block'
+                if (contactsBody) contactsBody.style.display = 'block'
+
+                // Also sync contact search bar
+                const contactSearch = document.getElementById('contact-search')
+                if (contactSearch) contactSearch.value = term
+            }
+        }
+
+        // Toggle collapsible sections
+        function toggleSection(bodyId, arrowId) {
+            const body = document.getElementById(bodyId)
+            const arrow = document.getElementById(arrowId)
+            if (!body) return
+
+            if (body.style.display === 'none') {
+                body.style.display = 'block'
+                if (arrow) arrow.style.transform = 'rotate(0deg)'
+            } else {
+                body.style.display = 'none'
+                if (arrow) arrow.style.transform = 'rotate(-90deg)'
+            }
         }
 
         function reconnectSpotify() {
@@ -1861,7 +1908,16 @@
 
             <!-- Spotify Connection -->
             <div class="vault-section">
-                <h3 style="margin-bottom: 1.5rem;">🎵 Connect Your Services</h3>
+                <h3 style="margin-bottom: 1rem;">🎵 Connect Your Services</h3>
+                
+                <!-- Universal Search -->
+                <div style="margin-bottom:1.5rem;">
+                    <input id="vault-search" placeholder="🔍 Search your entire vault - photos, contacts, playlists..." 
+                        style="width:100%; padding:0.85rem 1rem; border:2px solid #e5e7eb; border-radius:10px; font-size:1rem; transition:border 0.2s;"
+                        oninput="searchVault(this.value)"
+                        onfocus="this.style.borderColor='#3b82f6'"
+                        onblur="this.style.borderColor='#e5e7eb'">
+                </div>
 
                 <!-- Spotify Card -->
                 <div id="spotify-card" style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #1db954; margin-bottom:1rem;">
@@ -1880,16 +1936,23 @@
                 <div id="playlists-container" style="margin-top:1rem;"></div>
 
                 <!-- Photos Upload Card -->
-                <div style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #3b82f6; margin-bottom:1rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
-                        <div>
-                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">📸 Photos & Memories</h4>
-                            <p style="color:#6b7280;">Upload your favourite photos to preserve for future generations</p>
+                <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #3b82f6; margin-bottom:1rem; overflow:hidden;">
+                    <!-- Collapsible Header -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem; cursor:pointer;"
+                         onclick="toggleSection('photos-body', 'photos-arrow')">
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <span id="photos-arrow" style="color:#3b82f6; font-size:1.2rem; transition:transform 0.2s;">▼</span>
+                            <div>
+                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">📸 Photos & Memories</h4>
+                                <p style="color:#6b7280; font-size:0.9rem;"><span id="photos-count-header">0 photos</span> preserved in your vault</p>
+                            </div>
                         </div>
-                        <label for="photo-upload-input" class="action-button" style="background:#3b82f6; cursor:pointer; display:inline-block;">
+                        <label for="photo-upload-input" class="action-button" style="background:#3b82f6; cursor:pointer; display:inline-block;" onclick="event.stopPropagation()">
                             📸 Upload Photos
                         </label>
                     </div>
+                    <!-- Collapsible Body -->
+                    <div id="photos-body" style="padding:0 1.5rem 1.5rem; display:none;">
 
                     <!-- Hidden file input - supports multiple + folders -->
                     <input type="file" id="photo-upload-input" multiple accept="image/*" style="display:none;" onchange="handlePhotoUpload(this.files)">
@@ -1921,24 +1984,32 @@
                     <div id="photo-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:0.5rem;"></div>
 
                     <p id="photo-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;">No photos uploaded yet</p>
+                    </div><!-- end photos-body -->
                 </div>
 
                 <!-- Contacts Card -->
-                <div style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #8b5cf6; margin-bottom:1rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
-                        <div>
-                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">👥 Contacts & People</h4>
-                            <p style="color:#6b7280;">Preserve the people who mattered in your life</p>
+                <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #8b5cf6; margin-bottom:1rem; overflow:hidden;">
+                    <!-- Collapsible Header -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem; cursor:pointer;"
+                         onclick="toggleSection('contacts-body', 'contacts-arrow')">
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <span id="contacts-arrow" style="color:#8b5cf6; font-size:1.2rem; transition:transform 0.2s;">▼</span>
+                            <div>
+                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">👥 Contacts & People</h4>
+                                <p style="color:#6b7280; font-size:0.9rem;"><span id="contacts-count-header">0 contacts</span> preserved in your vault</p>
+                            </div>
                         </div>
-                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;" onclick="event.stopPropagation()">
                             <button class="action-button" onclick="document.getElementById('vcf-upload-input').click()" style="background:#8b5cf6;">
-                                📁 Upload Contacts File
+                                📁 Import from iPhone
                             </button>
                             <button class="action-button" onclick="showAddContactForm()" style="background:#6d28d9;">
                                 ➕ Add Manually
                             </button>
                         </div>
                     </div>
+                    <!-- Collapsible Body -->
+                    <div id="contacts-body" style="padding:0 1.5rem 1.5rem; display:none;">
 
                     <!-- Hidden VCF file input -->
                     <input type="file" id="vcf-upload-input" accept=".vcf,.csv" style="display:none;" onchange="handleContactsUpload(this)">
@@ -1983,6 +2054,7 @@
                     <!-- Contacts list -->
                     <div id="contacts-list" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
                     <p id="contacts-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;"></p>
+                    </div><!-- end contacts-body -->
                 </div>
 
                 <!-- Stories Card - Coming Soon -->
