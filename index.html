@@ -1054,7 +1054,23 @@
             try {
                 const headers = { 'Authorization': 'Bearer ' + accessToken }
                 const res = await fetch('https://api.spotify.com/v1/me/playlists?limit=50', { headers })
+                
+                // Check if token expired
+                if (res.status === 401) {
+                    container.innerHTML = `
+                        <div style="text-align:center; padding:1.5rem;">
+                            <p style="color:#ef4444; margin-bottom:1rem;">⏰ Spotify session expired. Please reconnect.</p>
+                            <button class="action-button" onclick="reconnectSpotify()" style="background:#1db954;">
+                                Reconnect Spotify
+                            </button>
+                        </div>
+                    `
+                    localStorage.removeItem('spotify_token')
+                    return
+                }
+                
                 const data = await res.json()
+                console.log('Playlist data:', data)
 
                 if (!data.items || data.items.length === 0) {
                     container.innerHTML = '<p style="color:#6b7280; text-align:center;">No playlists found</p>'
@@ -1213,6 +1229,11 @@
                 showNotification('Connection failed. Please try again.')
                 showSection('dashboard')
             }
+        }
+
+        function reconnectSpotify() {
+            localStorage.removeItem('spotify_token')
+            connectSpotify()
         }
 
         // Check for existing Spotify connection
@@ -1704,6 +1725,15 @@
             document.getElementById('nav-dashboard').classList.remove('hidden');
             document.getElementById('user-name').textContent = user.name;
             updateDashboardStats();
+            
+            // Reload Spotify if token exists
+            const spotifyToken = localStorage.getItem('spotify_token');
+            if (spotifyToken) {
+                setTimeout(() => {
+                    const spotifyCard = document.getElementById('spotify-card');
+                    if (spotifyCard) updateSpotifyUI(0, 0, spotifyToken);
+                }, 300);
+            }
         }
 
         function updateUIForLoggedOut() {
