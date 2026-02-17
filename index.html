@@ -1284,31 +1284,51 @@
 
             files.forEach((file, index) => {
                 const reader = new FileReader()
-                reader.onload = function(e) {
+                reader.onload = async function(e) {
                     const dataUrl = e.target.result
 
-                    // Add to uploaded photos array
-                    uploadedPhotos.push({
-                        name: file.name,
-                        size: file.size,
-                        type: file.type,
-                        dataUrl: dataUrl,
-                        uploadedAt: new Date().toISOString()
-                    })
-
-                    // Create photo thumbnail
+                    // Show thumbnail immediately
                     const div = document.createElement('div')
                     div.style = 'aspect-ratio:1; border-radius:8px; overflow:hidden; position:relative; cursor:pointer;'
                     div.innerHTML = `
                         <img src="${dataUrl}" style="width:100%; height:100%; object-fit:cover;" />
-                        <div class="photo-overlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.4); opacity:0; transition:opacity 0.2s; display:flex; align-items:center; justify-content:center;"
+                        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.4); opacity:0; transition:opacity 0.2s; display:flex; align-items:center; justify-content:center;"
                              onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">
-                            <span style="color:white; font-size:0.75rem; text-align:center; padding:0.25rem;">${file.name.substring(0,15)}</span>
+                            <span style="color:white; font-size:0.75rem; text-align:center; padding:0.25rem;">${file.name.substring(0,20)}</span>
                         </div>
                     `
-
-                    // Insert before the "+" button
                     grid.insertBefore(div, grid.firstChild)
+
+                    // Upload to Supabase Storage
+                    try {
+                        const userEmail = user ? user.email.replace('@','_').replace('.','_') : 'anonymous'
+                        const fileName = userEmail + '/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+                        
+                        const { data, error } = await supabaseClient.storage
+                            .from('vault-photos')
+                            .upload(fileName, file, {
+                                cacheControl: '3600',
+                                upsert: false
+                            })
+
+                        if (error) {
+                            console.error('Upload error:', error)
+                        } else {
+                            // Get public URL
+                            const { data: urlData } = supabaseClient.storage
+                                .from('vault-photos')
+                                .getPublicUrl(fileName)
+                            
+                            uploadedPhotos.push({
+                                name: file.name,
+                                url: urlData.publicUrl,
+                                uploadedAt: new Date().toISOString()
+                            })
+                            console.log('Photo saved to Supabase:', urlData.publicUrl)
+                        }
+                    } catch(err) {
+                        console.error('Supabase upload failed:', err)
+                    }
 
                     // Update progress
                     processed++
@@ -1323,18 +1343,60 @@
                             progressBar.style.width = '0%'
                         }, 1000)
                         photoCount.textContent = uploadedPhotos.length + ' photo' + (uploadedPhotos.length !== 1 ? 's' : '') + ' preserved in your vault'
-                        showNotification('📸 ' + files.length + ' photo' + (files.length !== 1 ? 's' : '') + ' added to your vault!')
-
-                        // Save to localStorage as backup
-                        try {
-                            localStorage.setItem('vault_photo_count', uploadedPhotos.length)
-                        } catch(e) {
-                            console.log('Storage full - photos shown but not cached')
-                        }
+                        showNotification('📸 ' + files.length + ' photo' + (files.length !== 1 ? 's' : '') + ' saved to your vault forever!')
                     }
                 }
                 reader.readAsDataURL(file)
             })
+        }
+
+        // Load saved photos from Supabase
+        async function loadSavedPhotos() {
+            const grid = document.getElementById('photo-grid')
+            const photoCount = document.getElementById('photo-count')
+            if (!grid || !user) return
+
+            try {
+                const userEmail = user.email.replace('@','_').replace('.','_')
+                
+                const { data, error } = await supabaseClient.storage
+                    .from('vault-photos')
+                    .list(userEmail, {
+                        limit: 100,
+                        sortBy: { column: 'created_at', order: 'desc' }
+                    })
+
+                if (error || !data || data.length === 0) return
+
+                // Clear existing grid first
+                grid.innerHTML = ''
+
+                for (const file of data) {
+                    const { data: urlData } = supabaseClient.storage
+                        .from('vault-photos')
+                        .getPublicUrl(userEmail + '/' + file.name)
+
+                    uploadedPhotos.push({ name: file.name, url: urlData.publicUrl })
+
+                    const div = document.createElement('div')
+                    div.style = 'aspect-ratio:1; border-radius:8px; overflow:hidden; position:relative; cursor:pointer;'
+                    div.innerHTML = `
+                        <img src="${urlData.publicUrl}" style="width:100%; height:100%; object-fit:cover;" 
+                             onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📸</text></svg>'" />
+                        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.4); opacity:0; transition:opacity 0.2s; display:flex; align-items:center; justify-content:center;"
+                             onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">
+                            <span style="color:white; font-size:0.75rem; text-align:center; padding:0.25rem;">${file.name.substring(0,20)}</span>
+                        </div>
+                    `
+                    grid.appendChild(div)
+                }
+
+                if (photoCount) photoCount.textContent = data.length + ' photo' + (data.length !== 1 ? 's' : '') + ' preserved in your vault forever'
+                console.log('Loaded ' + data.length + ' photos from Supabase!')
+
+            } catch(e) {
+                console.log('Error loading photos:', e)
+            }
         }
 
         // Contacts handling
@@ -1438,35 +1500,72 @@
             return contacts
         }
 
-        function renderContacts() {
+        function renderContacts(filter = '') {
             const list = document.getElementById('contacts-list')
             const count = document.getElementById('contacts-count')
+            const searchBar = document.getElementById('contacts-search-bar')
             if (!list) return
 
             if (savedContacts.length === 0) {
-                list.innerHTML = ''
-                count.textContent = 'No contacts added yet'
+                list.innerHTML = '<p style="color:#9ca3af; text-align:center; padding:1.5rem;">No contacts added yet. Add people who matter to you!</p>'
+                count.textContent = ''
+                if (searchBar) searchBar.style.display = 'none'
                 return
             }
 
-            count.textContent = savedContacts.length + ' contact' + (savedContacts.length !== 1 ? 's' : '') + ' preserved in your vault'
+            // Show search bar when contacts exist
+            if (searchBar) searchBar.style.display = 'block'
 
-            list.innerHTML = savedContacts.map(c => `
+            // Filter contacts
+            const term = filter.toLowerCase()
+            let filtered = savedContacts
+
+            if (term) {
+                filtered = savedContacts.filter(c =>
+                    c.name.toLowerCase().includes(term) ||
+                    (c.relation && c.relation.toLowerCase().includes(term)) ||
+                    (c.phone && c.phone.includes(term)) ||
+                    (c.email && c.email.toLowerCase().includes(term)) ||
+                    (c.note && c.note.toLowerCase().includes(term))
+                )
+            }
+
+            // Sort: by date added (newest first) or by name
+            const sortBy = document.getElementById('contacts-sort') ? document.getElementById('contacts-sort').value : 'name'
+            if (sortBy === 'date') {
+                filtered.sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt))
+            } else {
+                filtered.sort((a, b) => a.name.localeCompare(b.name))
+            }
+
+            count.textContent = savedContacts.length + ' contact' + (savedContacts.length !== 1 ? 's' : '') + ' preserved' + (filter ? ' (' + filtered.length + ' shown)' : '')
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<p style="color:#9ca3af; text-align:center; padding:1rem;">No contacts match your search</p>'
+                return
+            }
+
+            list.innerHTML = filtered.map(c => `
                 <div style="background:white; border-radius:8px; padding:1rem; display:flex; align-items:center; gap:1rem; border:1px solid #e5e7eb;">
                     <div style="width:45px; height:45px; border-radius:50%; background:#8b5cf6; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:1.1rem; flex-shrink:0;">
                         ${c.name.charAt(0).toUpperCase()}
                     </div>
                     <div style="flex:1; min-width:0;">
                         <div style="font-weight:600; color:#1e3a8a;">${c.name}</div>
-                        <div style="color:#6b7280; font-size:0.85rem;">
-                            ${c.relation ? '<span style="background:#ede9fe; color:#6d28d9; padding:0.1rem 0.4rem; border-radius:4px; margin-right:0.5rem;">' + c.relation + '</span>' : ''}
-                            ${c.phone || ''} ${c.email ? '• ' + c.email : ''}
+                        <div style="color:#6b7280; font-size:0.85rem; margin-top:0.2rem;">
+                            ${c.relation ? '<span style="background:#ede9fe; color:#6d28d9; padding:0.1rem 0.5rem; border-radius:4px; margin-right:0.5rem; font-size:0.8rem;">' + c.relation + '</span>' : ''}
+                            ${c.phone ? '📞 ' + c.phone : ''} ${c.email ? '• ✉️ ' + c.email : ''}
                         </div>
-                        ${c.note ? '<div style="color:#9ca3af; font-size:0.8rem; margin-top:0.2rem;">' + c.note + '</div>' : ''}
+                        ${c.note ? '<div style="color:#9ca3af; font-size:0.8rem; margin-top:0.3rem; font-style:italic;">' + c.note + '</div>' : ''}
+                        <div style="color:#d1d5db; font-size:0.75rem; margin-top:0.2rem;">Added ${new Date(c.addedAt).toLocaleDateString()}</div>
                     </div>
-                    <button onclick="deleteContact(${c.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem; flex-shrink:0;">🗑️</button>
+                    <button onclick="deleteContact(${c.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem; flex-shrink:0;" title="Delete">🗑️</button>
                 </div>
             `).join('')
+        }
+
+        function searchContacts(term) {
+            renderContacts(term)
         }
 
         // Load contacts on startup
@@ -1859,9 +1958,23 @@
                         </div>
                     </div>
 
+                    <!-- Search and Sort Bar -->
+                    <div id="contacts-search-bar" style="display:none; margin-bottom:1rem;">
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                            <input id="contact-search" placeholder="🔍 Search by name, phone, email, relationship..." 
+                                style="flex:1; min-width:200px; padding:0.75rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.9rem;"
+                                oninput="searchContacts(this.value)">
+                            <select id="contacts-sort" onchange="renderContacts(document.getElementById('contact-search').value)"
+                                style="padding:0.75rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.9rem; background:white; cursor:pointer;">
+                                <option value="name">Sort A-Z</option>
+                                <option value="date">Sort by Date</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <!-- Contacts list -->
                     <div id="contacts-list" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
-                    <p id="contacts-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;">No contacts added yet</p>
+                    <p id="contacts-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;"></p>
                 </div>
 
                 <!-- Stories Card - Coming Soon -->
@@ -2050,8 +2163,11 @@
                 }, 300);
             }
 
-            // Load contacts
-            setTimeout(() => loadContacts(), 400);
+            // Load contacts and photos
+            setTimeout(() => {
+                loadContacts()
+                loadSavedPhotos()
+            }, 400);
         }
 
         function updateUIForLoggedOut() {
