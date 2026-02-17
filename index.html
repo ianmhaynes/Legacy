@@ -892,7 +892,7 @@
     <script>
         const SUPABASE_URL = 'https://cusfryouqtrivwbejrkj.supabase.co'
         const SUPABASE_KEY = 'sb_publishable_fZCVUL2XlsBkgQvMPxFriA_ca2OOVHk'
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
     </script>
 
     <!-- Spotify Configuration -->
@@ -910,12 +910,23 @@
         ].join(' ')
 
         function connectSpotify() {
-            const authUrl = 'https://accounts.spotify.com/authorize?' +
-                'client_id=' + SPOTIFY_CLIENT_ID +
+            if (!user) {
+                showNotification('Please log in first!')
+                showLogin()
+                return
+            }
+            const redirectUri = 'https://www.mydatalegacy.co'
+            const authUrl = 'https://accounts.spotify.com/authorize' +
+                '?client_id=' + SPOTIFY_CLIENT_ID +
                 '&response_type=token' +
-                '&redirect_uri=' + encodeURIComponent(SPOTIFY_REDIRECT_URI) +
+                '&redirect_uri=' + encodeURIComponent(redirectUri) +
                 '&scope=' + encodeURIComponent(SPOTIFY_SCOPES) +
                 '&show_dialog=true'
+            
+            // Store user before leaving page
+            localStorage.setItem('user', JSON.stringify(user))
+            
+            // Redirect to Spotify
             window.location.href = authUrl
         }
 
@@ -943,7 +954,7 @@
 
                 // Store in Supabase
                 if (user) {
-                    await supabase.from('legacy_content').upsert({
+                    await supabaseClient.from('legacy_content').upsert({
                         user_id: user.id,
                         content_type: 'spotify',
                         data: {
@@ -1538,4 +1549,3 @@
     </script>
 </body>
 </html>
-
