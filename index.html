@@ -6136,7 +6136,7 @@ document.querySelectorAll('.vault-section h3, [id$="-card"] h4').forEach(h => {
 })
 Does clicking a section header collapse it? 🔍not there22:25Let's take a step back. The file uploading is working now via the VS Code browser method. Let me give you one small focused file with ONLY the collapsible feature added - no other changes - so it's a tiny edit:
 In GitHub pencil editor, find this line:
-function reconnectSpotify() {
+function toggleSection(b,a){var el=document.getElementById(b);if(!el)return;el.style.display=el.style.display==='none'?'block':'none';var ar=document.getElementById(a);if(ar)ar.textContent=el.style.display==='none'?'▶':'▼';}function reconnectSpotify() {
 Add this BEFORE it:
 javascriptfunction toggleSection(b,a){var el=document.getElementById(b);if(!el)return;el.style.display=el.style.display==='none'?'block':'none';var ar=document.getElementById(a);if(ar)ar.textContent=el.style.display==='none'?'▶':'▼';}function reconnectSpotify() {
             localStorage.removeItem('spotify_token')
