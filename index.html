@@ -1070,32 +1070,27 @@
                 let html = '<div style="display:flex; flex-direction:column; gap:1rem;">'
 
                 for (const playlist of data.items) {
-                    if (!playlist) continue
+                    if (!playlist || !playlist.id) continue
                     
                     const image = playlist.images && playlist.images[0] 
                         ? playlist.images[0].url 
                         : null
-                    
-                    const trackCount = playlist.tracks ? playlist.tracks.total : '?'
-                    const tracksHref = playlist.tracks ? playlist.tracks.href : ''
-                    const playlistId = playlist.id || Math.random().toString(36).substr(2,9)
 
                     html += `
                         <div class="playlist-card" style="background:white; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                             <div style="display:flex; align-items:center; padding:1rem; cursor:pointer; gap:1rem;"
-                                 onclick="togglePlaylist('${playlistId}', '${encodeURIComponent(tracksHref)}')">
+                                 onclick="togglePlaylist('${playlist.id}')">
                                 ${image 
                                     ? `<img src="${image}" style="width:60px; height:60px; border-radius:8px; object-fit:cover;" />` 
                                     : `<div style="width:60px; height:60px; background:#3730a3; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">🎵</div>`
                                 }
                                 <div style="flex:1;">
                                     <div style="font-weight:600; color:#1e3a8a; font-size:1.1rem;">${playlist.name || 'Unnamed Playlist'}</div>
-                                    <div style="color:#6b7280; font-size:0.9rem;">${trackCount} songs</div>
-                                    ${playlist.description ? `<div style="color:#9ca3af; font-size:0.8rem; margin-top:0.2rem;">${playlist.description}</div>` : ''}
+                                    <div style="color:#6b7280; font-size:0.9rem;">Click to load songs</div>
                                 </div>
                                 <div style="color:#6b7280; font-size:1.2rem;">▼</div>
                             </div>
-                            <div id="tracks-${playlistId}" style="display:none; border-top:1px solid #f3f4f6; padding:0 1rem 1rem;">
+                            <div id="tracks-${playlist.id}" style="display:none; border-top:1px solid #f3f4f6; padding:0 1rem 1rem;">
                                 <p style="color:#9ca3af; padding:1rem 0; text-align:center;">Loading songs...</p>
                             </div>
                         </div>
@@ -1111,7 +1106,7 @@
             }
         }
 
-        async function togglePlaylist(playlistId, tracksHref) {
+        async function togglePlaylist(playlistId) {
             const tracksDiv = document.getElementById('tracks-' + playlistId)
             if (!tracksDiv) return
 
@@ -1129,8 +1124,8 @@
 
             try {
                 const token = localStorage.getItem('spotify_token')
-                const href = decodeURIComponent(tracksHref)
-                const res = await fetch(href + '&limit=50', {
+                // Fetch tracks directly using playlist ID
+                const res = await fetch('https://api.spotify.com/v1/playlists/' + playlistId + '/tracks?limit=50', {
                     headers: { 'Authorization': 'Bearer ' + token }
                 })
                 const data = await res.json()
