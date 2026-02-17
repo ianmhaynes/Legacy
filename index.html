@@ -1238,8 +1238,39 @@
         // Photo upload handling
         let uploadedPhotos = []
 
+        function handleDragOver(e) {
+            e.preventDefault()
+            e.stopPropagation()
+            const zone = document.getElementById('drop-zone')
+            zone.style.background = '#dbeafe'
+            zone.style.borderColor = '#1d4ed8'
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault()
+            const zone = document.getElementById('drop-zone')
+            zone.style.background = '#eff6ff'
+            zone.style.borderColor = '#3b82f6'
+        }
+
+        function handleDrop(e) {
+            e.preventDefault()
+            e.stopPropagation()
+            const zone = document.getElementById('drop-zone')
+            zone.style.background = '#eff6ff'
+            zone.style.borderColor = '#3b82f6'
+
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'))
+            if (files.length === 0) {
+                showNotification('No image files found. Please drop photos!')
+                return
+            }
+            showNotification('Loading ' + files.length + ' photos...')
+            handlePhotoUpload(files)
+        }
+
         function handlePhotoUpload(input) {
-            const files = Array.from(input.files)
+            const files = input instanceof FileList || Array.isArray(input) ? Array.from(input) : Array.from(input.files)
             if (!files.length) return
 
             const grid = document.getElementById('photo-grid')
@@ -1617,27 +1648,32 @@
                         </button>
                     </div>
 
-                    <!-- Hidden file input -->
-                    <input type="file" id="photo-upload-input" multiple accept="image/*" style="display:none;" onchange="handlePhotoUpload(this)">
+                    <!-- Hidden file input - supports multiple + folders -->
+                    <input type="file" id="photo-upload-input" multiple accept="image/*" style="display:none;" onchange="handlePhotoUpload(this.files)">
+
+                    <!-- Drag and Drop Zone -->
+                    <div id="drop-zone" 
+                         style="border:3px dashed #3b82f6; border-radius:12px; padding:2.5rem; text-align:center; margin-bottom:1rem; cursor:pointer; transition:all 0.2s; background:#eff6ff;"
+                         onclick="document.getElementById('photo-upload-input').click()"
+                         ondrop="handleDrop(event)"
+                         ondragover="handleDragOver(event)"
+                         ondragleave="handleDragLeave(event)">
+                        <div style="font-size:3rem; margin-bottom:0.5rem;">📸</div>
+                        <p style="color:#1e3a8a; font-weight:600; font-size:1.1rem; margin-bottom:0.25rem;">Drop your photos here</p>
+                        <p style="color:#6b7280; font-size:0.9rem;">or click to browse</p>
+                        <p style="color:#9ca3af; font-size:0.8rem; margin-top:0.5rem;">Supports JPG, PNG, HEIC • Drop entire folders • Select all with Ctrl+A</p>
+                    </div>
 
                     <!-- Upload progress -->
                     <div id="upload-progress" style="display:none; margin-bottom:1rem;">
-                        <div style="background:#e5e7eb; border-radius:10px; height:8px; overflow:hidden;">
+                        <div style="background:#e5e7eb; border-radius:10px; height:10px; overflow:hidden;">
                             <div id="progress-bar" style="background:#3b82f6; height:100%; width:0%; transition:width 0.3s;"></div>
                         </div>
                         <p id="progress-text" style="color:#6b7280; font-size:0.85rem; margin-top:0.5rem; text-align:center;">Uploading...</p>
                     </div>
 
                     <!-- Photo grid -->
-                    <div id="photo-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:0.5rem;">
-                        <div style="aspect-ratio:1; background:#e5e7eb; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; border:2px dashed #9ca3af;"
-                             onclick="document.getElementById('photo-upload-input').click()">
-                            <div style="text-align:center; color:#9ca3af;">
-                                <div style="font-size:2rem;">+</div>
-                                <div style="font-size:0.75rem;">Add Photos</div>
-                            </div>
-                        </div>
-                    </div>
+                    <div id="photo-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:0.5rem;"></div>
 
                     <p id="photo-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;">No photos uploaded yet</p>
                 </div>
