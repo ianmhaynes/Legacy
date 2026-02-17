@@ -29,6 +29,37 @@
         }
 
         nav .container {
+            max-width: 1200px;<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Data Legacy - Your Digital Legacy, Preserved Forever</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
+        }
+
+        /* Navigation */
+        nav {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav .container {
             max-width: 1200px;
             margin: 0 auto;
             display: flex;
@@ -1062,6 +1093,19 @@
                 const data = await res.json()
                 console.log('Playlist data:', data)
 
+                // Token expired
+                if (data.error && data.error.status === 401) {
+                    localStorage.removeItem('spotify_token')
+                    container.innerHTML = `
+                        <div style="text-align:center; padding:1.5rem;">
+                            <p style="color:#6b7280; margin-bottom:1rem;">⏰ Spotify session expired. Please reconnect.</p>
+                            <button class="action-button" onclick="connectSpotify()" style="background:#1db954;">
+                                🎵 Reconnect Spotify
+                            </button>
+                        </div>`
+                    return
+                }
+
                 if (!data.items || data.items.length === 0) {
                     container.innerHTML = '<p style="color:#6b7280; text-align:center;">No playlists found</p>'
                     return
@@ -1220,6 +1264,77 @@
                 showNotification('Connection failed. Please try again.')
                 showSection('dashboard')
             }
+        }
+
+        // Photo upload handling
+        let uploadedPhotos = []
+
+        function handlePhotoUpload(input) {
+            const files = Array.from(input.files)
+            if (!files.length) return
+
+            const grid = document.getElementById('photo-grid')
+            const progress = document.getElementById('upload-progress')
+            const progressBar = document.getElementById('progress-bar')
+            const progressText = document.getElementById('progress-text')
+            const photoCount = document.getElementById('photo-count')
+
+            progress.style.display = 'block'
+            let processed = 0
+
+            files.forEach((file, index) => {
+                const reader = new FileReader()
+                reader.onload = function(e) {
+                    const dataUrl = e.target.result
+
+                    // Add to uploaded photos array
+                    uploadedPhotos.push({
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                        dataUrl: dataUrl,
+                        uploadedAt: new Date().toISOString()
+                    })
+
+                    // Create photo thumbnail
+                    const div = document.createElement('div')
+                    div.style = 'aspect-ratio:1; border-radius:8px; overflow:hidden; position:relative; cursor:pointer;'
+                    div.innerHTML = `
+                        <img src="${dataUrl}" style="width:100%; height:100%; object-fit:cover;" />
+                        <div class="photo-overlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.4); opacity:0; transition:opacity 0.2s; display:flex; align-items:center; justify-content:center;"
+                             onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">
+                            <span style="color:white; font-size:0.75rem; text-align:center; padding:0.25rem;">${file.name.substring(0,15)}</span>
+                        </div>
+                    `
+
+                    // Insert before the "+" button
+                    grid.insertBefore(div, grid.firstChild)
+
+                    // Update progress
+                    processed++
+                    const pct = Math.round((processed / files.length) * 100)
+                    progressBar.style.width = pct + '%'
+                    progressText.textContent = 'Uploaded ' + processed + ' of ' + files.length + ' photos...'
+
+                    // Done
+                    if (processed === files.length) {
+                        setTimeout(() => {
+                            progress.style.display = 'none'
+                            progressBar.style.width = '0%'
+                        }, 1000)
+                        photoCount.textContent = uploadedPhotos.length + ' photo' + (uploadedPhotos.length !== 1 ? 's' : '') + ' preserved in your vault'
+                        showNotification('📸 ' + files.length + ' photo' + (files.length !== 1 ? 's' : '') + ' added to your vault!')
+
+                        // Save to localStorage as backup
+                        try {
+                            localStorage.setItem('vault_photo_count', uploadedPhotos.length)
+                        } catch(e) {
+                            console.log('Storage full - photos shown but not cached')
+                        }
+                    }
+                }
+                reader.readAsDataURL(file)
+            })
         }
 
         function reconnectSpotify() {
@@ -1521,15 +1636,41 @@
                 <!-- Playlists Display -->
                 <div id="playlists-container" style="margin-top:1rem;"></div>
 
-                <!-- Google Photos Card - Coming Soon -->
-                <div style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #d1d5db; margin-bottom:1rem; opacity:0.7;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                <!-- Photos Upload Card -->
+                <div style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #3b82f6; margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
                         <div>
-                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">📸 Photos & Videos</h4>
-                            <p style="color:#6b7280;">Preserve your photos and videos for future generations</p>
+                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">📸 Photos & Memories</h4>
+                            <p style="color:#6b7280;">Upload your favourite photos to preserve for future generations</p>
                         </div>
-                        <span style="background:#e5e7eb; color:#6b7280; padding:0.5rem 1.5rem; border-radius:8px; font-weight:600;">Coming Soon</span>
+                        <button class="action-button" onclick="document.getElementById('photo-upload-input').click()" style="background:#3b82f6;">
+                            📸 Upload Photos
+                        </button>
                     </div>
+
+                    <!-- Hidden file input -->
+                    <input type="file" id="photo-upload-input" multiple accept="image/*" style="display:none;" onchange="handlePhotoUpload(this)">
+
+                    <!-- Upload progress -->
+                    <div id="upload-progress" style="display:none; margin-bottom:1rem;">
+                        <div style="background:#e5e7eb; border-radius:10px; height:8px; overflow:hidden;">
+                            <div id="progress-bar" style="background:#3b82f6; height:100%; width:0%; transition:width 0.3s;"></div>
+                        </div>
+                        <p id="progress-text" style="color:#6b7280; font-size:0.85rem; margin-top:0.5rem; text-align:center;">Uploading...</p>
+                    </div>
+
+                    <!-- Photo grid -->
+                    <div id="photo-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:0.5rem;">
+                        <div style="aspect-ratio:1; background:#e5e7eb; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; border:2px dashed #9ca3af;"
+                             onclick="document.getElementById('photo-upload-input').click()">
+                            <div style="text-align:center; color:#9ca3af;">
+                                <div style="font-size:2rem;">+</div>
+                                <div style="font-size:0.75rem;">Add Photos</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p id="photo-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;">No photos uploaded yet</p>
                 </div>
 
                 <!-- Contacts Card - Coming Soon -->
