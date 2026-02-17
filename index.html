@@ -1140,108 +1140,40 @@
                 </div>
             </div>
 
-            <!-- Legacy Content -->
-            <div class="vault-section">
-                <h3>Your Digital Legacy</h3>
-                
-                <div class="legacy-item">
-                    <div class="legacy-item-info">
-                        <h4>🎵 Music & Playlists</h4>
-                        <p>Your soundtrack—preserved from Spotify and Apple Music</p>
-                    </div>
-                    <div class="legacy-item-stats">
-                        <div class="legacy-stat">
-                            <div class="legacy-stat-value">0</div>
-                            <div class="legacy-stat-label">Playlists</div>
-                        </div>
-                        <div class="legacy-stat">
-                            <div class="legacy-stat-value">0</div>
-                            <div class="legacy-stat-label">Songs</div>
-                        </div>
-                    </div>
-                    <button class="action-button">Connect Spotify</button>
-                </div>
-
-                <div class="legacy-item">
-                    <div class="legacy-item-info">
-                        <h4>📸 Photos & Memories</h4>
-                        <p>Every moment captured—your life in images</p>
-                    </div>
-                    <div class="legacy-item-stats">
-                        <div class="legacy-stat">
-                            <div class="legacy-stat-value">0</div>
-                            <div class="legacy-stat-label">Photos</div>
-                        </div>
-                        <div class="legacy-stat">
-                            <div class="legacy-stat-value">0</div>
-                            <div class="legacy-stat-label">Videos</div>
-                        </div>
-                    </div>
-                    <button class="action-button">Connect Google Photos</button>
-                </div>
-
-                <div class="legacy-item">
-                    <div class="legacy-item-info">
-                        <h4>👥 Contacts & Connections</h4>
-                        <p>The people who mattered in your life</p>
-                    </div>
-                    <div class="legacy-item-stats">
-                        <div class="legacy-stat">
-                            <div class="legacy-stat-value">0</div>
-                            <div class="legacy-stat-label">Contacts</div>
-                        </div>
-                        <div class="legacy-stat">
-                            <div class="legacy-stat-value">0</div>
-                            <div class="legacy-stat-label">Groups</div>
-                        </div>
-                    </div>
-                    <button class="action-button">Connect Contacts</button>
-                </div>
-
-                <div class="legacy-item">
-                    <div class="legacy-item-info">
-                        <h4>📖 Stories & Messages</h4>
-                        <p>Your voice, your words, your wisdom</p>
-                    </div>
-                    <div class="legacy-item-stats">
-                        <div class="legacy-stat">
-                            <div class="legacy-stat-value">0</div>
-                            <div class="legacy-stat-label">Stories</div>
-                        </div>
-                        <div class="legacy-stat">
-                            <div class="legacy-stat-value">0</div>
-                            <div class="legacy-stat-label">Letters</div>
-                        </div>
-                    </div>
-                    <button class="action-button">Create Story</button>
+            <!-- Welcome Message -->
+            <div class="vault-section" style="text-align: center; padding: 3rem;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">🏛️</div>
+                <h3 style="font-size: 2rem; margin-bottom: 1rem;">Your Vault is Ready!</h3>
+                <p style="color: #6b7280; font-size: 1.2rem; max-width: 600px; margin: 0 auto 2rem;">
+                    You're one of our founding members. We're currently setting up service connections and will notify you by email the moment they're ready.
+                </p>
+                <div style="background: #eff6ff; border-radius: 10px; padding: 1.5rem; max-width: 500px; margin: 0 auto; border-left: 4px solid #3730a3;">
+                    <p style="color: #1e3a8a; font-weight: 600; margin-bottom: 0.5rem;">🚀 Coming Very Soon:</p>
+                    <p style="color: #4b5563;">🎵 Spotify playlist backup</p>
+                    <p style="color: #4b5563;">📸 Photo library preservation</p>
+                    <p style="color: #4b5563;">👥 Contacts backup</p>
+                    <p style="color: #4b5563;">📖 Voice & story recording</p>
                 </div>
             </div>
 
-            <!-- Inheritors -->
-            <div class="vault-section">
-                <h3>Your Inheritors</h3>
-                <p style="margin-bottom: 1.5rem; color: #6b7280;">These people will receive your legacy vault when the time comes</p>
-                
-                <div class="inheritors-grid">
-                    <div class="inheritor-card">
-                        <div class="inheritor-avatar">👤</div>
-                        <h4>Add Inheritor</h4>
-                        <p>Designate who receives your legacy</p>
-                        <button class="action-button" style="margin-top: 1rem;">Add Person</button>
-                    </div>
+            <!-- Notify Me -->
+            <div class="vault-section" style="text-align: center;">
+                <h3>Want to be notified when we launch?</h3>
+                <p style="color: #6b7280; margin: 1rem 0 1.5rem;">We'll email you as soon as connections are ready to set up.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button class="action-button" onclick="notifyMe()">✉️ Yes, Notify Me!</button>
+                    <button class="action-button secondary" onclick="showSection('home')">Back to Home</button>
                 </div>
+                <p id="notify-confirm" style="display:none; color: #10b981; margin-top: 1rem; font-weight: 600;">✅ Great! We'll email you at <span id="notify-email"></span></p>
             </div>
 
-            <!-- Quick Actions -->
-            <div class="vault-section">
-                <h3>Quick Actions</h3>
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <button class="action-button">Connect New Service</button>
-                    <button class="action-button">Record Voice Message</button>
-                    <button class="action-button">Write Letter to Future</button>
-                    <button class="action-button secondary">Download Archive</button>
-                    <button class="action-button secondary">Manage Settings</button>
-                </div>
+            <!-- Founder Badge -->
+            <div class="vault-section" style="text-align: center; background: linear-gradient(135deg, #1e3a8a, #3730a3); color: white; border-radius: 15px;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🥇</div>
+                <h3 style="color: white; font-size: 1.8rem; margin-bottom: 1rem;">You're a Founding Member!</h3>
+                <p style="opacity: 0.9; font-size: 1.1rem; max-width: 500px; margin: 0 auto;">
+                    As one of our first members, you'll receive priority access to all features, a founding member discount, and your legacy preserved for 100 years.
+                </p>
             </div>
         </div>
     </section>
@@ -1400,6 +1332,11 @@
             document.getElementById('storage-used').textContent = '0 GB';
             document.getElementById('years-guarantee').textContent = user.plan === 'Forever' ? '100' : '50';
             document.getElementById('inheritors-count').textContent = '0';
+        }
+
+        function notifyMe() {
+            document.getElementById('notify-confirm').style.display = 'block';
+            document.getElementById('notify-email').textContent = user.email;
         }
 
         function showNotification(message) {
