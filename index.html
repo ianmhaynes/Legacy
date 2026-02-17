@@ -1637,6 +1637,63 @@
             }
         }
 
+        // Life Stories
+        let currentStoryKey = ''
+        let savedStories = JSON.parse(localStorage.getItem('vault_stories') || '{}')
+
+        function openStoryEditor(key, title, prompt) {
+            currentStoryKey = key
+            document.getElementById('story-editor-title').textContent = title
+            document.getElementById('story-editor-prompt').textContent = prompt
+            document.getElementById('story-editor-text').value = savedStories[key] || ''
+            document.getElementById('story-editor').style.display = 'block'
+            document.getElementById('story-editor').scrollIntoView({ behavior: 'smooth' })
+        }
+
+        function closeStoryEditor() {
+            document.getElementById('story-editor').style.display = 'none'
+            currentStoryKey = ''
+        }
+
+        function saveStory() {
+            const text = document.getElementById('story-editor-text').value.trim()
+            if (!text) { showNotification('Please write something first!'); return }
+
+            savedStories[currentStoryKey] = text
+            localStorage.setItem('vault_stories', JSON.stringify(savedStories))
+
+            // Show written indicator on the card
+            const indicator = document.getElementById('indicator-' + currentStoryKey)
+            if (indicator) indicator.style.display = 'block'
+
+            // Update count
+            const count = Object.keys(savedStories).length
+            const header = document.getElementById('stories-count-header')
+            if (header) header.textContent = count + ' stor' + (count !== 1 ? 'ies' : 'y') + ' written'
+
+            closeStoryEditor()
+            showNotification('✨ Story saved to your legacy!')
+        }
+
+        function loadStories() {
+            savedStories = JSON.parse(localStorage.getItem('vault_stories') || '{}')
+            const count = Object.keys(savedStories).length
+            if (count > 0) {
+                const header = document.getElementById('stories-count-header')
+                if (header) header.textContent = count + ' stor' + (count !== 1 ? 'ies' : 'y') + ' written'
+                // Show indicators
+                Object.keys(savedStories).forEach(key => {
+                    const indicator = document.getElementById('indicator-' + key)
+                    if (indicator) indicator.style.display = 'block'
+                })
+                // Auto expand
+                const body = document.getElementById('stories-body')
+                const arrow = document.getElementById('stories-arrow')
+                if (body) body.style.display = 'block'
+                if (arrow) arrow.textContent = '▼'
+            }
+        }
+
         function reconnectSpotify() {
             localStorage.removeItem('spotify_token')
             connectSpotify()
@@ -2067,14 +2124,102 @@
                     </div><!-- end contacts-body -->
                 </div>
 
-                <!-- Stories Card - Coming Soon -->
-                <div style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #d1d5db; opacity:0.7;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
-                        <div>
-                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">📖 Stories & Voice Messages</h4>
-                            <p style="color:#6b7280;">Record your voice and write letters to future generations</p>
+                <!-- Life Stories Card -->
+                <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #f59e0b; margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem; cursor:pointer; user-select:none;"
+                         onclick="toggleSection('stories-body','stories-arrow')">
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <span id="stories-arrow" style="color:#f59e0b; font-size:1rem;">▶</span>
+                            <div>
+                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">✨ The Best Things in My Life</h4>
+                                <p style="color:#6b7280; font-size:0.9rem;"><span id="stories-count-header">Your life story, preserved forever</span></p>
+                            </div>
                         </div>
-                        <span style="background:#e5e7eb; color:#6b7280; padding:0.5rem 1.5rem; border-radius:8px; font-weight:600;">Coming Soon</span>
+                        <button class="action-button" onclick="event.stopPropagation(); toggleSection('stories-body','stories-arrow')" style="background:#f59e0b;">
+                            + Add Story
+                        </button>
+                    </div>
+
+                    <div id="stories-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                        
+                        <!-- Life prompts -->
+                        <div id="stories-prompts" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+                            
+                            <div class="story-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
+                                 onclick="openStoryEditor('best_memory', '🌟 Best Memory', 'What is the single best memory of your life? Paint the picture...')">
+                                <div style="font-size:2rem; margin-bottom:0.5rem;">🌟</div>
+                                <h5 style="color:#1e3a8a; margin-bottom:0.3rem;">Best Memory</h5>
+                                <p style="color:#9ca3af; font-size:0.85rem;">What moment do you treasure most?</p>
+                                <div id="indicator-best_memory" style="margin-top:0.5rem; display:none;">
+                                    <span style="background:#fef3c7; color:#92400e; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem;">✓ Written</span>
+                                </div>
+                            </div>
+
+                            <div class="story-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
+                                 onclick="openStoryEditor('proudest_moment', '🏆 Proudest Moment', 'What achievement are you most proud of in your life?')">
+                                <div style="font-size:2rem; margin-bottom:0.5rem;">🏆</div>
+                                <h5 style="color:#1e3a8a; margin-bottom:0.3rem;">Proudest Moment</h5>
+                                <p style="color:#9ca3af; font-size:0.85rem;">What achievement defines you?</p>
+                                <div id="indicator-proudest_moment" style="margin-top:0.5rem; display:none;">
+                                    <span style="background:#fef3c7; color:#92400e; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem;">✓ Written</span>
+                                </div>
+                            </div>
+
+                            <div class="story-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
+                                 onclick="openStoryEditor('most_important_person', '❤️ Most Important Person', 'Who has had the biggest impact on your life and why?')">
+                                <div style="font-size:2rem; margin-bottom:0.5rem;">❤️</div>
+                                <h5 style="color:#1e3a8a; margin-bottom:0.3rem;">Most Important Person</h5>
+                                <p style="color:#9ca3af; font-size:0.85rem;">Who changed your life?</p>
+                                <div id="indicator-most_important_person" style="margin-top:0.5rem; display:none;">
+                                    <span style="background:#fef3c7; color:#92400e; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem;">✓ Written</span>
+                                </div>
+                            </div>
+
+                            <div class="story-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
+                                 onclick="openStoryEditor('favourite_place', '🌍 Favourite Place', 'Describe the place that means the most to you in the world.')">
+                                <div style="font-size:2rem; margin-bottom:0.5rem;">🌍</div>
+                                <h5 style="color:#1e3a8a; margin-bottom:0.3rem;">Favourite Place</h5>
+                                <p style="color:#9ca3af; font-size:0.85rem;">Where did you feel most alive?</p>
+                                <div id="indicator-favourite_place" style="margin-top:0.5rem; display:none;">
+                                    <span style="background:#fef3c7; color:#92400e; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem;">✓ Written</span>
+                                </div>
+                            </div>
+
+                            <div class="story-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
+                                 onclick="openStoryEditor('life_lesson', '💡 Life Lesson', 'What is the most important lesson you have learned in your life?')">
+                                <div style="font-size:2rem; margin-bottom:0.5rem;">💡</div>
+                                <h5 style="color:#1e3a8a; margin-bottom:0.3rem;">Life Lesson</h5>
+                                <p style="color:#9ca3af; font-size:0.85rem;">What wisdom would you pass on?</p>
+                                <div id="indicator-life_lesson" style="margin-top:0.5rem; display:none;">
+                                    <span style="background:#fef3c7; color:#92400e; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem;">✓ Written</span>
+                                </div>
+                            </div>
+
+                            <div class="story-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
+                                 onclick="openStoryEditor('letter_to_grandchildren', '📝 Letter to Future Generations', 'Write a letter directly to your grandchildren or great-grandchildren.')">
+                                <div style="font-size:2rem; margin-bottom:0.5rem;">📝</div>
+                                <h5 style="color:#1e3a8a; margin-bottom:0.3rem;">Letter to Future Generations</h5>
+                                <p style="color:#9ca3af; font-size:0.85rem;">Speak directly to descendants</p>
+                                <div id="indicator-letter_to_grandchildren" style="margin-top:0.5rem; display:none;">
+                                    <span style="background:#fef3c7; color:#92400e; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem;">✓ Written</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Story editor (hidden by default) -->
+                        <div id="story-editor" style="display:none; background:white; border-radius:10px; padding:1.5rem; border:1px solid #f59e0b;">
+                            <h4 id="story-editor-title" style="color:#1e3a8a; margin-bottom:0.5rem;"></h4>
+                            <p id="story-editor-prompt" style="color:#6b7280; font-size:0.9rem; margin-bottom:1rem; font-style:italic;"></p>
+                            <textarea id="story-editor-text" 
+                                placeholder="Write your story here..." 
+                                style="width:100%; padding:1rem; border:1px solid #e5e7eb; border-radius:8px; font-size:1rem; min-height:200px; resize:vertical; line-height:1.6; margin-bottom:1rem; font-family:inherit;"></textarea>
+                            <div style="display:flex; gap:0.5rem;">
+                                <button class="action-button" onclick="saveStory()" style="background:#f59e0b;">💾 Save Story</button>
+                                <button class="action-button secondary" onclick="closeStoryEditor()">Cancel</button>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -2253,10 +2398,11 @@
                 }, 300);
             }
 
-            // Load contacts and photos
+            // Load contacts, photos and stories
             setTimeout(() => {
                 loadContacts()
                 loadSavedPhotos()
+                loadStories()
             }, 400);
         }
 
