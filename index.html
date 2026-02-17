@@ -1880,18 +1880,20 @@
                             <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">📸 Photos & Memories</h4>
                             <p style="color:#6b7280;">Upload your favourite photos to preserve for future generations</p>
                         </div>
-                        <button class="action-button" onclick="document.getElementById('photo-upload-input').click()" style="background:#3b82f6;">
+                        <label for="photo-upload-input" class="action-button" style="background:#3b82f6; cursor:pointer; display:inline-block;">
                             📸 Upload Photos
-                        </button>
+                        </label>
                     </div>
 
                     <!-- Hidden file input - supports multiple + folders -->
                     <input type="file" id="photo-upload-input" multiple accept="image/*" style="display:none;" onchange="handlePhotoUpload(this.files)">
 
                     <!-- Drag and Drop Zone -->
-                    <div id="drop-zone" 
-                         style="border:3px dashed #3b82f6; border-radius:12px; padding:2.5rem; text-align:center; margin-bottom:1rem; cursor:pointer; transition:all 0.2s; background:#eff6ff;"
-                         onclick="document.getElementById('photo-upload-input').click()"
+                    <label for="photo-upload-input" id="drop-zone" 
+                         style="border:3px dashed #3b82f6; border-radius:12px; padding:2.5rem; text-align:center; margin-bottom:1rem; cursor:pointer; transition:all 0.2s; background:#eff6ff; display:block;"
+                         ondrop="handleDrop(event)"
+                         ondragover="handleDragOver(event)"
+                         ondragleave="handleDragLeave(event)"
                          ondrop="handleDrop(event)"
                          ondragover="handleDragOver(event)"
                          ondragleave="handleDragLeave(event)">
@@ -1899,7 +1901,7 @@
                         <p style="color:#1e3a8a; font-weight:600; font-size:1.1rem; margin-bottom:0.25rem;">Drop your photos here</p>
                         <p style="color:#6b7280; font-size:0.9rem;">or click to browse</p>
                         <p style="color:#9ca3af; font-size:0.8rem; margin-top:0.5rem;">Supports JPG, PNG, HEIC • Drop entire folders • Select all with Ctrl+A</p>
-                    </div>
+                    </label>
 
                     <!-- Upload progress -->
                     <div id="upload-progress" style="display:none; margin-bottom:1rem;">
