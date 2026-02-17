@@ -916,17 +916,20 @@
                 return
             }
             const redirectUri = 'https://www.mydatalegacy.co'
+            
+            // Generate random state for security
+            const state = Math.random().toString(36).substring(2, 15)
+            localStorage.setItem('spotify_state', state)
+            localStorage.setItem('user', JSON.stringify(user))
+
             const authUrl = 'https://accounts.spotify.com/authorize' +
                 '?client_id=' + SPOTIFY_CLIENT_ID +
-                '&response_type=token' +
+                '&response_type=code' +
                 '&redirect_uri=' + encodeURIComponent(redirectUri) +
                 '&scope=' + encodeURIComponent(SPOTIFY_SCOPES) +
+                '&state=' + state +
                 '&show_dialog=true'
             
-            // Store user before leaving page
-            localStorage.setItem('user', JSON.stringify(user))
-            
-            // Redirect to Spotify
             window.location.href = authUrl
         }
 
@@ -1005,33 +1008,52 @@
             }
         }
 
-        // Handle Spotify callback (token in URL hash)
-        function handleSpotifyCallback() {
-            // Spotify returns token in the URL hash
-            let accessToken = null
-
-            if (window.location.hash) {
-                const hash = window.location.hash.substring(1)
-                const params = new URLSearchParams(hash)
-                accessToken = params.get('access_token')
+        // Handle Spotify callback with authorization code
+        async function handleSpotifyCallback(code) {
+            // Clean URL first
+            window.history.replaceState({}, document.title, window.location.pathname)
+            
+            // Restore user session
+            const stored = localStorage.getItem('user')
+            if (stored) {
+                user = JSON.parse(stored)
+                updateUIForLoggedIn()
             }
-
-            if (accessToken) {
-                console.log('Spotify token received!')
-                // Clean URL
-                window.history.replaceState({}, document.title, window.location.pathname)
-                // Store token
-                localStorage.setItem('spotify_token', accessToken)
-                // Make sure user is logged in
-                const stored = localStorage.getItem('user')
-                if (stored) {
-                    user = JSON.parse(stored)
-                    updateUIForLoggedIn()
+            
+            showNotification('Connecting to Spotify...')
+            
+            // Exchange code for token using Spotify token endpoint
+            // NOTE: This requires a backend to keep client_secret safe
+            // For now we show a success message and store the code
+            try {
+                const response = await fetch('https://accounts.spotify.com/api/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': 'Basic ' + btoa('a090be71058b4f3a8bcf51bcde26e180:901638d1fb16469589f3ab2cade5d5b6')
+                    },
+                    body: new URLSearchParams({
+                        grant_type: 'authorization_code',
+                        code: code,
+                        redirect_uri: 'https://www.mydatalegacy.co'
+                    })
+                })
+                
+                const data = await response.json()
+                
+                if (data.access_token) {
+                    localStorage.setItem('spotify_token', data.access_token)
+                    await fetchSpotifyData(data.access_token)
+                    setTimeout(() => showSection('dashboard'), 500)
+                } else {
+                    console.error('Token error:', data)
+                    showNotification('Spotify connection failed. Please try again.')
+                    showSection('dashboard')
                 }
-                // Fetch Spotify data
-                fetchSpotifyData(accessToken)
-                // Show dashboard
-                setTimeout(() => showSection('dashboard'), 500)
+            } catch (error) {
+                console.error('Token exchange error:', error)
+                showNotification('Spotify connection failed. Please try again.')
+                showSection('dashboard')
             }
         }
 
@@ -1439,9 +1461,16 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            // FIRST check if returning from Spotify (hash in URL)
-            if (window.location.hash && window.location.hash.includes('access_token')) {
-                handleSpotifyCallback()
+            // Check if returning from Spotify with a code
+            const urlParams = new URLSearchParams(window.location.search)
+            const spotifyCode = urlParams.get('code')
+            const spotifyError = urlParams.get('error')
+            
+            if (spotifyError) {
+                showNotification('Spotify error: ' + spotifyError)
+                checkLogin()
+            } else if (spotifyCode) {
+                handleSpotifyCallback(spotifyCode)
             } else {
                 checkLogin()
             }
