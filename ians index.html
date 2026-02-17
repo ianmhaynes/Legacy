@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legacy Vault - Your Digital Legacy, Preserved Forever</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
+        }
+
+        /* Navigation */
+        nav {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        nav .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s;
+        }
+
+        nav a:hover {
+            opacity: 0.8;
+        }
+
+        .btn-nav {
+            background: white;
+            color: #1e3a8a;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+            color: white;
+            padding: 6rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .hero .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2.5rem;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-button {
+            background: white;
+            color: #1e3a8a;
+            padding: 1.2rem 2.5rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .cta-button.secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .cta-button.secondary:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Trust Indicators */
+        .trust-bar {
+            background: #f9fafb;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .trust-bar p {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+
+        .trust-bar strong {
+            color: #1e3a8a;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Problem Section */
+        .problem-section {
+            padding: 5rem 2rem;
+            background: #fef2f2;
+        }
+
+        .problem-section h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #991b1b;
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .problem-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            border-left: 4px solid #dc2626;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .problem-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #991b1b;
+        }
+
+        .problem-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Solution Section */
+        .solution-section {
+            padding: 5rem 2rem;
+            background: white;
+        }
+
+        .solution-section h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #1e3a8a;
+        }
+
+        .solution-section .intro {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #6b7280;
+            max-width: 800px;
+            margin: 0 auto 3rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: #f9fafb;
+            padding: 2.5rem;
+            border-radius: 15px;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: #3730a3;
+            box-shadow: 0 10px 30px rgba(30, 58, 138, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #1e3a8a;
+        }
+
+        .feature-card p {
+            color: #4b5563;
+            line-height: 1.7;
+        }
+
+        /* How It Works */
+        .how-it-works {
+            padding: 5rem 2rem;
+            background: linear-gradient(to bottom, #eff6ff, #dbeafe);
+        }
+
+        .how-it-works h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #1e3a8a;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .step {
+            text-align: center;
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: #3730a3;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 auto 1rem;
+        }
+
+        .step h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #1e3a8a;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 5rem 2rem;
+            background: white;
+        }
+
+        .testimonials h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #1e3a8a;
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .testimonial {
+            background: #f9fafb;
+            padding: 2rem;
+            border-radius: 15px;
+            border-left: 4px solid #3730a3;
+        }
+
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 1rem;
+            color: #4b5563;
+            line-height: 1.7;
+        }
+
+        .testimonial-author {
+            font-weight: 600;
+            color: #1e3a8a;
+        }
+
+        .testimonial-role {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        /* Pricing Section */
+        .pricing {
+            padding: 5rem 2rem;
+            background: #f9fafb;
+        }
+
+        .pricing h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #1e3a8a;
+        }
+
+        .pricing .subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #6b7280;
+            margin-bottom: 3rem;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            border: 2px solid #e5e7eb;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .pricing-card:hover {
+            border-color: #3730a3;
+            box-shadow: 0 15px 40px rgba(30, 58, 138, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .pricing-card.popular {
+            border-color: #3730a3;
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(30, 58, 138, 0.2);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #3730a3;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .pricing-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #1e3a8a;
+        }
+
+        .price {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #1e3a8a;
+            margin-bottom: 0.5rem;
+        }
+
+        .price-period {
+            font-size: 1.1rem;
+            color: #6b7280;
+            font-weight: 400;
+            margin-bottom: 2rem;
+            display: block;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .pricing-features li {
+            padding: 0.75rem 0;
+            color: #4b5563;
+            display: flex;
+            align-items: start;
+        }
+
+        .pricing-features li::before {
+            content: "✓";
+            color: #10b981;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .pricing-cta {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pricing-card .pricing-cta {
+            background: #3730a3;
+            color: white;
+        }
+
+        .pricing-card.popular .pricing-cta {
+            background: #1e3a8a;
+            color: white;
+        }
+
+        .pricing-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: none;
+            padding: 3rem 2rem;
+            min-height: 80vh;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .dashboard-header {
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .dashboard-header h2 {
+            font-size: 2.5rem;
+            color: #1e3a8a;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-header p {
+            font-size: 1.2rem;
+            color: #6b7280;
+        }
+
+        .vault-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #3730a3 0%, #1e3a8a 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .vault-section {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .vault-section h3 {
+            font-size: 1.8rem;
+            color: #1e3a8a;
+            margin-bottom: 1.5rem;
+        }
+
+        .legacy-item {
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #3730a3;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .legacy-item-info h4 {
+            font-size: 1.2rem;
+            color: #1e3a8a;
+            margin-bottom: 0.5rem;
+        }
+
+        .legacy-item-info p {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+
+        .legacy-item-stats {
+            display: flex;
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .legacy-stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .legacy-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+
+        .legacy-stat-label {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .action-button {
+            background: #3730a3;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-button:hover {
+            background: #1e3a8a;
+            transform: translateY(-2px);
+        }
+
+        .action-button.secondary {
+            background: #e5e7eb;
+            color: #4b5563;
+        }
+
+        .action-button.secondary:hover {
+            background: #d1d5db;
+        }
+
+        .inheritors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .inheritor-card {
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .inheritor-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #3730a3, #1e3a8a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            margin: 0 auto 1rem;
+        }
+
+        .inheritor-card h4 {
+            font-size: 1.2rem;
+            color: #1e3a8a;
+            margin-bottom: 0.5rem;
+        }
+
+        .inheritor-card p {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.4);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 1.5rem;
+            color: #1e3a8a;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4b5563;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3730a3;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-primary {
+            flex: 1;
+            background: #3730a3;
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #1e3a8a;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            background: #e5e7eb;
+            color: #4b5563;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        /* Footer */
+        footer {
+            background: #1f2937;
+            color: white;
+            padding: 3rem 2rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a {
+            color: #d1d5db;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #374151;
+            color: #9ca3af;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 2000;
+            border-left: 4px solid #10b981;
+        }
+
+        .notification.active {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .hero .subtitle {
+                font-size: 1.2rem;
+            }
+
+            nav .nav-links {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+
+            .legacy-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .legacy-item-stats {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+    
+    <!-- Supabase Connection -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://cusfryouqtrivwbejrkj.supabase.co'
+        const SUPABASE_KEY = 'sb_publishable_fZCVUL2XlsBkgQvMPxFriA_ca2OOVHk'
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+    </script>
+    
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <div class="logo">🏛️ Legacy Vault</div>
+            <ul class="nav-links">
+                <li><a href="#home" onclick="showSection('home')">Home</a></li>
+                <li><a href="#how" onclick="scrollToSection('how-it-works')">How It Works</a></li>
+                <li><a href="#pricing" onclick="scrollToSection('pricing')">Pricing</a></li>
+                <li id="nav-dashboard" class="hidden"><a href="#dashboard" onclick="showSection('dashboard')">My Vault</a></li>
+                <li id="nav-login"><a href="#" onclick="showLogin()" class="btn-nav">Start Your Legacy</a></li>
+                <li id="nav-logout" class="hidden"><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Home Section -->
+    <div id="home-section">
+        <!-- Hero -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1>What Will Your Grandchildren Know About You?</h1>
+                <p class="subtitle">Your Digital Legacy, Preserved Forever</p>
+                <p>Don't let your memories die with your phone. Create a time capsule of your life—photos, music, messages, and stories—for future generations to discover.</p>
+                <div class="cta-buttons">
+                    <button class="cta-button" onclick="showLogin()">Start Preserving Your Legacy</button>
+                    <button class="cta-button secondary" onclick="scrollToSection('how-it-works')">See How It Works</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trust Bar -->
+        <div class="trust-bar">
+            <p><strong>Guaranteed for 50+ years</strong> • Bank-level encryption • Trusted by thousands of families</p>
+        </div>
+
+        <!-- Problem Section -->
+        <section class="problem-section">
+            <h2>Your Digital Life Won't Outlive You</h2>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <div class="problem-icon">📱</div>
+                    <h3>Locked Phones</h3>
+                    <p>When you pass, your family can't unlock your iPhone. Everything inside—photos, messages, memories—is lost forever.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">☁️</div>
+                    <h3>Deleted Accounts</h3>
+                    <p>iCloud accounts close when payments stop. Apple deletes your photos, contacts, and data within months of your death.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">🔒</div>
+                    <h3>Lost Passwords</h3>
+                    <p>Your loved ones don't know your passwords to Spotify, Instagram, or Facebook. Your digital footprint disappears.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">👨‍👩‍👧‍👦</div>
+                    <h3>Family History Erased</h3>
+                    <p>Your grandchildren will never see photos of you in your youth, hear your favorite songs, or know what you cared about.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Solution Section -->
+        <section class="solution-section">
+            <h2>A Digital Time Capsule for Future Generations</h2>
+            <p class="intro">Legacy Vault preserves your digital life so your family can discover who you really were—decades after you're gone.</p>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎵</div>
+                    <h3>Your Soundtrack</h3>
+                    <p>Preserve your Spotify playlists and Apple Music library. Let your grandchildren discover what music moved you, what made you dance, what got you through hard times.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📸</div>
+                    <h3>Your Life in Photos</h3>
+                    <p>Automatically backup every photo from your phone and social media. Future generations see you young, vibrant, and living your full life.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>Your People</h3>
+                    <p>Preserve contacts, messages, and social connections. Your family will know who mattered to you and why.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📖</div>
+                    <h3>Your Stories</h3>
+                    <p>Record voice memos, write letters, and create video messages. Speak directly to descendants you'll never meet.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h3>Designated Inheritors</h3>
+                    <p>Choose who gets access when you're gone. Set conditions—age requirements, specific dates, or automatic triggers.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⏰</div>
+                    <h3>50-Year Guarantee</h3>
+                    <p>Your vault is preserved and accessible for at least 50 years, guaranteed. We maintain it so your family doesn't have to.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section class="how-it-works" id="how-it-works">
+            <h2>How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Connect Your Life</h3>
+                    <p>Link your Spotify, photos, social media, and other accounts. We automatically backup everything important.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Add Your Stories</h3>
+                    <p>Record voice messages, write letters to future generations, and add context to your photos and memories.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Choose Inheritors</h3>
+                    <p>Designate who gets access—children, grandchildren, or specific family members. Set conditions for when they receive it.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Live Your Life</h3>
+                    <p>Your vault automatically updates as you create new memories. No maintenance required.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <h3>Legacy Released</h3>
+                    <p>When the time comes, your inheritors receive a beautiful digital time capsule of your entire life.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials -->
+        <section class="testimonials">
+            <h2>Stories from Families</h2>
+            <div class="testimonial-grid">
+                <div class="testimonial">
+                    <p class="testimonial-text">"When my father passed, we couldn't access his phone. All his photos were locked forever. I created a Legacy Vault so my kids never experience that loss."</p>
+                    <p class="testimonial-author">Sarah M.</p>
+                    <p class="testimonial-role">Mother of three</p>
+                </div>
+                <div class="testimonial">
+                    <p class="testimonial-text">"My grandmother died when I was young. I'd give anything to hear her voice or see photos of her as a young woman. I'm making sure my grandchildren have that gift."</p>
+                    <p class="testimonial-author">James L.</p>
+                    <p class="testimonial-role">Grandfather</p>
+                </div>
+                <div class="testimonial">
+                    <p class="testimonial-text">"This isn't just backup software—it's an heirloom. I'm creating something my great-great-grandchildren will treasure."</p>
+                    <p class="testimonial-author">Maria R.</p>
+                    <p class="testimonial-role">Legacy Vault member</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section class="pricing" id="pricing">
+            <h2>Choose Your Legacy Plan</h2>
+            <p class="subtitle">Invest in your family's future memories</p>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Starter</h3>
+                    <div class="price">$19</div>
+                    <span class="price-period">per month</span>
+                    <ul class="pricing-features">
+                        <li>50 GB secure storage</li>
+                        <li>Connect 3 services</li>
+                        <li>Up to 2 inheritors</li>
+                        <li>Basic timeline view</li>
+                        <li>50-year guarantee</li>
+                        <li>Email support</li>
+                    </ul>
+                    <button class="pricing-cta" onclick="showLogin()">Start Your Vault</button>
+                </div>
+
+                <div class="pricing-card popular">
+                    <span class="popular-badge">Most Popular</span>
+                    <h3>Forever</h3>
+                    <div class="price">$299</div>
+                    <span class="price-period">one-time payment</span>
+                    <ul class="pricing-features">
+                        <li>200 GB secure storage</li>
+                        <li>Unlimited services</li>
+                        <li>Unlimited inheritors</li>
+                        <li>Rich timeline & stories</li>
+                        <li>Voice & video messages</li>
+                        <li>Conditional releases</li>
+                        <li>100-year guarantee</li>
+                        <li>Priority support</li>
+                    </ul>
+                    <button class="pricing-cta" onclick="showLogin()">Preserve Your Legacy</button>
+                </div>
+
+                <div class="pricing-card">
+                    <h3>Family Estate</h3>
+                    <div class="price">$79</div>
+                    <span class="price-period">per month</span>
+                    <ul class="pricing-features">
+                        <li>1 TB secure storage</li>
+                        <li>Unlimited everything</li>
+                        <li>Cover 5 family members</li>
+                        <li>Family tree integration</li>
+                        <li>DNA/ancestry links</li>
+                        <li>Custom domain</li>
+                        <li>Legal document storage</li>
+                        <li>White-glove service</li>
+                    </ul>
+                    <button class="pricing-cta" onclick="showLogin()">Protect Your Family</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Dashboard Section -->
+    <section id="dashboard-section" class="dashboard">
+        <div class="container">
+            <div class="dashboard-header">
+                <h2>Your Legacy Vault</h2>
+                <p>Welcome back, <span id="user-name">User</span></p>
+            </div>
+
+            <!-- Vault Stats -->
+            <div class="vault-stats">
+                <div class="stat-card">
+                    <h3>Memories Preserved</h3>
+                    <div class="stat-value" id="total-memories">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Storage Used</h3>
+                    <div class="stat-value" id="storage-used">0 GB</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Years Guaranteed</h3>
+                    <div class="stat-value" id="years-guarantee">50</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Inheritors</h3>
+                    <div class="stat-value" id="inheritors-count">0</div>
+                </div>
+            </div>
+
+            <!-- Legacy Content -->
+            <div class="vault-section">
+                <h3>Your Digital Legacy</h3>
+                
+                <div class="legacy-item">
+                    <div class="legacy-item-info">
+                        <h4>🎵 Music & Playlists</h4>
+                        <p>Your soundtrack—preserved from Spotify and Apple Music</p>
+                    </div>
+                    <div class="legacy-item-stats">
+                        <div class="legacy-stat">
+                            <div class="legacy-stat-value">127</div>
+                            <div class="legacy-stat-label">Playlists</div>
+                        </div>
+                        <div class="legacy-stat">
+                            <div class="legacy-stat-value">3,492</div>
+                            <div class="legacy-stat-label">Songs</div>
+                        </div>
+                    </div>
+                    <button class="action-button">View Details</button>
+                </div>
+
+                <div class="legacy-item">
+                    <div class="legacy-item-info">
+                        <h4>📸 Photos & Memories</h4>
+                        <p>Every moment captured—your life in images</p>
+                    </div>
+                    <div class="legacy-item-stats">
+                        <div class="legacy-stat">
+                            <div class="legacy-stat-value">8,234</div>
+                            <div class="legacy-stat-label">Photos</div>
+                        </div>
+                        <div class="legacy-stat">
+                            <div class="legacy-stat-value">412</div>
+                            <div class="legacy-stat-label">Videos</div>
+                        </div>
+                    </div>
+                    <button class="action-button">View Timeline</button>
+                </div>
+
+                <div class="legacy-item">
+                    <div class="legacy-item-info">
+                        <h4>👥 Contacts & Connections</h4>
+                        <p>The people who mattered in your life</p>
+                    </div>
+                    <div class="legacy-item-stats">
+                        <div class="legacy-stat">
+                            <div class="legacy-stat-value">542</div>
+                            <div class="legacy-stat-label">Contacts</div>
+                        </div>
+                        <div class="legacy-stat">
+                            <div class="legacy-stat-value">12</div>
+                            <div class="legacy-stat-label">Groups</div>
+                        </div>
+                    </div>
+                    <button class="action-button">View Network</button>
+                </div>
+
+                <div class="legacy-item">
+                    <div class="legacy-item-info">
+                        <h4>📖 Stories & Messages</h4>
+                        <p>Your voice, your words, your wisdom</p>
+                    </div>
+                    <div class="legacy-item-stats">
+                        <div class="legacy-stat">
+                            <div class="legacy-stat-value">0</div>
+                            <div class="legacy-stat-label">Stories</div>
+                        </div>
+                        <div class="legacy-stat">
+                            <div class="legacy-stat-value">0</div>
+                            <div class="legacy-stat-label">Letters</div>
+                        </div>
+                    </div>
+                    <button class="action-button">Create Story</button>
+                </div>
+            </div>
+
+            <!-- Inheritors -->
+            <div class="vault-section">
+                <h3>Your Inheritors</h3>
+                <p style="margin-bottom: 1.5rem; color: #6b7280;">These people will receive your legacy vault when the time comes</p>
+                
+                <div class="inheritors-grid">
+                    <div class="inheritor-card">
+                        <div class="inheritor-avatar">👤</div>
+                        <h4>Add Inheritor</h4>
+                        <p>Designate who receives your legacy</p>
+                        <button class="action-button" style="margin-top: 1rem;">Add Person</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="vault-section">
+                <h3>Quick Actions</h3>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="action-button">Connect New Service</button>
+                    <button class="action-button">Record Voice Message</button>
+                    <button class="action-button">Write Letter to Future</button>
+                    <button class="action-button secondary">Download Archive</button>
+                    <button class="action-button secondary">Manage Settings</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <h2>Start Your Legacy Vault</h2>
+            <form id="login-form" onsubmit="login(event)">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required placeholder="••••••••">
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-primary">Create My Vault</button>
+                    <button type="button" class="btn-secondary" onclick="closeLogin()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Legacy Vault</h3>
+                <p style="color: #9ca3af; margin-top: 0.5rem;">Preserving your digital legacy for future generations.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Product</h3>
+                <ul>
+                    <li><a href="#pricing">Pricing</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#">Security</a></li>
+                    <li><a href="#">Guarantee</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Support</h3>
+                <ul>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Company</h3>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Our Story</a></li>
+                    <li><a href="#">Press</a></li>
+                    <li><a href="#">Careers</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Legacy Vault. Your memories, preserved forever.</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem;">Bank-level encryption • 50-year guarantee • GDPR compliant</p>
+        </div>
+    </footer>
+
+    <script>
+        // State management
+        let user = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLogin();
+        });
+
+        function showSection(section) {
+            document.getElementById('home-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('active');
+
+            if (section === 'home') {
+                document.getElementById('home-section').classList.remove('hidden');
+            } else if (section === 'dashboard') {
+                if (user) {
+                    document.getElementById('dashboard-section').classList.add('active');
+                } else {
+                    showLogin();
+                }
+            }
+        }
+
+        function scrollToSection(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function showLogin() {
+            document.getElementById('login-modal').classList.add('active');
+        }
+
+        function closeLogin() {
+            document.getElementById('login-modal').classList.remove('active');
+        }
+
+        function login(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            user = {
+                email: email,
+                name: email.split('@')[0],
+                plan: 'Forever'
+            };
+
+            localStorage.setItem('user', JSON.stringify(user));
+            updateUIForLoggedIn();
+            closeLogin();
+            showSection('dashboard');
+            showNotification('Welcome to your Legacy Vault!');
+        }
+
+        function logout() {
+            user = null;
+            localStorage.removeItem('user');
+            updateUIForLoggedOut();
+            showSection('home');
+            showNotification('Logged out successfully');
+        }
+
+        function checkLogin() {
+            const stored = localStorage.getItem('user');
+            if (stored) {
+                user = JSON.parse(stored);
+                updateUIForLoggedIn();
+            }
+        }
+
+        function updateUIForLoggedIn() {
+            document.getElementById('nav-login').classList.add('hidden');
+            document.getElementById('nav-logout').classList.remove('hidden');
+            document.getElementById('nav-dashboard').classList.remove('hidden');
+            document.getElementById('user-name').textContent = user.name;
+            updateDashboardStats();
+        }
+
+        function updateUIForLoggedOut() {
+            document.getElementById('nav-login').classList.remove('hidden');
+            document.getElementById('nav-logout').classList.add('hidden');
+            document.getElementById('nav-dashboard').classList.add('hidden');
+        }
+
+        function updateDashboardStats() {
+            document.getElementById('total-memories').textContent = '8,773';
+            document.getElementById('storage-used').textContent = '6.9 GB';
+            document.getElementById('years-guarantee').textContent = user.plan === 'Forever' ? '100' : '50';
+            document.getElementById('inheritors-count').textContent = '0';
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('active');
+
+            setTimeout(() => {
+                notification.classList.remove('active');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
