@@ -976,8 +976,8 @@
                 const playlistCount = playlists.total || 0
                 const trackCount = tracks.total || 0
 
-                // Update UI immediately
-                updateSpotifyUI(playlistCount, trackCount)
+                // Update UI immediately with token for playlist loading
+                updateSpotifyUI(playlistCount, trackCount, accessToken)
                 showNotification('🎵 ' + playlistCount + ' playlists and ' + trackCount + ' songs preserved!')
 
                 // Store in Supabase if user logged in
@@ -1010,28 +1010,153 @@
             }
         }
 
-        function updateSpotifyUI(playlistCount, trackCount) {
+        async function updateSpotifyUI(playlistCount, trackCount, accessToken) {
             const spotifyCard = document.getElementById('spotify-card')
-            if (spotifyCard) {
-                spotifyCard.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
-                        <div>
-                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">🎵 Spotify Connected! ✅</h4>
-                            <p style="color:#6b7280;">Your music legacy is being preserved</p>
-                        </div>
-                        <div style="display:flex; gap:2rem; text-align:center;">
-                            <div>
-                                <div style="font-size:1.8rem; font-weight:700; color:#1e3a8a;">${playlistCount}</div>
-                                <div style="color:#6b7280; font-size:0.85rem;">Playlists</div>
-                            </div>
-                            <div>
-                                <div style="font-size:1.8rem; font-weight:700; color:#1e3a8a;">${trackCount}</div>
-                                <div style="color:#6b7280; font-size:0.85rem;">Saved Songs</div>
-                            </div>
-                        </div>
-                        <span style="background:#d1fae5; color:#065f46; padding:0.5rem 1rem; border-radius:20px; font-weight:600;">Connected</span>
+            if (!spotifyCard) return
+
+            // Show connected header
+            spotifyCard.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+                    <div>
+                        <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">🎵 Spotify Connected! ✅</h4>
+                        <p style="color:#6b7280;">Your music legacy is being preserved</p>
                     </div>
-                `
+                    <div style="display:flex; gap:2rem; text-align:center;">
+                        <div>
+                            <div style="font-size:1.8rem; font-weight:700; color:#1e3a8a;">${playlistCount}</div>
+                            <div style="color:#6b7280; font-size:0.85rem;">Playlists</div>
+                        </div>
+                        <div>
+                            <div style="font-size:1.8rem; font-weight:700; color:#1e3a8a;">${trackCount}</div>
+                            <div style="color:#6b7280; font-size:0.85rem;">Saved Songs</div>
+                        </div>
+                    </div>
+                    <span style="background:#d1fae5; color:#065f46; padding:0.5rem 1rem; border-radius:20px; font-weight:600;">Connected</span>
+                </div>
+                <div id="playlists-container">
+                    <p style="color:#6b7280; text-align:center;">Loading your playlists...</p>
+                </div>
+            `
+
+            // Now load and display playlists
+            if (accessToken) {
+                await displayPlaylists(accessToken)
+            } else {
+                const token = localStorage.getItem('spotify_token')
+                if (token) await displayPlaylists(token)
+            }
+        }
+
+        async function displayPlaylists(accessToken) {
+            const container = document.getElementById('playlists-container')
+            if (!container) return
+
+            try {
+                const headers = { 'Authorization': 'Bearer ' + accessToken }
+                const res = await fetch('https://api.spotify.com/v1/me/playlists?limit=50', { headers })
+                const data = await res.json()
+
+                if (!data.items || data.items.length === 0) {
+                    container.innerHTML = '<p style="color:#6b7280; text-align:center;">No playlists found</p>'
+                    return
+                }
+
+                let html = '<div style="display:flex; flex-direction:column; gap:1rem;">'
+
+                for (const playlist of data.items) {
+                    const image = playlist.images && playlist.images[0] 
+                        ? playlist.images[0].url 
+                        : null
+
+                    html += `
+                        <div class="playlist-card" style="background:white; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                            <div style="display:flex; align-items:center; padding:1rem; cursor:pointer; gap:1rem;"
+                                 onclick="togglePlaylist('${playlist.id}', '${encodeURIComponent(playlist.tracks.href)}')">
+                                ${image 
+                                    ? `<img src="${image}" style="width:60px; height:60px; border-radius:8px; object-fit:cover;" />` 
+                                    : `<div style="width:60px; height:60px; background:#3730a3; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">🎵</div>`
+                                }
+                                <div style="flex:1;">
+                                    <div style="font-weight:600; color:#1e3a8a; font-size:1.1rem;">${playlist.name}</div>
+                                    <div style="color:#6b7280; font-size:0.9rem;">${playlist.tracks.total} songs</div>
+                                    ${playlist.description ? `<div style="color:#9ca3af; font-size:0.8rem; margin-top:0.2rem;">${playlist.description}</div>` : ''}
+                                </div>
+                                <div style="color:#6b7280; font-size:1.2rem;">▼</div>
+                            </div>
+                            <div id="tracks-${playlist.id}" style="display:none; border-top:1px solid #f3f4f6; padding:0 1rem 1rem;">
+                                <p style="color:#9ca3af; padding:1rem 0; text-align:center;">Loading songs...</p>
+                            </div>
+                        </div>
+                    `
+                }
+
+                html += '</div>'
+                container.innerHTML = html
+
+            } catch (error) {
+                console.error('Error loading playlists:', error)
+                container.innerHTML = '<p style="color:#ef4444;">Error loading playlists. Please refresh.</p>'
+            }
+        }
+
+        async function togglePlaylist(playlistId, tracksHref) {
+            const tracksDiv = document.getElementById('tracks-' + playlistId)
+            if (!tracksDiv) return
+
+            // Toggle visibility
+            if (tracksDiv.style.display !== 'none') {
+                tracksDiv.style.display = 'none'
+                return
+            }
+
+            tracksDiv.style.display = 'block'
+
+            // Load tracks if not already loaded
+            if (tracksDiv.dataset.loaded) return
+            tracksDiv.dataset.loaded = 'true'
+
+            try {
+                const token = localStorage.getItem('spotify_token')
+                const href = decodeURIComponent(tracksHref)
+                const res = await fetch(href + '&limit=50', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                })
+                const data = await res.json()
+
+                if (!data.items || data.items.length === 0) {
+                    tracksDiv.innerHTML = '<p style="color:#6b7280; padding:1rem; text-align:center;">No songs in this playlist</p>'
+                    return
+                }
+
+                let html = '<div style="padding-top:0.5rem;">'
+                data.items.forEach((item, index) => {
+                    if (!item.track) return
+                    const track = item.track
+                    const artists = track.artists.map(a => a.name).join(', ')
+                    const duration = Math.floor(track.duration_ms / 60000) + ':' + 
+                        String(Math.floor((track.duration_ms % 60000) / 1000)).padStart(2, '0')
+
+                    html += `
+                        <div style="display:flex; align-items:center; padding:0.6rem 0; border-bottom:1px solid #f9fafb; gap:1rem;">
+                            <div style="color:#9ca3af; font-size:0.85rem; width:20px; text-align:right;">${index + 1}</div>
+                            ${track.album.images[0] 
+                                ? `<img src="${track.album.images[0].url}" style="width:40px; height:40px; border-radius:4px;" />`
+                                : '<div style="width:40px; height:40px; background:#e5e7eb; border-radius:4px;"></div>'
+                            }
+                            <div style="flex:1; min-width:0;">
+                                <div style="font-weight:500; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${track.name}</div>
+                                <div style="color:#6b7280; font-size:0.85rem;">${artists}</div>
+                            </div>
+                            <div style="color:#9ca3af; font-size:0.85rem; flex-shrink:0;">${duration}</div>
+                        </div>
+                    `
+                })
+                html += '</div>'
+                tracksDiv.innerHTML = html
+
+            } catch (error) {
+                console.error('Error loading tracks:', error)
+                tracksDiv.innerHTML = '<p style="color:#ef4444; padding:1rem;">Error loading songs.</p>'
             }
         }
 
