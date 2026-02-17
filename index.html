@@ -1014,37 +1014,27 @@
             const spotifyCard = document.getElementById('spotify-card')
             if (!spotifyCard) return
 
-            // Show connected header
+            const token = accessToken || localStorage.getItem('spotify_token')
+            if (!token) return
+
+            // Show connected header with loading playlists container
             spotifyCard.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
                     <div>
                         <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">🎵 Spotify Connected! ✅</h4>
                         <p style="color:#6b7280;">Your music legacy is being preserved</p>
                     </div>
-                    <div style="display:flex; gap:2rem; text-align:center;">
-                        <div>
-                            <div style="font-size:1.8rem; font-weight:700; color:#1e3a8a;">${playlistCount}</div>
-                            <div style="color:#6b7280; font-size:0.85rem;">Playlists</div>
-                        </div>
-                        <div>
-                            <div style="font-size:1.8rem; font-weight:700; color:#1e3a8a;">${trackCount}</div>
-                            <div style="color:#6b7280; font-size:0.85rem;">Saved Songs</div>
-                        </div>
-                    </div>
                     <span style="background:#d1fae5; color:#065f46; padding:0.5rem 1rem; border-radius:20px; font-weight:600;">Connected</span>
                 </div>
                 <div id="playlists-container">
-                    <p style="color:#6b7280; text-align:center;">Loading your playlists...</p>
+                    <p style="color:#6b7280; text-align:center; padding:1rem;">Loading your playlists...</p>
                 </div>
             `
 
-            // Now load and display playlists
-            if (accessToken) {
-                await displayPlaylists(accessToken)
-            } else {
-                const token = localStorage.getItem('spotify_token')
-                if (token) await displayPlaylists(token)
-            }
+            // Wait for DOM to update then load playlists
+            setTimeout(async () => {
+                await displayPlaylists(token)
+            }, 100)
         }
 
         async function displayPlaylists(accessToken) {
