@@ -1343,8 +1343,12 @@
                             progress.style.display = 'none'
                             progressBar.style.width = '0%'
                         }, 1000)
-                        photoCount.textContent = uploadedPhotos.length + ' photo' + (uploadedPhotos.length !== 1 ? 's' : '') + ' preserved in your vault'
                         showNotification('📸 ' + files.length + ' photo' + (files.length !== 1 ? 's' : '') + ' saved to your vault forever!')
+                        // Reload from Supabase to show correct photos without duplicates
+                        setTimeout(async () => {
+                            uploadedPhotos = []
+                            await loadSavedPhotos()
+                        }, 1500)
                     }
                 }
                 reader.readAsDataURL(file)
@@ -2204,4 +2208,3 @@
     </script>
 </body>
 </html>
-
