@@ -1159,7 +1159,7 @@
                             <div class="legacy-stat-label">Songs</div>
                         </div>
                     </div>
-                    <button class="action-button">View Details</button>
+                    <button class="action-button">Connect Spotify</button>
                 </div>
 
                 <div class="legacy-item">
@@ -1177,7 +1177,7 @@
                             <div class="legacy-stat-label">Videos</div>
                         </div>
                     </div>
-                    <button class="action-button">View Timeline</button>
+                    <button class="action-button">Connect Google Photos</button>
                 </div>
 
                 <div class="legacy-item">
@@ -1187,15 +1187,15 @@
                     </div>
                     <div class="legacy-item-stats">
                         <div class="legacy-stat">
-                            <div class="legacy-stat-value">542</div>
+                            <div class="legacy-stat-value">0</div>
                             <div class="legacy-stat-label">Contacts</div>
                         </div>
                         <div class="legacy-stat">
-                            <div class="legacy-stat-value">12</div>
+                            <div class="legacy-stat-value">0</div>
                             <div class="legacy-stat-label">Groups</div>
                         </div>
                     </div>
-                    <button class="action-button">View Network</button>
+                    <button class="action-button">Connect Contacts</button>
                 </div>
 
                 <div class="legacy-item">
@@ -1396,8 +1396,8 @@
         }
 
         function updateDashboardStats() {
-            document.getElementById('total-memories').textContent = '8,773';
-            document.getElementById('storage-used').textContent = '6.9 GB';
+            document.getElementById('total-memories').textContent = '0';
+            document.getElementById('storage-used').textContent = '0 GB';
             document.getElementById('years-guarantee').textContent = user.plan === 'Forever' ? '100' : '50';
             document.getElementById('inheritors-count').textContent = '0';
         }
