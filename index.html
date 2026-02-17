@@ -948,51 +948,65 @@
 
         async function fetchSpotifyData(accessToken) {
             try {
-                showNotification('Connecting to Spotify...')
+                showNotification('Loading your Spotify data...')
 
-                // Fetch playlists
-                const playlistsRes = await fetch('https://api.spotify.com/v1/me/playlists?limit=50', {
-                    headers: { 'Authorization': 'Bearer ' + accessToken }
-                })
-                const playlists = await playlistsRes.json()
+                const headers = { 'Authorization': 'Bearer ' + accessToken }
 
-                // Fetch saved tracks count
-                const tracksRes = await fetch('https://api.spotify.com/v1/me/tracks?limit=1', {
-                    headers: { 'Authorization': 'Bearer ' + accessToken }
-                })
-                const tracks = await tracksRes.json()
+                // Fetch profile first to verify connection
+                const profileRes = await fetch('https://api.spotify.com/v1/me', { headers })
+                const profile = await profileRes.json()
+                console.log('Spotify profile:', profile)
 
-                // Fetch top artists
-                const artistsRes = await fetch('https://api.spotify.com/v1/me/top/artists?limit=10', {
-                    headers: { 'Authorization': 'Bearer ' + accessToken }
-                })
-                const artists = await artistsRes.json()
-
-                // Store in Supabase
-                if (user) {
-                    await supabaseClient.from('legacy_content').upsert({
-                        user_id: user.id,
-                        content_type: 'spotify',
-                        data: {
-                            playlists: playlists.items,
-                            total_tracks: tracks.total,
-                            top_artists: artists.items
-                        },
-                        metadata: {
-                            playlists_count: playlists.total,
-                            tracks_count: tracks.total,
-                            connected_at: new Date().toISOString()
-                        }
-                    })
+                if (profile.error) {
+                    console.error('Profile error:', profile.error)
+                    showNotification('Could not load Spotify data. Please reconnect.')
+                    return
                 }
 
-                // Update UI
-                updateSpotifyUI(playlists.total, tracks.total)
-                showNotification('🎵 Spotify connected! ' + playlists.total + ' playlists preserved!')
+                // Fetch playlists
+                const playlistsRes = await fetch('https://api.spotify.com/v1/me/playlists?limit=50', { headers })
+                const playlists = await playlistsRes.json()
+                console.log('Playlists:', playlists)
+
+                // Fetch saved tracks
+                const tracksRes = await fetch('https://api.spotify.com/v1/me/tracks?limit=1', { headers })
+                const tracks = await tracksRes.json()
+                console.log('Tracks:', tracks)
+
+                const playlistCount = playlists.total || 0
+                const trackCount = tracks.total || 0
+
+                // Update UI immediately
+                updateSpotifyUI(playlistCount, trackCount)
+                showNotification('🎵 ' + playlistCount + ' playlists and ' + trackCount + ' songs preserved!')
+
+                // Store in Supabase if user logged in
+                if (user && user.id) {
+                    try {
+                        await supabaseClient.from('legacy_content').upsert({
+                            user_id: user.id,
+                            content_type: 'spotify',
+                            data: {
+                                display_name: profile.display_name,
+                                playlists: playlists.items || [],
+                                total_tracks: trackCount
+                            },
+                            metadata: {
+                                playlists_count: playlistCount,
+                                tracks_count: trackCount,
+                                spotify_id: profile.id,
+                                connected_at: new Date().toISOString()
+                            }
+                        })
+                        console.log('Saved to Supabase!')
+                    } catch (dbError) {
+                        console.error('Database error:', dbError)
+                    }
+                }
 
             } catch (error) {
-                showNotification('Error connecting Spotify. Please try again.')
-                console.error('Spotify error:', error)
+                showNotification('Error loading Spotify data. Please try again.')
+                console.error('Spotify fetch error:', error)
             }
         }
 
