@@ -898,7 +898,8 @@
     <!-- Spotify Configuration -->
     <script>
         const SPOTIFY_CLIENT_ID = 'a090be71058b4f3a8bcf51bcde26e180'
-        const SPOTIFY_REDIRECT_URI = 'https://www.mydatalegacy.co'
+        // Use current domain as redirect URI
+        const SPOTIFY_REDIRECT_URI = window.location.origin
         const SPOTIFY_SCOPES = [
             'user-library-read',
             'playlist-read-private',
@@ -995,19 +996,31 @@
 
         // Handle Spotify callback (token in URL hash)
         function handleSpotifyCallback() {
-            const hash = window.location.hash.substring(1)
-            const params = new URLSearchParams(hash)
-            const accessToken = params.get('access_token')
+            // Spotify returns token in the URL hash
+            let accessToken = null
+
+            if (window.location.hash) {
+                const hash = window.location.hash.substring(1)
+                const params = new URLSearchParams(hash)
+                accessToken = params.get('access_token')
+            }
 
             if (accessToken) {
+                console.log('Spotify token received!')
                 // Clean URL
                 window.history.replaceState({}, document.title, window.location.pathname)
                 // Store token
                 localStorage.setItem('spotify_token', accessToken)
-                // Fetch data
+                // Make sure user is logged in
+                const stored = localStorage.getItem('user')
+                if (stored) {
+                    user = JSON.parse(stored)
+                    updateUIForLoggedIn()
+                }
+                // Fetch Spotify data
                 fetchSpotifyData(accessToken)
                 // Show dashboard
-                showSection('dashboard')
+                setTimeout(() => showSection('dashboard'), 500)
             }
         }
 
@@ -1415,8 +1428,12 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            handleSpotifyCallback() // Check if returning from Spotify
-            checkLogin()
+            // FIRST check if returning from Spotify (hash in URL)
+            if (window.location.hash && window.location.hash.includes('access_token')) {
+                handleSpotifyCallback()
+            } else {
+                checkLogin()
+            }
         });
 
         function showSection(section) {
@@ -1521,3 +1538,4 @@
     </script>
 </body>
 </html>
+
