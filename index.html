@@ -894,6 +894,142 @@
         const SUPABASE_KEY = 'sb_publishable_fZCVUL2XlsBkgQvMPxFriA_ca2OOVHk'
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
     </script>
+
+    <!-- Spotify Configuration -->
+    <script>
+        const SPOTIFY_CLIENT_ID = 'a090be71058b4f3a8bcf51bcde26e180'
+        const SPOTIFY_REDIRECT_URI = 'https://www.mydatalegacy.co/callback'
+        const SPOTIFY_SCOPES = [
+            'user-library-read',
+            'playlist-read-private',
+            'playlist-read-collaborative',
+            'user-top-read',
+            'user-read-recently-played',
+            'user-read-email'
+        ].join(' ')
+
+        function connectSpotify() {
+            const authUrl = 'https://accounts.spotify.com/authorize?' +
+                'client_id=' + SPOTIFY_CLIENT_ID +
+                '&response_type=token' +
+                '&redirect_uri=' + encodeURIComponent(SPOTIFY_REDIRECT_URI) +
+                '&scope=' + encodeURIComponent(SPOTIFY_SCOPES) +
+                '&show_dialog=true'
+            window.location.href = authUrl
+        }
+
+        async function fetchSpotifyData(accessToken) {
+            try {
+                showNotification('Connecting to Spotify...')
+
+                // Fetch playlists
+                const playlistsRes = await fetch('https://api.spotify.com/v1/me/playlists?limit=50', {
+                    headers: { 'Authorization': 'Bearer ' + accessToken }
+                })
+                const playlists = await playlistsRes.json()
+
+                // Fetch saved tracks count
+                const tracksRes = await fetch('https://api.spotify.com/v1/me/tracks?limit=1', {
+                    headers: { 'Authorization': 'Bearer ' + accessToken }
+                })
+                const tracks = await tracksRes.json()
+
+                // Fetch top artists
+                const artistsRes = await fetch('https://api.spotify.com/v1/me/top/artists?limit=10', {
+                    headers: { 'Authorization': 'Bearer ' + accessToken }
+                })
+                const artists = await artistsRes.json()
+
+                // Store in Supabase
+                if (user) {
+                    await supabase.from('legacy_content').upsert({
+                        user_id: user.id,
+                        content_type: 'spotify',
+                        data: {
+                            playlists: playlists.items,
+                            total_tracks: tracks.total,
+                            top_artists: artists.items
+                        },
+                        metadata: {
+                            playlists_count: playlists.total,
+                            tracks_count: tracks.total,
+                            connected_at: new Date().toISOString()
+                        }
+                    })
+                }
+
+                // Update UI
+                updateSpotifyUI(playlists.total, tracks.total)
+                showNotification('🎵 Spotify connected! ' + playlists.total + ' playlists preserved!')
+
+            } catch (error) {
+                showNotification('Error connecting Spotify. Please try again.')
+                console.error('Spotify error:', error)
+            }
+        }
+
+        function updateSpotifyUI(playlistCount, trackCount) {
+            const spotifyCard = document.getElementById('spotify-card')
+            if (spotifyCard) {
+                spotifyCard.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                        <div>
+                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">🎵 Spotify Connected! ✅</h4>
+                            <p style="color:#6b7280;">Your music legacy is being preserved</p>
+                        </div>
+                        <div style="display:flex; gap:2rem; text-align:center;">
+                            <div>
+                                <div style="font-size:1.8rem; font-weight:700; color:#1e3a8a;">${playlistCount}</div>
+                                <div style="color:#6b7280; font-size:0.85rem;">Playlists</div>
+                            </div>
+                            <div>
+                                <div style="font-size:1.8rem; font-weight:700; color:#1e3a8a;">${trackCount}</div>
+                                <div style="color:#6b7280; font-size:0.85rem;">Saved Songs</div>
+                            </div>
+                        </div>
+                        <span style="background:#d1fae5; color:#065f46; padding:0.5rem 1rem; border-radius:20px; font-weight:600;">Connected</span>
+                    </div>
+                `
+            }
+        }
+
+        // Handle Spotify callback (token in URL hash)
+        function handleSpotifyCallback() {
+            const hash = window.location.hash.substring(1)
+            const params = new URLSearchParams(hash)
+            const accessToken = params.get('access_token')
+
+            if (accessToken) {
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname)
+                // Store token
+                localStorage.setItem('spotify_token', accessToken)
+                // Fetch data
+                fetchSpotifyData(accessToken)
+                // Show dashboard
+                showSection('dashboard')
+            }
+        }
+
+        // Check for existing Spotify connection
+        function checkSpotifyConnection() {
+            const token = localStorage.getItem('spotify_token')
+            if (token) {
+                // Verify token still works
+                fetch('https://api.spotify.com/v1/me', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                }).then(res => {
+                    if (res.ok) {
+                        res.json().then(data => {
+                            showNotification('Spotify already connected!')
+                        })
+                    } else {
+                        localStorage.removeItem('spotify_token')
+                    }
+                })
+            }
+        }
+    </script>
     
 </head>
 <body>
@@ -1145,26 +1281,59 @@
                 <div style="font-size: 4rem; margin-bottom: 1rem;">🏛️</div>
                 <h3 style="font-size: 2rem; margin-bottom: 1rem;">Your Vault is Ready!</h3>
                 <p style="color: #6b7280; font-size: 1.2rem; max-width: 600px; margin: 0 auto 2rem;">
-                    You're one of our founding members. We're currently setting up service connections and will notify you by email the moment they're ready.
+                    Start connecting your services to preserve your digital legacy for future generations.
                 </p>
-                <div style="background: #eff6ff; border-radius: 10px; padding: 1.5rem; max-width: 500px; margin: 0 auto; border-left: 4px solid #3730a3;">
-                    <p style="color: #1e3a8a; font-weight: 600; margin-bottom: 0.5rem;">🚀 Coming Very Soon:</p>
-                    <p style="color: #4b5563;">🎵 Spotify playlist backup</p>
-                    <p style="color: #4b5563;">📸 Photo library preservation</p>
-                    <p style="color: #4b5563;">👥 Contacts backup</p>
-                    <p style="color: #4b5563;">📖 Voice & story recording</p>
-                </div>
             </div>
 
-            <!-- Notify Me -->
-            <div class="vault-section" style="text-align: center;">
-                <h3>Want to be notified when we launch?</h3>
-                <p style="color: #6b7280; margin: 1rem 0 1.5rem;">We'll email you as soon as connections are ready to set up.</p>
-                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                    <button class="action-button" onclick="notifyMe()">✉️ Yes, Notify Me!</button>
-                    <button class="action-button secondary" onclick="showSection('home')">Back to Home</button>
+            <!-- Spotify Connection -->
+            <div class="vault-section">
+                <h3 style="margin-bottom: 1.5rem;">🎵 Connect Your Services</h3>
+
+                <!-- Spotify Card -->
+                <div id="spotify-card" style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #1db954; margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                        <div>
+                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">🎵 Spotify</h4>
+                            <p style="color:#6b7280;">Preserve your playlists, saved songs and music history</p>
+                        </div>
+                        <button class="action-button" onclick="connectSpotify()" style="background:#1db954;">
+                            Connect Spotify
+                        </button>
+                    </div>
                 </div>
-                <p id="notify-confirm" style="display:none; color: #10b981; margin-top: 1rem; font-weight: 600;">✅ Great! We'll email you at <span id="notify-email"></span></p>
+
+                <!-- Google Photos Card - Coming Soon -->
+                <div style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #d1d5db; margin-bottom:1rem; opacity:0.7;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                        <div>
+                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">📸 Photos & Videos</h4>
+                            <p style="color:#6b7280;">Preserve your photos and videos for future generations</p>
+                        </div>
+                        <span style="background:#e5e7eb; color:#6b7280; padding:0.5rem 1.5rem; border-radius:8px; font-weight:600;">Coming Soon</span>
+                    </div>
+                </div>
+
+                <!-- Contacts Card - Coming Soon -->
+                <div style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #d1d5db; margin-bottom:1rem; opacity:0.7;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                        <div>
+                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">👥 Contacts</h4>
+                            <p style="color:#6b7280;">Preserve the people who mattered in your life</p>
+                        </div>
+                        <span style="background:#e5e7eb; color:#6b7280; padding:0.5rem 1.5rem; border-radius:8px; font-weight:600;">Coming Soon</span>
+                    </div>
+                </div>
+
+                <!-- Stories Card - Coming Soon -->
+                <div style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #d1d5db; opacity:0.7;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                        <div>
+                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">📖 Stories & Voice Messages</h4>
+                            <p style="color:#6b7280;">Record your voice and write letters to future generations</p>
+                        </div>
+                        <span style="background:#e5e7eb; color:#6b7280; padding:0.5rem 1.5rem; border-radius:8px; font-weight:600;">Coming Soon</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Founder Badge -->
@@ -1172,7 +1341,7 @@
                 <div style="font-size: 3rem; margin-bottom: 1rem;">🥇</div>
                 <h3 style="color: white; font-size: 1.8rem; margin-bottom: 1rem;">You're a Founding Member!</h3>
                 <p style="opacity: 0.9; font-size: 1.1rem; max-width: 500px; margin: 0 auto;">
-                    As one of our first members, you'll receive priority access to all features, a founding member discount, and your legacy preserved for 100 years.
+                    As one of our first members, you'll receive priority access to all features and your legacy preserved for 100 years.
                 </p>
             </div>
         </div>
@@ -1246,7 +1415,8 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            checkLogin();
+            handleSpotifyCallback() // Check if returning from Spotify
+            checkLogin()
         });
 
         function showSection(section) {
