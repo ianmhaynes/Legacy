@@ -1910,6 +1910,12 @@
             <div class="vault-section">
                 <h3 style="margin-bottom: 1rem;">🎵 Connect Your Services</h3>
                 
+                <div style="margin-bottom:1.5rem;">
+                    <input id="vault-search" placeholder="🔍 Search your entire vault..." 
+                        style="width:100%; padding:0.85rem; border:2px solid #e5e7eb; border-radius:10px; font-size:1rem;"
+                        oninput="searchContacts(this.value)">
+                </div>
+                
                 <!-- Universal Search -->
                 <div style="margin-bottom:1.5rem;">
                     <input id="vault-search" placeholder="🔍 Search your entire vault - photos, contacts, playlists..." 
@@ -1943,7 +1949,7 @@
                         <div style="display:flex; align-items:center; gap:1rem;">
                             <span id="photos-arrow" style="color:#3b82f6; font-size:1.2rem; transition:transform 0.2s;">▼</span>
                             <div>
-                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">📸 Photos & Memories</h4>
+                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">📸 Photos & Me<h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;" onclick="toggleSection('photos-body','photos-arrow')" style="cursor:pointer;">📸 Photos & Memories ▼</h4>mories</h4>
                                 <p style="color:#6b7280; font-size:0.9rem;"><span id="photos-count-header">0 photos</span> preserved in your vault</p>
                             </div>
                         </div>
