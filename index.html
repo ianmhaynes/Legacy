@@ -1,4 +1,4 @@
-html<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -899,7 +899,7 @@ html<!DOCTYPE html>
     <script>
         const SPOTIFY_CLIENT_ID = '26e87baf40af41e18e088c0359a30537'
         const SPOTIFY_REDIRECT_URI = 'https://www.mydatalegacy.co'
-        const SPOTIFY_SCOPES = 'user-top-read user-read-email'
+        const SPOTIFY_SCOPES = 'user-top-read user-read-recently-played user-read-email'
 
         // PKCE Helper Functions
         function generateRandomString(length) {
@@ -968,6 +968,7 @@ html<!DOCTYPE html>
                 for (const range of ranges) {
                     const res = await fetch(`https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=${range}`, { headers })
                     const data = await res.json()
+                    console.log(`Top tracks ${range}:`, data)
 
                     if (data.items) {
                         data.items.forEach(track => {
@@ -986,8 +987,52 @@ html<!DOCTYPE html>
                     }
                 }
 
+                // If no top tracks, try recently played as fallback
+                if (allTracks.size === 0) {
+                    console.log('No top tracks found, fetching recently played...')
+                    const recentRes = await fetch('https://api.spotify.com/v1/me/player/recently-played?limit=50', { headers })
+                    const recentData = await recentRes.json()
+                    console.log('Recently played:', recentData)
+
+                    if (recentData.items) {
+                        recentData.items.forEach(item => {
+                            const track = item.track
+                            if (!allTracks.has(track.id)) {
+                                allTracks.set(track.id, {
+                                    name: track.name,
+                                    artist: track.artists.map(a => a.name).join(', '),
+                                    album: track.album.name,
+                                    image: track.album.images[0]?.url || null,
+                                    duration_ms: track.duration_ms,
+                                    popularity: track.popularity,
+                                    spotify_url: track.external_urls.spotify
+                                })
+                            }
+                        })
+                    }
+                }
+
                 const musicData = Array.from(allTracks.values())
                 console.log('Collected', musicData.length, 'unique tracks')
+
+                if (musicData.length === 0) {
+                    showNotification('⚠️ No listening history found. Listen to some music on Spotify first!')
+                    const container = document.getElementById('spotify-card')
+                    if (container) {
+                        container.innerHTML = `
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+                                <div>
+                                    <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">🎵 Spotify Connected</h4>
+                                    <p style="color:#6b7280;">No listening history found yet. Start listening to music on Spotify!</p>
+                                </div>
+                                <button class="action-button secondary" onclick="reconnectSpotify()">
+                                    🔄 Refresh
+                                </button>
+                            </div>
+                        `
+                    }
+                    return
+                }
 
                 // Store locally
                 localStorage.setItem('spotify_music_data', JSON.stringify(musicData))
