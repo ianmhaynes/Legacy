@@ -1088,11 +1088,97 @@
             }
         }
 
+        function handleSpotifyCSV(input) {
+            const file = input.files[0]
+            if (!file) return
+
+            showNotification('Processing your Spotify data...')
+
+            const reader = new FileReader()
+            reader.onload = async function(e) {
+                try {
+                    const text = e.target.result
+                    const lines = text.split('\n')
+                    
+                    // Skip header row
+                    const dataLines = lines.slice(1).filter(line => line.trim())
+                    
+                    const tracks = []
+                    dataLines.forEach((line, index) => {
+                        // Parse CSV line (handle commas in quotes)
+                        const matches = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g)
+                        if (!matches || matches.length < 3) return
+                        
+                        const track = matches[0]?.replace(/"/g, '').trim()
+                        const artist = matches[1]?.replace(/"/g, '').trim()
+                        const album = matches[2]?.replace(/"/g, '').trim()
+                        
+                        if (track && artist) {
+                            tracks.push({
+                                name: track,
+                                artist: artist,
+                                album: album || 'Unknown Album',
+                                captured_at: new Date().toISOString()
+                            })
+                        }
+                    })
+
+                    if (tracks.length === 0) {
+                        showNotification('⚠️ No valid tracks found in CSV. Check format: Track,Artist,Album')
+                        return
+                    }
+
+                    console.log('Parsed', tracks.length, 'tracks from CSV')
+
+                    // Store locally
+                    localStorage.setItem('spotify_music_data', JSON.stringify(tracks))
+
+                    // Save to Supabase
+                    if (user && user.email) {
+                        try {
+                            const { data, error } = await supabaseClient
+                                .from('legacy_content')
+                                .upsert({
+                                    user_email: user.email,
+                                    content_type: 'spotify_music',
+                                    data: {
+                                        tracks: tracks,
+                                        total_count: tracks.length,
+                                        captured_at: new Date().toISOString()
+                                    },
+                                    updated_at: new Date().toISOString()
+                                })
+                            
+                            if (error) {
+                                console.error('Supabase error:', error)
+                                showNotification(`⚠️ ${tracks.length} songs saved locally but could not sync to cloud`)
+                            } else {
+                                console.log('Saved to Supabase successfully!')
+                                showNotification(`🎵 ${tracks.length} songs saved to your vault!`)
+                            }
+                        } catch (dbError) {
+                            console.error('Database error:', dbError)
+                            showNotification(`⚠️ ${tracks.length} songs saved locally but could not sync to cloud`)
+                        }
+                    } else {
+                        showNotification(`🎵 ${tracks.length} songs loaded!`)
+                    }
+
+                    // Display tracks
+                    displayMusicList(tracks)
+
+                } catch (error) {
+                    console.error('CSV parsing error:', error)
+                    showNotification('Error reading CSV file. Format should be: Track,Artist,Album')
+                }
+            }
+            reader.readAsText(file)
+        }
+
         function displayMusicList(tracks) {
             const container = document.getElementById('spotify-card')
             if (!container) return
 
-            // Get capture date from first track (all captured at same time)
             const captureDate = tracks[0]?.captured_at ? new Date(tracks[0].captured_at).toLocaleDateString() : new Date().toLocaleDateString()
 
             let html = `
@@ -1101,42 +1187,50 @@
                     <div style="display:flex; align-items:center; gap:0.75rem;">
                         <span id="spotify-tracks-arrow" style="color:#1db954; font-size:1rem;">▶</span>
                         <div>
-                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">🎵 Your Saved Songs</h4>
-                            <p style="color:#6b7280;">${tracks.length} songs from your library • Captured ${captureDate}</p>
+                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">🎵 Your Music Library</h4>
+                            <p style="color:#6b7280;">${tracks.length} songs preserved • ${captureDate}</p>
                         </div>
                     </div>
-                    <button class="action-button secondary" onclick="event.stopPropagation(); reconnectSpotify()">
-                        🔄 Refresh
-                    </button>
+                    <label for="spotify-csv-upload" class="action-button secondary" onclick="event.stopPropagation()" style="cursor:pointer; display:inline-block;">
+                        🔄 Update CSV
+                    </label>
                 </div>
 
                 <div id="spotify-tracks-body" style="background:white; border-radius:10px; border:1px solid #e5e7eb; max-height:600px; overflow-y:auto; display:none;">
             `
 
             tracks.forEach((track, index) => {
-                const duration = Math.floor(track.duration_ms / 60000) + ':' + 
-                    String(Math.floor((track.duration_ms % 60000) / 1000)).padStart(2, '0')
-
                 html += `
                     <div style="display:flex; align-items:center; padding:1rem; border-bottom:1px solid #f3f4f6; gap:1rem; transition:background 0.2s;" 
                          onmouseover="this.style.background='#f9fafb'" 
                          onmouseout="this.style.background='white'">
                         <div style="color:#9ca3af; font-size:0.9rem; width:30px; text-align:right; flex-shrink:0;">${index + 1}</div>
-                        ${track.image 
-                            ? `<img src="${track.image}" style="width:50px; height:50px; border-radius:6px; flex-shrink:0;" />`
-                            : '<div style="width:50px; height:50px; background:#e5e7eb; border-radius:6px; flex-shrink:0;"></div>'
-                        }
+                        <div style="width:50px; height:50px; background:#1db954; border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; color:white; font-size:1.2rem;">🎵</div>
                         <div style="flex:1; min-width:0;">
                             <div style="font-weight:600; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${track.name}</div>
-                            <div style="color:#6b7280; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${track.artist}</div>
+                            <div style="color:#6b7280; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${track.artist}${track.album ? ' • ' + track.album : ''}</div>
                         </div>
-                        <div style="color:#9ca3af; font-size:0.9rem; flex-shrink:0;">${duration}</div>
                     </div>
                 `
             })
 
             html += '</div>'
             container.innerHTML = html
+        }
+
+        // Load saved music on startup
+        function loadSavedMusic() {
+            const musicData = localStorage.getItem('spotify_music_data')
+            if (musicData) {
+                try {
+                    const tracks = JSON.parse(musicData)
+                    if (tracks.length > 0) {
+                        displayMusicList(tracks)
+                    }
+                } catch(e) {
+                    console.error('Error loading saved music:', e)
+                }
+            }
         }
 
         function reconnectSpotify() {
@@ -1917,12 +2011,13 @@
                 <div id="spotify-card" style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #1db954; margin-bottom:1rem;">
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
                         <div>
-                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">🎵 Spotify</h4>
-                            <p style="color:#6b7280;">Preserve your most played songs and music history</p>
+                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">🎵 Your Music Library</h4>
+                            <p style="color:#6b7280;">Upload your Spotify data CSV to preserve your music</p>
                         </div>
-                        <button class="action-button" onclick="connectSpotify()" style="background:#1db954;">
-                            Connect Spotify
-                        </button>
+                        <label for="spotify-csv-upload" class="action-button" style="background:#1db954; cursor:pointer; display:inline-block;">
+                            📁 Upload CSV
+                        </label>
+                        <input type="file" id="spotify-csv-upload" accept=".csv" style="display:none;" onchange="handleSpotifyCSV(this)">
                     </div>
                 </div>
 
@@ -2264,7 +2359,7 @@
                 loadContacts()
                 loadSavedPhotos()
                 loadStories()
-                checkExistingSpotifyData()
+                loadSavedMusic()
             }, 400);
         }
 
