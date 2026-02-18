@@ -921,7 +921,7 @@
     <script>
         const SPOTIFY_CLIENT_ID = '26e87baf40af41e18e088c0359a30537'
         const SPOTIFY_REDIRECT_URI = 'https://www.mydatalegacy.co'
-        const SPOTIFY_SCOPES = 'playlist-read-private playlist-read-collaborative user-library-read user-read-email'
+        const SPOTIFY_SCOPES = 'user-read-recently-played user-top-read user-library-read playlist-read-private playlist-read-collaborative user-read-email'
 
         // PKCE Helper Functions
         function generateRandomString(length) {
@@ -1090,65 +1090,130 @@
 
         async function fetchSpotifyData(accessToken) {
             try {
-                showNotification('Extracting your Spotify playlists...')
+                showNotification('Extracting your Spotify data...')
 
                 const headers = { 'Authorization': 'Bearer ' + accessToken }
+                const allTracks = new Map()
 
-                // Fetch all playlists
-                const allTracks = new Map() // Use Map to avoid duplicates
-                let offset = 0
-                const limit = 50
-
-                // First get all playlists
-                const playlists = []
-                while (offset < 200) { // Get up to 200 playlists
-                    const res = await fetch(`https://api.spotify.com/v1/me/playlists?limit=${limit}&offset=${offset}`, { headers })
-                    const data = await res.json()
-
-                    if (!data.items || data.items.length === 0) break
-
-                    playlists.push(...data.items)
-                    offset += limit
-                    if (data.items.length < limit) break
+                // STRATEGY 1: Get tracks from playlists
+                console.log('Fetching playlists...')
+                try {
+                    const playlistsRes = await fetch('https://api.spotify.com/v1/me/playlists?limit=50', { headers })
+                    const playlistsData = await playlistsRes.json()
+                    
+                    if (playlistsData.items && playlistsData.items.length > 0) {
+                        console.log('Found', playlistsData.items.length, 'playlists')
+                        
+                        for (const playlist of playlistsData.items.slice(0, 20)) { // Limit to first 20 playlists
+                            const tracksRes = await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks?limit=50`, { headers })
+                            const tracksData = await tracksRes.json()
+                            
+                            if (tracksData.items) {
+                                tracksData.items.forEach(item => {
+                                    if (item.track && item.track.id && !allTracks.has(item.track.id)) {
+                                        allTracks.set(item.track.id, {
+                                            name: item.track.name,
+                                            artist: item.track.artists.map(a => a.name).join(', '),
+                                            album: item.track.album.name,
+                                            captured_at: new Date().toISOString()
+                                        })
+                                    }
+                                })
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error fetching playlists:', err)
                 }
 
-                console.log('Found', playlists.length, 'playlists. Extracting tracks...')
-
-                // Now get tracks from each playlist
-                for (const playlist of playlists) {
-                    try {
-                        let trackOffset = 0
-                        while (trackOffset < 500) { // Max 500 tracks per playlist
-                            const res = await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks?limit=50&offset=${trackOffset}`, { headers })
-                            const data = await res.json()
-
-                            if (!data.items || data.items.length === 0) break
-
-                            data.items.forEach(item => {
-                                if (item.track && item.track.id && !allTracks.has(item.track.id)) {
-                                    allTracks.set(item.track.id, {
-                                        name: item.track.name,
-                                        artist: item.track.artists.map(a => a.name).join(', '),
-                                        album: item.track.album.name,
-                                        captured_at: new Date().toISOString(),
-                                        playlist: playlist.name
-                                    })
-                                }
-                            })
-
-                            trackOffset += 50
-                            if (data.items.length < 50) break
-                        }
-                    } catch (err) {
-                        console.error('Error fetching playlist', playlist.name, err)
+                // STRATEGY 2: Get saved/liked tracks
+                console.log('Fetching saved tracks...')
+                try {
+                    const savedRes = await fetch('https://api.spotify.com/v1/me/tracks?limit=50', { headers })
+                    const savedData = await savedRes.json()
+                    
+                    if (savedData.items && savedData.items.length > 0) {
+                        console.log('Found', savedData.items.length, 'saved tracks')
+                        savedData.items.forEach(item => {
+                            if (item.track && !allTracks.has(item.track.id)) {
+                                allTracks.set(item.track.id, {
+                                    name: item.track.name,
+                                    artist: item.track.artists.map(a => a.name).join(', '),
+                                    album: item.track.album.name,
+                                    captured_at: new Date().toISOString()
+                                })
+                            }
+                        })
                     }
+                } catch (err) {
+                    console.error('Error fetching saved tracks:', err)
+                }
+
+                // STRATEGY 3: Get recently played
+                console.log('Fetching recently played...')
+                try {
+                    const recentRes = await fetch('https://api.spotify.com/v1/me/player/recently-played?limit=50', { headers })
+                    const recentData = await recentRes.json()
+                    
+                    if (recentData.items && recentData.items.length > 0) {
+                        console.log('Found', recentData.items.length, 'recently played tracks')
+                        recentData.items.forEach(item => {
+                            if (item.track && !allTracks.has(item.track.id)) {
+                                allTracks.set(item.track.id, {
+                                    name: item.track.name,
+                                    artist: item.track.artists.map(a => a.name).join(', '),
+                                    album: item.track.album.name,
+                                    captured_at: new Date().toISOString()
+                                })
+                            }
+                        })
+                    }
+                } catch (err) {
+                    console.error('Error fetching recently played:', err)
+                }
+
+                // STRATEGY 4: Get top tracks
+                console.log('Fetching top tracks...')
+                try {
+                    const topRes = await fetch('https://api.spotify.com/v1/me/top/tracks?limit=50', { headers })
+                    const topData = await topRes.json()
+                    
+                    if (topData.items && topData.items.length > 0) {
+                        console.log('Found', topData.items.length, 'top tracks')
+                        topData.items.forEach(track => {
+                            if (track && !allTracks.has(track.id)) {
+                                allTracks.set(track.id, {
+                                    name: track.name,
+                                    artist: track.artists.map(a => a.name).join(', '),
+                                    album: track.album.name,
+                                    captured_at: new Date().toISOString()
+                                })
+                            }
+                        })
+                    }
+                } catch (err) {
+                    console.error('Error fetching top tracks:', err)
                 }
 
                 const tracks = Array.from(allTracks.values())
-                console.log('Extracted', tracks.length, 'unique tracks from', playlists.length, 'playlists')
+                console.log('Total unique tracks collected:', tracks.length)
 
                 if (tracks.length === 0) {
-                    showNotification('⚠️ No playlists or songs found. Create some playlists in Spotify!')
+                    showNotification('⚠️ No music found. Try playing some songs on Spotify first!')
+                    const container = document.getElementById('spotify-card')
+                    if (container) {
+                        container.innerHTML = `
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem;">
+                                <div>
+                                    <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">🎵 Spotify Connected</h4>
+                                    <p style="color:#6b7280;">No music found. Go listen to some music on Spotify, then click Refresh!</p>
+                                </div>
+                                <button class="action-button" onclick="reconnectSpotify()" style="background:#1db954;">
+                                    🔄 Refresh
+                                </button>
+                            </div>
+                        `
+                    }
                     return
                 }
 
@@ -1158,7 +1223,7 @@
                 // Save to Supabase
                 if (user && user.email) {
                     try {
-                        console.log('Saving to Supabase for user:', user.email)
+                        console.log('Saving', tracks.length, 'tracks to Supabase for user:', user.email)
                         const { data, error } = await supabaseClient
                             .from('legacy_content')
                             .upsert({
@@ -1167,7 +1232,6 @@
                                 data: {
                                     tracks: tracks,
                                     total_count: tracks.length,
-                                    playlists_count: playlists.length,
                                     captured_at: new Date().toISOString()
                                 },
                                 updated_at: new Date().toISOString()
@@ -1177,14 +1241,14 @@
                         
                         if (error) {
                             console.error('Supabase save error:', error)
-                            showNotification(`⚠️ ${tracks.length} songs saved locally but sync failed: ${error.message}`)
+                            showNotification(`⚠️ ${tracks.length} songs saved locally. Cloud sync error: ${error.message}`)
                         } else {
                             console.log('Successfully saved to Supabase!')
-                            showNotification(`🎵 ${tracks.length} songs from ${playlists.length} playlists preserved!`)
+                            showNotification(`🎵 ${tracks.length} songs preserved to your vault!`)
                         }
                     } catch (dbError) {
                         console.error('Database error:', dbError)
-                        showNotification(`⚠️ ${tracks.length} songs saved locally but sync failed`)
+                        showNotification(`⚠️ ${tracks.length} songs saved locally. Cloud sync failed.`)
                     }
                 } else {
                     showNotification(`🎵 ${tracks.length} songs loaded!`)
@@ -1194,7 +1258,7 @@
                 displayMusicList(tracks)
 
             } catch (error) {
-                showNotification('Error loading Spotify data. Please try again.')
+                showNotification('Error loading Spotify data. Check console for details.')
                 console.error('Spotify fetch error:', error)
             }
         }
