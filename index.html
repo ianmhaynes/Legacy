@@ -1224,33 +1224,39 @@
                 if (user && user.email) {
                     try {
                         console.log('Saving', tracks.length, 'tracks to Supabase for user:', user.email)
+                        const payload = {
+                            user_email: user.email,
+                            content_type: 'spotify_music',
+                            data: {
+                                tracks: tracks,
+                                total_count: tracks.length,
+                                captured_at: new Date().toISOString()
+                            },
+                            updated_at: new Date().toISOString()
+                        }
+                        console.log('Supabase payload:', payload)
+                        
                         const { data, error } = await supabaseClient
                             .from('legacy_content')
-                            .upsert({
-                                user_email: user.email,
-                                content_type: 'spotify_music',
-                                data: {
-                                    tracks: tracks,
-                                    total_count: tracks.length,
-                                    captured_at: new Date().toISOString()
-                                },
-                                updated_at: new Date().toISOString()
-                            }, {
+                            .upsert(payload, {
                                 onConflict: 'user_email,content_type'
                             })
                         
                         if (error) {
                             console.error('Supabase save error:', error)
-                            showNotification(`⚠️ ${tracks.length} songs saved locally. Cloud sync error: ${error.message}`)
+                            console.error('Error details:', JSON.stringify(error, null, 2))
+                            showNotification(`⚠️ ${tracks.length} songs saved locally. DB error: ${error.message}`)
                         } else {
-                            console.log('Successfully saved to Supabase!')
+                            console.log('Successfully saved to Supabase!', data)
                             showNotification(`🎵 ${tracks.length} songs preserved to your vault!`)
                         }
                     } catch (dbError) {
-                        console.error('Database error:', dbError)
+                        console.error('Database catch error:', dbError)
+                        console.error('Error stack:', dbError.stack)
                         showNotification(`⚠️ ${tracks.length} songs saved locally. Cloud sync failed.`)
                     }
                 } else {
+                    console.log('No user logged in, skipping Supabase save')
                     showNotification(`🎵 ${tracks.length} songs loaded!`)
                 }
 
