@@ -1095,143 +1095,79 @@
                 const headers = { 'Authorization': 'Bearer ' + accessToken }
                 const allTracks = new Map()
 
-                // STEP 1: Get tracks from user's playlists
-                console.log('Fetching your playlists...')
-                try {
-                    const playlistsRes = await fetch('https://api.spotify.com/v1/me/playlists?limit=50', { headers })
-                    const playlistsData = await playlistsRes.json()
+                // DEBUG: Check profile first
+                console.log('=== SPOTIFY DEBUG ===')
+                const profileRes = await fetch('https://api.spotify.com/v1/me', { headers })
+                const profile = await profileRes.json()
+                console.log('Profile:', profile)
+
+                // STEP 1: Playlists
+                console.log('--- Fetching playlists ---')
+                const playlistsRes = await fetch('https://api.spotify.com/v1/me/playlists?limit=50', { headers })
+                const playlistsData = await playlistsRes.json()
+                console.log('Playlists response:', playlistsData)
+                
+                if (playlistsData.items) {
+                    console.log('Playlist count:', playlistsData.items.length)
+                    playlistsData.items.forEach(p => console.log('  - Playlist:', p.name, 'Tracks:', p.tracks.total))
                     
-                    if (playlistsData.items && playlistsData.items.length > 0) {
-                        console.log('Found', playlistsData.items.length, 'playlists')
+                    for (const playlist of playlistsData.items) {
+                        const tracksRes = await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks?limit=50`, { headers })
+                        const tracksData = await tracksRes.json()
+                        console.log(`Tracks in "${playlist.name}":`, tracksData)
                         
-                        for (const playlist of playlistsData.items) {
-                            console.log('Fetching tracks from playlist:', playlist.name)
-                            
-                            let offset = 0
-                            while (offset < 500) {
-                                const tracksRes = await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks?limit=50&offset=${offset}`, { headers })
-                                const tracksData = await tracksRes.json()
-                                
-                                if (!tracksData.items || tracksData.items.length === 0) break
-                                
-                                tracksData.items.forEach(item => {
-                                    if (item.track && item.track.id && !allTracks.has(item.track.id)) {
-                                        allTracks.set(item.track.id, {
-                                            name: item.track.name,
-                                            artist: item.track.artists.map(a => a.name).join(', '),
-                                            album: item.track.album.name,
-                                            captured_at: new Date().toISOString()
-                                        })
-                                    }
-                                })
-                                
-                                offset += 50
-                                if (tracksData.items.length < 50) break
-                            }
+                        if (tracksData.items) {
+                            tracksData.items.forEach(item => {
+                                if (item.track && item.track.id) {
+                                    allTracks.set(item.track.id, {
+                                        name: item.track.name,
+                                        artist: item.track.artists.map(a => a.name).join(', '),
+                                        album: item.track.album.name,
+                                        captured_at: new Date().toISOString()
+                                    })
+                                }
+                            })
                         }
-                    } else {
-                        console.log('No playlists found')
                     }
-                } catch (err) {
-                    console.error('Error fetching playlists:', err)
                 }
 
-                // STEP 2: Get Liked Songs (saved tracks)
-                console.log('Fetching your Liked Songs...')
-                try {
-                    let offset = 0
-                    while (offset < 500) {
-                        const savedRes = await fetch(`https://api.spotify.com/v1/me/tracks?limit=50&offset=${offset}`, { headers })
-                        const savedData = await savedRes.json()
-                        
-                        if (!savedData.items || savedData.items.length === 0) break
-                        
-                        console.log('Found', savedData.items.length, 'liked songs at offset', offset)
-                        savedData.items.forEach(item => {
-                            if (item.track && item.track.id && !allTracks.has(item.track.id)) {
-                                allTracks.set(item.track.id, {
-                                    name: item.track.name,
-                                    artist: item.track.artists.map(a => a.name).join(', '),
-                                    album: item.track.album.name,
-                                    captured_at: new Date().toISOString()
-                                })
-                            }
-                        })
-                        
-                        offset += 50
-                        if (savedData.items.length < 50) break
-                    }
-                } catch (err) {
-                    console.error('Error fetching liked songs:', err)
+                // STEP 2: Liked Songs
+                console.log('--- Fetching Liked Songs ---')
+                const savedRes = await fetch('https://api.spotify.com/v1/me/tracks?limit=50', { headers })
+                const savedData = await savedRes.json()
+                console.log('Liked Songs response:', savedData)
+                
+                if (savedData.items) {
+                    console.log('Liked songs count:', savedData.items.length)
+                    savedData.items.forEach((item, i) => {
+                        console.log(`  ${i+1}. ${item.track.name} - ${item.track.artists[0].name}`)
+                        if (item.track && item.track.id) {
+                            allTracks.set(item.track.id, {
+                                name: item.track.name,
+                                artist: item.track.artists.map(a => a.name).join(', '),
+                                album: item.track.album.name,
+                                captured_at: new Date().toISOString()
+                            })
+                        }
+                    })
                 }
 
                 const tracks = Array.from(allTracks.values())
-                console.log('Total tracks from YOUR library:', tracks.length)
+                console.log('=== TOTAL TRACKS COLLECTED:', tracks.length, '===')
+                console.log('Tracks:', tracks)
 
                 if (tracks.length === 0) {
-                    showNotification('⚠️ No music found. Add songs to Liked Songs or create a playlist!')
-                    const container = document.getElementById('spotify-card')
-                    if (container) {
-                        container.innerHTML = `
-                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem;">
-                                <div>
-                                    <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">🎵 Spotify Connected</h4>
-                                    <p style="color:#6b7280;">No music found. Add songs to your Liked Songs or create a playlist, then click Refresh!</p>
-                                </div>
-                                <button class="action-button" onclick="reconnectSpotify()" style="background:#1db954;">
-                                    🔄 Refresh
-                                </button>
-                            </div>
-                        `
-                    }
+                    showNotification('⚠️ No music found in your Spotify account')
                     return
                 }
 
-                // Store locally
                 localStorage.setItem('spotify_music_data', JSON.stringify(tracks))
-
-                // Save to Supabase
-                if (user && user.email) {
-                    try {
-                        console.log('Saving', tracks.length, 'tracks to Supabase for user:', user.email)
-                        const payload = {
-                            user_email: user.email,
-                            content_type: 'spotify_music',
-                            data: {
-                                tracks: tracks,
-                                total_count: tracks.length,
-                                captured_at: new Date().toISOString()
-                            },
-                            updated_at: new Date().toISOString()
-                        }
-                        
-                        const { data, error } = await supabaseClient
-                            .from('legacy_content')
-                            .upsert(payload, {
-                                onConflict: 'user_email,content_type'
-                            })
-                        
-                        if (error) {
-                            console.error('Supabase save error:', error)
-                            showNotification(`🎵 ${tracks.length} songs preserved locally!`)
-                        } else {
-                            console.log('Successfully saved to Supabase!')
-                            showNotification(`🎵 ${tracks.length} songs preserved to your vault!`)
-                        }
-                    } catch (dbError) {
-                        console.error('Database error:', dbError)
-                        showNotification(`🎵 ${tracks.length} songs preserved locally!`)
-                    }
-                } else {
-                    showNotification(`🎵 ${tracks.length} songs loaded!`)
-                }
-
-                // Display tracks
                 displayMusicList(tracks)
+                showNotification(`🎵 ${tracks.length} songs preserved!`)
 
             } catch (error) {
-                showNotification('Error loading Spotify data. Check console.')
-                console.error('Spotify fetch error:', error)
+                console.error('ERROR:', error)
+                showNotification('Error: ' + error.message)
             }
         }
 
