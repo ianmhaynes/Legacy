@@ -2511,16 +2511,16 @@
 
                 <!-- Inheritors Card -->
                 <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #ec4899; margin-bottom:1rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem; cursor:pointer; user-select:none;"
-                         onclick="toggleSection('inheritors-body','inheritors-arrow')">
-                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem;">
+                        <div style="display:flex; align-items:center; gap:0.75rem; cursor:pointer; user-select:none; flex:1;"
+                             onclick="toggleSection('inheritors-body','inheritors-arrow')">
                             <span id="inheritors-arrow" style="color:#ec4899; font-size:1rem;">▶</span>
                             <div>
                                 <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">👨‍👩‍👧‍👦 Inheritors</h4>
                                 <p style="color:#6b7280; font-size:0.9rem;"><span id="inheritors-count-header">Who will receive your legacy</span></p>
                             </div>
                         </div>
-                        <button class="action-button" onclick="event.stopPropagation(); showAddInheritorForm()" style="background:#ec4899;">
+                        <button class="action-button" onclick="showAddInheritorForm()" style="background:#ec4899;">
                             + Add Inheritor
                         </button>
                     </div>
