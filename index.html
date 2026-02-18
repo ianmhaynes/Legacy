@@ -1342,6 +1342,7 @@
             
             // Update UI
             updateSavedSongsDisplay()
+            refreshDashboardStats()
             showNotification(`🎵 "${name}" added to your library!`)
 
             // Save to Supabase
@@ -1403,6 +1404,7 @@
             savedSongs = savedSongs.filter(s => s.id !== id)
             localStorage.setItem('spotify_music_data', JSON.stringify(savedSongs))
             updateSavedSongsDisplay()
+            refreshDashboardStats()
             showNotification('Song removed')
 
             // Update Supabase
@@ -1688,6 +1690,7 @@
             savedContacts.push(contact)
             localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
             renderContacts()
+            refreshDashboardStats()
             showNotification('👥 Contact saved: ' + name)
 
             document.getElementById('contact-name').value = ''
@@ -1904,6 +1907,7 @@
             if (header) header.textContent = count + ' stor' + (count !== 1 ? 'ies' : 'y') + ' written'
 
             closeStoryEditor()
+            refreshDashboardStats()
             showNotification('✨ Story saved!')
         }
 
@@ -2587,10 +2591,31 @@
         }
 
         function updateDashboardStats() {
-            document.getElementById('total-memories').textContent = '0';
-            document.getElementById('storage-used').textContent = '0 GB';
-            document.getElementById('years-guarantee').textContent = user.plan === 'Forever' ? '100' : '50';
-            document.getElementById('inheritors-count').textContent = '0';
+            // Count actual memories
+            const songs = JSON.parse(localStorage.getItem('spotify_music_data') || '[]').length
+            const contacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]').length
+            const stories = Object.keys(JSON.parse(localStorage.getItem('vault_stories') || '{}')).length
+            const photos = uploadedPhotos.length // Will be updated when photos load
+            
+            const totalMemories = songs + contacts + stories + photos
+            
+            document.getElementById('total-memories').textContent = totalMemories
+            
+            // Estimate storage (very rough)
+            const storageGB = ((photos * 2) + (songs * 0.1) + (contacts * 0.001)).toFixed(2)
+            document.getElementById('storage-used').textContent = storageGB + ' MB'
+            
+            document.getElementById('years-guarantee').textContent = user.plan === 'Forever' ? '100' : '50'
+            document.getElementById('inheritors-count').textContent = '0'
+        }
+
+        // Update stats when data changes
+        function refreshDashboardStats() {
+            if (user) {
+                setTimeout(() => {
+                    updateDashboardStats()
+                }, 500)
+            }
         }
 
         function showNotification(message) {
