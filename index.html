@@ -1,4 +1,9 @@
-Data Legacy - Your Digital Legacy, Preserved Forever</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Data Legacy - Your Digital Legacy, Preserved Forever</title>
     <style>
         * {
             margin: 0;
@@ -975,16 +980,50 @@ Data Legacy - Your Digital Legacy, Preserved Forever</title>
                 updateSpotifyUI(playlistCount, trackCount, accessToken)
                 showNotification('🎵 ' + playlistCount + ' playlists and ' + trackCount + ' songs preserved!')
 
-                // Store in Supabase if user logged in
-                if (user && user.id) {
+                // Fetch full details for each playlist including all songs
+                const playlistsWithSongs = []
+                for (const playlist of (playlists.items || []).slice(0, 10)) {
                     try {
-                        await supabaseClient.from('legacy_content').upsert({
-                            user_id: user.id,
+                        const tracksRes = await fetch('https://api.spotify.com/v1/playlists/' + playlist.id + '/tracks?limit=50', { headers })
+                        const tracksData = await tracksRes.json()
+                        
+                        playlistsWithSongs.push({
+                            id: playlist.id,
+                            name: playlist.name,
+                            description: playlist.description,
+                            image: playlist.images && playlist.images[0] ? playlist.images[0].url : null,
+                            total_tracks: playlist.tracks ? playlist.tracks.total : 0,
+                            tracks: (tracksData.items || []).map(item => item.track ? {
+                                name: item.track.name,
+                                artists: item.track.artists.map(a => a.name).join(', '),
+                                album: item.track.album.name,
+                                album_image: item.track.album.images && item.track.album.images[0] ? item.track.album.images[0].url : null,
+                                duration_ms: item.track.duration_ms
+                            } : null).filter(t => t !== null)
+                        })
+                    } catch (e) {
+                        console.error('Error fetching playlist:', playlist.id, e)
+                    }
+                }
+
+                // Store complete playlist data in Supabase
+                const currentUser = JSON.parse(localStorage.getItem('user') || 'null')
+                if (currentUser && currentUser.email) {
+                    try {
+                        const { data: existing } = await supabaseClient
+                            .from('legacy_content')
+                            .select('id')
+                            .eq('user_id', currentUser.email)
+                            .eq('content_type', 'spotify')
+                            .single()
+
+                        const spotifyData = {
+                            user_id: currentUser.email,
                             content_type: 'spotify',
                             data: {
                                 display_name: profile.display_name,
-                                playlists: playlists.items || [],
-                                total_tracks: trackCount
+                                playlists: playlistsWithSongs,
+                                saved_at: new Date().toISOString()
                             },
                             metadata: {
                                 playlists_count: playlistCount,
@@ -992,8 +1031,15 @@ Data Legacy - Your Digital Legacy, Preserved Forever</title>
                                 spotify_id: profile.id,
                                 connected_at: new Date().toISOString()
                             }
-                        })
-                        console.log('Saved to Supabase!')
+                        }
+
+                        if (existing) {
+                            await supabaseClient.from('legacy_content').update(spotifyData).eq('id', existing.id)
+                        } else {
+                            await supabaseClient.from('legacy_content').insert(spotifyData)
+                        }
+                        
+                        console.log('Saved', playlistsWithSongs.length, 'playlists with full song details to Supabase!')
                     } catch (dbError) {
                         console.error('Database error:', dbError)
                     }
@@ -1036,6 +1082,28 @@ Data Legacy - Your Digital Legacy, Preserved Forever</title>
             const container = document.getElementById('playlists-container')
             if (!container) return
 
+            // Try to load from Supabase first (persisted data)
+            const currentUser = JSON.parse(localStorage.getItem('user') || 'null')
+            if (currentUser && currentUser.email) {
+                try {
+                    const { data: savedData, error } = await supabaseClient
+                        .from('legacy_content')
+                        .select('data')
+                        .eq('user_id', currentUser.email)
+                        .eq('content_type', 'spotify')
+                        .single()
+
+                    if (savedData && savedData.data && savedData.data.playlists) {
+                        displayPlaylistsFromData(savedData.data.playlists)
+                        console.log('Loaded playlists from Supabase!')
+                        return
+                    }
+                } catch (e) {
+                    console.log('No saved Spotify data yet, will fetch fresh')
+                }
+            }
+
+            // Fallback to live Spotify API
             try {
                 const headers = { 'Authorization': 'Bearer ' + accessToken }
                 const res = await fetch('https://api.spotify.com/v1/me/playlists?limit=50', { headers })
@@ -1044,7 +1112,8 @@ Data Legacy - Your Digital Legacy, Preserved Forever</title>
                 if (res.status === 401) {
                     container.innerHTML = `
                         <div style="text-align:center; padding:1.5rem;">
-                            <p style="color:#ef4444; margin-bottom:1rem;">⏰ Spotify session expired. Please reconnect.</p>
+                            <p style="color:#6b7280; margin-bottom:1rem;">⏰ Spotify session expired.</p>
+                            <p style="color:#9ca3af; font-size:0.85rem; margin-bottom:1rem;">Your playlists are saved - reconnect to refresh</p>
                             <button class="action-button" onclick="reconnectSpotify()" style="background:#1db954;">
                                 Reconnect Spotify
                             </button>
@@ -1111,6 +1180,61 @@ Data Legacy - Your Digital Legacy, Preserved Forever</title>
             } catch (error) {
                 console.error('Error loading playlists:', error)
                 container.innerHTML = '<p style="color:#ef4444;">Error loading playlists. Please refresh.</p>'
+            }
+        }
+
+        function displayPlaylistsFromData(playlists) {
+            const container = document.getElementById('playlists-container')
+            if (!container || !playlists || playlists.length === 0) return
+
+            let html = '<div style="display:flex; flex-direction:column; gap:1rem;">'
+
+            playlists.forEach(playlist => {
+                const image = playlist.image || null
+                const trackCount = playlist.tracks ? playlist.tracks.length : playlist.total_tracks
+
+                html += `
+                    <div class="playlist-card" style="background:white; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                        <div style="display:flex; align-items:center; padding:1rem; cursor:pointer; gap:1rem;"
+                             onclick="toggleSavedPlaylist('${playlist.id}')">
+                            ${image 
+                                ? \`<img src="\${image}" style="width:60px; height:60px; border-radius:8px; object-fit:cover;" />\` 
+                                : \`<div style="width:60px; height:60px; background:#3730a3; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">🎵</div>\`
+                            }
+                            <div style="flex:1;">
+                                <div style="font-weight:600; color:#1e3a8a; font-size:1.1rem;">\${playlist.name}</div>
+                                <div style="color:#6b7280; font-size:0.9rem;">\${trackCount} songs</div>
+                                \${playlist.description ? \`<div style="color:#9ca3af; font-size:0.8rem; margin-top:0.2rem;">\${playlist.description}</div>\` : ''}
+                            </div>
+                            <div style="color:#6b7280; font-size:1.2rem;">▼</div>
+                        </div>
+                        <div id="saved-tracks-\${playlist.id}" style="display:none; border-top:1px solid #f3f4f6; padding:1rem;">
+                            ${playlist.tracks && playlist.tracks.length > 0 ? 
+                                playlist.tracks.map((track, idx) => \`
+                                    <div style="display:flex; align-items:center; padding:0.6rem 0; border-bottom:1px solid #f9fafb; gap:1rem;">
+                                        <div style="color:#9ca3af; font-size:0.85rem; width:20px; text-align:right;">\${idx + 1}</div>
+                                        \${track.album_image ? \`<img src="\${track.album_image}" style="width:40px; height:40px; border-radius:4px;" />\` : '<div style="width:40px; height:40px; background:#e5e7eb; border-radius:4px;"></div>'}
+                                        <div style="flex:1; min-width:0;">
+                                            <div style="font-weight:500; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${track.name}</div>
+                                            <div style="color:#6b7280; font-size:0.85rem;">\${track.artists}</div>
+                                        </div>
+                                        <div style="color:#9ca3af; font-size:0.85rem; flex-shrink:0;">\${Math.floor(track.duration_ms / 60000)}:\${String(Math.floor((track.duration_ms % 60000) / 1000)).padStart(2, '0')}</div>
+                                    </div>
+                                \`).join('')
+                            : '<p style="color:#9ca3af; text-align:center; padding:1rem;">No songs saved</p>'}
+                        </div>
+                    </div>
+                `
+            })
+
+            html += '</div>'
+            container.innerHTML = html
+        }
+
+        function toggleSavedPlaylist(playlistId) {
+            const tracksDiv = document.getElementById('saved-tracks-' + playlistId)
+            if (tracksDiv) {
+                tracksDiv.style.display = tracksDiv.style.display === 'none' ? 'block' : 'none'
             }
         }
 
