@@ -921,7 +921,7 @@
     <script>
         const SPOTIFY_CLIENT_ID = '26e87baf40af41e18e088c0359a30537'
         const SPOTIFY_REDIRECT_URI = 'https://www.mydatalegacy.co'
-        const SPOTIFY_SCOPES = 'user-top-read user-read-recently-played user-read-email'
+        const SPOTIFY_SCOPES = 'user-library-read playlist-read-private user-read-email'
 
         // PKCE Helper Functions
         function generateRandomString(length) {
@@ -969,7 +969,7 @@
 
         async function fetchSpotifyData(accessToken) {
             try {
-                showNotification('Loading your top music from Spotify...')
+                showNotification('Loading your saved music from Spotify...')
 
                 const headers = { 'Authorization': 'Bearer ' + accessToken }
 
@@ -983,71 +983,51 @@
                     return
                 }
 
-                // Fetch top tracks from all time ranges and combine
-                const ranges = ['short_term', 'medium_term', 'long_term']
+                // Fetch saved tracks (liked songs) - these are tracks YOU saved
                 const allTracks = new Map()
+                let offset = 0
+                const limit = 50
 
-                for (const range of ranges) {
-                    const res = await fetch(`https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=${range}`, { headers })
+                while (offset < 200) { // Get up to 200 saved songs
+                    const res = await fetch(`https://api.spotify.com/v1/me/tracks?limit=${limit}&offset=${offset}`, { headers })
                     const data = await res.json()
-                    console.log(`Top tracks ${range}:`, data)
+                    console.log(`Saved tracks offset ${offset}:`, data)
 
-                    if (data.items) {
-                        data.items.forEach(track => {
-                            if (!allTracks.has(track.id)) {
-                                allTracks.set(track.id, {
-                                    name: track.name,
-                                    artist: track.artists.map(a => a.name).join(', '),
-                                    album: track.album.name,
-                                    image: track.album.images[0]?.url || null,
-                                    duration_ms: track.duration_ms,
-                                    popularity: track.popularity,
-                                    spotify_url: track.external_urls.spotify,
-                                    captured_at: new Date().toISOString()
-                                })
-                            }
-                        })
-                    }
-                }
+                    if (!data.items || data.items.length === 0) break
 
-                // If no top tracks, try recently played as fallback
-                if (allTracks.size === 0) {
-                    console.log('No top tracks found, fetching recently played...')
-                    const recentRes = await fetch('https://api.spotify.com/v1/me/player/recently-played?limit=50', { headers })
-                    const recentData = await recentRes.json()
-                    console.log('Recently played:', recentData)
+                    data.items.forEach(item => {
+                        const track = item.track
+                        if (!allTracks.has(track.id)) {
+                            allTracks.set(track.id, {
+                                name: track.name,
+                                artist: track.artists.map(a => a.name).join(', '),
+                                album: track.album.name,
+                                image: track.album.images[0]?.url || null,
+                                duration_ms: track.duration_ms,
+                                popularity: track.popularity,
+                                spotify_url: track.external_urls.spotify,
+                                captured_at: new Date().toISOString(),
+                                added_at: item.added_at // When YOU saved it
+                            })
+                        }
+                    })
 
-                    if (recentData.items) {
-                        recentData.items.forEach(item => {
-                            const track = item.track
-                            if (!allTracks.has(track.id)) {
-                                allTracks.set(track.id, {
-                                    name: track.name,
-                                    artist: track.artists.map(a => a.name).join(', '),
-                                    album: track.album.name,
-                                    image: track.album.images[0]?.url || null,
-                                    duration_ms: track.duration_ms,
-                                    popularity: track.popularity,
-                                    spotify_url: track.external_urls.spotify,
-                                    captured_at: new Date().toISOString()
-                                })
-                            }
-                        })
-                    }
+                    offset += limit
+                    if (data.items.length < limit) break // No more tracks
                 }
 
                 const musicData = Array.from(allTracks.values())
-                console.log('Collected', musicData.length, 'unique tracks')
+                console.log('Collected', musicData.length, 'saved tracks')
 
                 if (musicData.length === 0) {
-                    showNotification('⚠️ No listening history found. Listen to some music on Spotify first!')
+                    showNotification('⚠️ No saved songs found. Save some songs to your Spotify library first!')
                     const container = document.getElementById('spotify-card')
                     if (container) {
                         container.innerHTML = `
                             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
                                 <div>
                                     <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">🎵 Spotify Connected</h4>
-                                    <p style="color:#6b7280;">No listening history found yet. Start listening to music on Spotify!</p>
+                                    <p style="color:#6b7280;">No saved songs found. Go to Spotify and save some songs!</p>
                                 </div>
                                 <button class="action-button secondary" onclick="reconnectSpotify()">
                                     🔄 Refresh
@@ -1068,27 +1048,37 @@
 
                 // Update UI
                 displayMusicList(musicData)
-                showNotification(`🎵 ${musicData.length} songs preserved to your vault!`)
+                showNotification(`🎵 ${musicData.length} saved songs preserved to your vault!`)
 
                 // Store in Supabase
                 if (user && user.email) {
                     try {
-                        await supabaseClient.from('legacy_content').upsert({
-                            user_email: user.email,
-                            content_type: 'spotify_music',
-                            data: {
-                                profile: profile.display_name || profile.id,
-                                tracks: musicData,
-                                total_count: musicData.length,
-                                captured_at: new Date().toISOString()
-                            },
-                            updated_at: new Date().toISOString()
-                        }, {
-                            onConflict: 'user_email,content_type'
-                        })
-                        console.log('Saved to Supabase!')
+                        console.log('Saving to Supabase for user:', user.email)
+                        const { data: savedData, error } = await supabaseClient
+                            .from('legacy_content')
+                            .upsert({
+                                user_email: user.email,
+                                content_type: 'spotify_music',
+                                data: {
+                                    profile: profile.display_name || profile.id,
+                                    tracks: musicData,
+                                    total_count: musicData.length,
+                                    captured_at: new Date().toISOString()
+                                },
+                                updated_at: new Date().toISOString()
+                            }, {
+                                onConflict: 'user_email,content_type'
+                            })
+                        
+                        if (error) {
+                            console.error('Supabase save error:', error)
+                            showNotification('⚠️ Music saved locally but could not sync to cloud')
+                        } else {
+                            console.log('Successfully saved to Supabase!', savedData)
+                        }
                     } catch (dbError) {
                         console.error('Database error:', dbError)
+                        showNotification('⚠️ Music saved locally but could not sync to cloud')
                     }
                 }
 
@@ -1111,8 +1101,8 @@
                     <div style="display:flex; align-items:center; gap:0.75rem;">
                         <span id="spotify-tracks-arrow" style="color:#1db954; font-size:1rem;">▶</span>
                         <div>
-                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">🎵 Your Most Played Music</h4>
-                            <p style="color:#6b7280;">${tracks.length} songs • Captured ${captureDate}</p>
+                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">🎵 Your Saved Songs</h4>
+                            <p style="color:#6b7280;">${tracks.length} songs from your library • Captured ${captureDate}</p>
                         </div>
                     </div>
                     <button class="action-button secondary" onclick="event.stopPropagation(); reconnectSpotify()">
