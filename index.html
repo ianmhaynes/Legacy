@@ -19,29 +19,33 @@
 
         /* Navigation */
         nav {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
-            color: white;
-            padding: 1rem 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: rgba(251, 251, 253, 0.8);
+            backdrop-filter: saturate(180%) blur(20px);
+            color: #1d1d1f;
+            padding: 0;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.1);
             position: sticky;
             top: 0;
             z-index: 100;
         }
 
         nav .container {
-            max-width: 1200px;
+            max-width: 980px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 0 1.5rem;
+            height: 44px;
         }
 
         nav .logo {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            font-size: 1.5rem;
-            font-weight: 700;
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: #1d1d1f;
         }
 
         nav .nav-links {
@@ -52,70 +56,67 @@
         }
 
         nav a {
-            color: white;
+            color: #1d1d1f;
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 400;
+            font-size: 0.875rem;
             transition: opacity 0.3s;
         }
 
         nav a:hover {
-            opacity: 0.8;
+            opacity: 0.6;
         }
 
         .btn-nav {
-            background: white;
-            color: #1e3a8a;
-            padding: 0.5rem 1.5rem;
-            border-radius: 25px;
-            font-weight: 600;
+            background: #0071e3;
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 980px;
+            font-weight: 400;
+        }
+
+        .btn-nav:hover {
+            opacity: 0.9;
         }
 
         /* Hero Section */
         .hero {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
-            color: white;
-            padding: 6rem 2rem;
+            background: #fbfbfd;
+            color: #1d1d1f;
+            padding: 8rem 2rem 6rem;
             text-align: center;
             position: relative;
-            overflow: hidden;
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
-            opacity: 0.3;
         }
 
         .hero-content {
-            max-width: 900px;
+            max-width: 980px;
             margin: 0 auto;
             position: relative;
-            z-index: 1;
         }
 
         .hero h1 {
-            font-size: 3.5rem;
+            font-size: 4rem;
             margin-bottom: 1.5rem;
-            font-weight: 800;
-            line-height: 1.2;
+            font-weight: 600;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            color: #1d1d1f;
         }
 
         .hero .subtitle {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            opacity: 0.95;
-            font-weight: 300;
+            font-size: 1.75rem;
+            margin-bottom: 2rem;
+            font-weight: 400;
+            color: #6e6e73;
+            line-height: 1.4;
         }
 
         .hero p {
-            font-size: 1.2rem;
-            margin-bottom: 2.5rem;
-            opacity: 0.9;
+            font-size: 1.25rem;
+            margin-bottom: 3rem;
+            color: #86868b;
+            font-weight: 400;
+            line-height: 1.5;
         }
 
         .cta-buttons {
@@ -126,50 +127,53 @@
         }
 
         .cta-button {
-            background: white;
-            color: #1e3a8a;
-            padding: 1.2rem 2.5rem;
+            background: #0071e3;
+            color: white;
+            padding: 0.85rem 1.5rem;
             border: none;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: 700;
+            border-radius: 980px;
+            font-size: 1.05rem;
+            font-weight: 400;
             cursor: pointer;
             transition: all 0.3s;
             display: inline-block;
             text-decoration: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: none;
         }
 
         .cta-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            background: #0077ed;
+            transform: scale(1.02);
         }
 
         .cta-button.secondary {
             background: transparent;
-            color: white;
-            border: 2px solid white;
+            color: #0071e3;
+            border: none;
         }
 
         .cta-button.secondary:hover {
-            background: rgba(255,255,255,0.1);
+            color: #0077ed;
+            background: transparent;
         }
 
         /* Trust Indicators */
         .trust-bar {
-            background: #f9fafb;
+            background: white;
             padding: 1.5rem 2rem;
             text-align: center;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #d2d2d7;
         }
 
         .trust-bar p {
-            color: #6b7280;
-            font-size: 0.95rem;
+            color: #86868b;
+            font-size: 0.875rem;
+            font-weight: 400;
         }
 
         .trust-bar strong {
-            color: #1e3a8a;
+            color: #1d1d1f;
+            font-weight: 500;
         }
 
         /* Container */
@@ -181,37 +185,51 @@
 
         /* Problem Section */
         .problem-section {
-            padding: 5rem 2rem;
-            background: #fef2f2;
+            padding: 6rem 2rem;
+            background: white;
         }
 
         .problem-section h2 {
             text-align: center;
             font-size: 2.5rem;
-            margin-bottom: 3rem;
-            color: #991b1b;
+            margin-bottom: 1rem;
+            color: #1d1d1f;
+            font-weight: 600;
+            letter-spacing: -0.01em;
         }
 
         .problem-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 980px;
+            margin: 3rem auto 0;
         }
 
         .problem-card {
-            background: white;
+            background: #fbfbfd;
             padding: 2rem;
-            border-radius: 15px;
-            border-left: 4px solid #dc2626;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 18px;
+            border: 1px solid #d2d2d7;
+            transition: all 0.3s;
+        }
+
+        .problem-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
         }
 
         .problem-card h3 {
             font-size: 1.3rem;
-            margin-bottom: 1rem;
-            color: #991b1b;
+            margin-bottom: 0.75rem;
+            color: #1d1d1f;
+            font-weight: 600;
+        }
+
+        .problem-card p {
+            color: #6e6e73;
+            line-height: 1.6;
+            font-size: 1rem;
         }
 
         .problem-icon {
@@ -221,61 +239,65 @@
 
         /* Solution Section */
         .solution-section {
-            padding: 5rem 2rem;
-            background: white;
+            padding: 6rem 2rem;
+            background: #fbfbfd;
         }
 
         .solution-section h2 {
             text-align: center;
             font-size: 2.5rem;
             margin-bottom: 1rem;
-            color: #1e3a8a;
+            color: #1d1d1f;
+            font-weight: 600;
+            letter-spacing: -0.01em;
         }
 
         .solution-section .intro {
             text-align: center;
-            font-size: 1.2rem;
-            color: #6b7280;
+            font-size: 1.25rem;
+            color: #86868b;
             max-width: 800px;
-            margin: 0 auto 3rem;
+            margin: 0 auto 4rem;
+            font-weight: 400;
         }
 
         .feature-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2.5rem;
-            max-width: 1200px;
+            max-width: 980px;
             margin: 0 auto;
         }
 
         .feature-card {
-            background: #f9fafb;
-            padding: 2.5rem;
-            border-radius: 15px;
+            background: white;
+            padding: 2rem;
+            border-radius: 18px;
             transition: all 0.3s;
-            border: 2px solid transparent;
+            border: 1px solid #d2d2d7;
         }
 
         .feature-card:hover {
-            transform: translateY(-5px);
-            border-color: #3730a3;
-            box-shadow: 0 10px 30px rgba(30, 58, 138, 0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
         }
 
         .feature-icon {
-            font-size: 3rem;
+            font-size: 2.5rem;
             margin-bottom: 1rem;
         }
 
         .feature-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            color: #1e3a8a;
+            font-size: 1.4rem;
+            margin-bottom: 0.75rem;
+            color: #1d1d1f;
+            font-weight: 600;
         }
 
         .feature-card p {
-            color: #4b5563;
-            line-height: 1.7;
+            color: #6e6e73;
+            line-height: 1.6;
+            font-size: 1rem;
         }
 
         /* How It Works */
