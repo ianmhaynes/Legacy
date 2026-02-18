@@ -1270,9 +1270,33 @@
             connectSpotify()
         }
 
+        // Helper functions for user-specific storage
+        function getUserKey(key) {
+            if (!user || !user.email) return key
+            return `${user.email}_${key}`
+        }
+
+        function getUserData(key, defaultValue = null) {
+            const data = localStorage.getItem(getUserKey(key))
+            if (!data) return defaultValue
+            try {
+                return JSON.parse(data)
+            } catch(e) {
+                return defaultValue
+            }
+        }
+
+        function setUserData(key, value) {
+            localStorage.setItem(getUserKey(key), JSON.stringify(value))
+        }
+
+        function removeUserData(key) {
+            localStorage.removeItem(getUserKey(key))
+        }
+
         // Spotify Song Search (Alternative without Client Secret)
         let searchTimeout
-        let savedSongs = JSON.parse(localStorage.getItem('spotify_music_data') || '[]')
+        let savedSongs = []
 
         function searchSpotifySongs(query) {
             clearTimeout(searchTimeout)
@@ -1334,7 +1358,7 @@
             }
 
             savedSongs.push(song)
-            localStorage.setItem('spotify_music_data', JSON.stringify(savedSongs))
+            setUserData('spotify_music_data', savedSongs)
             
             // Clear search
             document.getElementById('song-search').value = ''
@@ -1402,7 +1426,7 @@
 
         function removeSong(id) {
             savedSongs = savedSongs.filter(s => s.id !== id)
-            localStorage.setItem('spotify_music_data', JSON.stringify(savedSongs))
+            setUserData('spotify_music_data', savedSongs)
             updateSavedSongsDisplay()
             refreshDashboardStats()
             showNotification('Song removed')
@@ -1419,7 +1443,7 @@
         }
 
         function loadSavedMusic() {
-            savedSongs = JSON.parse(localStorage.getItem('spotify_music_data') || '[]')
+            savedSongs = getUserData('spotify_music_data', [])
             if (savedSongs.length > 0) {
                 updateSavedSongsDisplay()
             }
@@ -1666,7 +1690,7 @@
         }
 
         // Contacts handling
-        let savedContacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]')
+        let savedContacts = []
 
         function showAddContactForm() {
             const form = document.getElementById('add-contact-form')
@@ -1688,7 +1712,7 @@
             }
 
             savedContacts.push(contact)
-            localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
+            setUserData('vault_contacts', savedContacts)
             renderContacts()
             refreshDashboardStats()
             showNotification('👥 Contact saved: ' + name)
@@ -1703,7 +1727,7 @@
 
         function deleteContact(id) {
             savedContacts = savedContacts.filter(c => c.id !== id)
-            localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
+            setUserData('vault_contacts', savedContacts)
             renderContacts()
             showNotification('Contact removed')
         }
@@ -1842,7 +1866,7 @@
         }
 
         function loadContacts() {
-            savedContacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]')
+            savedContacts = getUserData('vault_contacts', [])
             renderContacts()
         }
 
@@ -1875,7 +1899,7 @@
         }
 
         // Inheritors Management
-        let savedInheritors = JSON.parse(localStorage.getItem('vault_inheritors') || '[]')
+        let savedInheritors = []
 
         function showAddInheritorForm() {
             const form = document.getElementById('add-inheritor-form')
@@ -1902,7 +1926,7 @@
             }
 
             savedInheritors.push(inheritor)
-            localStorage.setItem('vault_inheritors', JSON.stringify(savedInheritors))
+            setUserData('vault_inheritors', savedInheritors)
             
             // Clear form
             document.getElementById('inheritor-name').value = ''
@@ -1919,7 +1943,7 @@
         function deleteInheritor(id) {
             if (!confirm('Remove this inheritor?')) return
             savedInheritors = savedInheritors.filter(i => i.id !== id)
-            localStorage.setItem('vault_inheritors', JSON.stringify(savedInheritors))
+            setUserData('vault_inheritors', savedInheritors)
             renderInheritors()
             refreshDashboardStats()
             showNotification('Inheritor removed')
@@ -1955,7 +1979,7 @@
         }
 
         function loadInheritors() {
-            savedInheritors = JSON.parse(localStorage.getItem('vault_inheritors') || '[]')
+            savedInheritors = getUserData('vault_inheritors', [])
             if (savedInheritors.length > 0) {
                 renderInheritors()
                 const body = document.getElementById('inheritors-body')
@@ -1967,7 +1991,7 @@
 
         // Life Stories
         let currentStoryKey = ''
-        let savedStories = JSON.parse(localStorage.getItem('vault_stories') || '{}')
+        let savedStories = {}
 
         function openStoryEditor(key, title, prompt) {
             currentStoryKey = key
@@ -1988,7 +2012,7 @@
             if (!text) { showNotification('Please write something first!'); return }
 
             savedStories[currentStoryKey] = text
-            localStorage.setItem('vault_stories', JSON.stringify(savedStories))
+            setUserData('vault_stories', savedStories)
 
             const indicator = document.getElementById('indicator-' + currentStoryKey)
             if (indicator) indicator.style.display = 'block'
@@ -2003,7 +2027,7 @@
         }
 
         function loadStories() {
-            savedStories = JSON.parse(localStorage.getItem('vault_stories') || '{}')
+            savedStories = getUserData('vault_stories', {})
             const count = Object.keys(savedStories).length
             if (count > 0) {
                 const header = document.getElementById('stories-count-header')
@@ -2729,11 +2753,11 @@
         }
 
         function updateDashboardStats() {
-            // Count actual memories
-            const songs = JSON.parse(localStorage.getItem('spotify_music_data') || '[]').length
-            const contacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]').length
-            const stories = Object.keys(JSON.parse(localStorage.getItem('vault_stories') || '{}')).length
-            const inheritors = JSON.parse(localStorage.getItem('vault_inheritors') || '[]').length
+            // Count actual memories - use user-specific data
+            const songs = getUserData('spotify_music_data', []).length
+            const contacts = getUserData('vault_contacts', []).length
+            const stories = Object.keys(getUserData('vault_stories', {})).length
+            const inheritors = getUserData('vault_inheritors', []).length
             const photos = uploadedPhotos.length // Will be updated when photos load
             
             const totalMemories = songs + contacts + stories + photos
