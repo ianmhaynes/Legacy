@@ -1874,6 +1874,97 @@
             }
         }
 
+        // Inheritors Management
+        let savedInheritors = JSON.parse(localStorage.getItem('vault_inheritors') || '[]')
+
+        function showAddInheritorForm() {
+            const form = document.getElementById('add-inheritor-form')
+            form.style.display = form.style.display === 'none' ? 'block' : 'none'
+        }
+
+        function saveInheritor() {
+            const name = document.getElementById('inheritor-name').value.trim()
+            const email = document.getElementById('inheritor-email').value.trim()
+            const relation = document.getElementById('inheritor-relation').value
+
+            if (!name || !email || !relation) {
+                showNotification('Please fill in all required fields!')
+                return
+            }
+
+            const inheritor = {
+                id: Date.now(),
+                name: name,
+                email: email,
+                relation: relation,
+                note: document.getElementById('inheritor-note').value.trim(),
+                addedAt: new Date().toISOString()
+            }
+
+            savedInheritors.push(inheritor)
+            localStorage.setItem('vault_inheritors', JSON.stringify(savedInheritors))
+            
+            // Clear form
+            document.getElementById('inheritor-name').value = ''
+            document.getElementById('inheritor-email').value = ''
+            document.getElementById('inheritor-relation').value = ''
+            document.getElementById('inheritor-note').value = ''
+            document.getElementById('add-inheritor-form').style.display = 'none'
+
+            renderInheritors()
+            refreshDashboardStats()
+            showNotification(`👨‍👩‍👧‍👦 ${name} added as inheritor!`)
+        }
+
+        function deleteInheritor(id) {
+            if (!confirm('Remove this inheritor?')) return
+            savedInheritors = savedInheritors.filter(i => i.id !== id)
+            localStorage.setItem('vault_inheritors', JSON.stringify(savedInheritors))
+            renderInheritors()
+            refreshDashboardStats()
+            showNotification('Inheritor removed')
+        }
+
+        function renderInheritors() {
+            const list = document.getElementById('inheritors-list')
+            const empty = document.getElementById('inheritors-empty')
+            const header = document.getElementById('inheritors-count-header')
+
+            if (savedInheritors.length === 0) {
+                list.innerHTML = ''
+                empty.style.display = 'block'
+                header.textContent = 'Who will receive your legacy'
+                return
+            }
+
+            empty.style.display = 'none'
+            header.textContent = `${savedInheritors.length} inheritor${savedInheritors.length !== 1 ? 's' : ''} added`
+
+            list.innerHTML = savedInheritors.map(inheritor => `
+                <div style="background:white; border-radius:10px; padding:1.5rem; border:1px solid #e5e7eb; text-align:center;">
+                    <div style="width:80px; height:80px; background:linear-gradient(135deg, #ec4899, #d946ef); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; color:white; margin:0 auto 1rem; font-weight:700;">
+                        ${inheritor.name.charAt(0).toUpperCase()}
+                    </div>
+                    <h4 style="color:#1e3a8a; font-size:1.1rem; margin-bottom:0.3rem; font-weight:600;">${inheritor.name}</h4>
+                    <p style="color:#6b7280; font-size:0.85rem; margin-bottom:0.5rem;">${inheritor.relation}</p>
+                    <p style="color:#9ca3af; font-size:0.8rem; margin-bottom:0.5rem;">✉️ ${inheritor.email}</p>
+                    ${inheritor.note ? `<p style="color:#6b7280; font-size:0.8rem; font-style:italic; margin-bottom:0.5rem;">"${inheritor.note}"</p>` : ''}
+                    <button onclick="deleteInheritor(${inheritor.id})" style="background:#fee2e2; color:#dc2626; border:none; padding:0.4rem 0.8rem; border-radius:6px; font-size:0.8rem; cursor:pointer; margin-top:0.5rem;">Remove</button>
+                </div>
+            `).join('')
+        }
+
+        function loadInheritors() {
+            savedInheritors = JSON.parse(localStorage.getItem('vault_inheritors') || '[]')
+            if (savedInheritors.length > 0) {
+                renderInheritors()
+                const body = document.getElementById('inheritors-body')
+                const arrow = document.getElementById('inheritors-arrow')
+                if (body) body.style.display = 'block'
+                if (arrow) arrow.textContent = '▼'
+            }
+        }
+
         // Life Stories
         let currentStoryKey = ''
         let savedStories = JSON.parse(localStorage.getItem('vault_stories') || '{}')
@@ -2417,6 +2508,52 @@
 
                     </div>
                 </div>
+
+                <!-- Inheritors Card -->
+                <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #ec4899; margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem; cursor:pointer; user-select:none;"
+                         onclick="toggleSection('inheritors-body','inheritors-arrow')">
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <span id="inheritors-arrow" style="color:#ec4899; font-size:1rem;">▶</span>
+                            <div>
+                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">👨‍👩‍👧‍👦 Inheritors</h4>
+                                <p style="color:#6b7280; font-size:0.9rem;"><span id="inheritors-count-header">Who will receive your legacy</span></p>
+                            </div>
+                        </div>
+                        <button class="action-button" onclick="event.stopPropagation(); showAddInheritorForm()" style="background:#ec4899;">
+                            + Add Inheritor
+                        </button>
+                    </div>
+
+                    <div id="inheritors-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                        
+                        <div id="add-inheritor-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
+                            <h4 style="color:#1e3a8a; margin-bottom:1rem;">Add an Inheritor</h4>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
+                                <input id="inheritor-name" placeholder="Full Name *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                                <input id="inheritor-email" placeholder="Email Address *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                            </div>
+                            <select id="inheritor-relation" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem;">
+                                <option value="">Select Relationship *</option>
+                                <option value="Child">Child</option>
+                                <option value="Grandchild">Grandchild</option>
+                                <option value="Spouse">Spouse</option>
+                                <option value="Sibling">Sibling</option>
+                                <option value="Friend">Friend</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <textarea id="inheritor-note" placeholder="Special instructions or message..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:60px; resize:vertical;"></textarea>
+                            <div style="display:flex; gap:0.5rem;">
+                                <button class="action-button" onclick="saveInheritor()" style="background:#ec4899;">Save</button>
+                                <button class="action-button secondary" onclick="document.getElementById('add-inheritor-form').style.display='none'">Cancel</button>
+                            </div>
+                        </div>
+
+                        <div id="inheritors-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1rem;"></div>
+                        <p id="inheritors-empty" style="color:#9ca3af; text-align:center; padding:2rem;">No inheritors added yet. Add someone who will receive your digital legacy.</p>
+
+                    </div>
+                </div>
             </div>
 
             <!-- Founder Badge -->
@@ -2581,6 +2718,7 @@
                 loadSavedPhotos()
                 loadStories()
                 loadSavedMusic()
+                loadInheritors()
             }, 400);
         }
 
@@ -2595,6 +2733,7 @@
             const songs = JSON.parse(localStorage.getItem('spotify_music_data') || '[]').length
             const contacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]').length
             const stories = Object.keys(JSON.parse(localStorage.getItem('vault_stories') || '{}')).length
+            const inheritors = JSON.parse(localStorage.getItem('vault_inheritors') || '[]').length
             const photos = uploadedPhotos.length // Will be updated when photos load
             
             const totalMemories = songs + contacts + stories + photos
@@ -2606,7 +2745,7 @@
             document.getElementById('storage-used').textContent = storageGB + ' MB'
             
             document.getElementById('years-guarantee').textContent = user.plan === 'Forever' ? '100' : '50'
-            document.getElementById('inheritors-count').textContent = '0'
+            document.getElementById('inheritors-count').textContent = inheritors
         }
 
         // Update stats when data changes
