@@ -1088,91 +1088,90 @@
             }
         }
 
-        function handleSpotifyCSV(input) {
-            const file = input.files[0]
-            if (!file) return
+        async function fetchSpotifyData(accessToken) {
+            try {
+                showNotification('Extracting your Spotify library...')
 
-            showNotification('Processing your Spotify data...')
+                const headers = { 'Authorization': 'Bearer ' + accessToken }
 
-            const reader = new FileReader()
-            reader.onload = async function(e) {
-                try {
-                    const text = e.target.result
-                    const lines = text.split('\n')
-                    
-                    // Skip header row
-                    const dataLines = lines.slice(1).filter(line => line.trim())
-                    
-                    const tracks = []
-                    dataLines.forEach((line, index) => {
-                        // Parse CSV line (handle commas in quotes)
-                        const matches = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g)
-                        if (!matches || matches.length < 3) return
-                        
-                        const track = matches[0]?.replace(/"/g, '').trim()
-                        const artist = matches[1]?.replace(/"/g, '').trim()
-                        const album = matches[2]?.replace(/"/g, '').trim()
-                        
-                        if (track && artist) {
-                            tracks.push({
-                                name: track,
-                                artist: artist,
-                                album: album || 'Unknown Album',
-                                captured_at: new Date().toISOString()
-                            })
-                        }
+                // Fetch saved tracks (liked songs)
+                const allTracks = []
+                let offset = 0
+                const limit = 50
+
+                while (offset < 500) { // Get up to 500 saved songs
+                    const res = await fetch(`https://api.spotify.com/v1/me/tracks?limit=${limit}&offset=${offset}`, { headers })
+                    const data = await res.json()
+
+                    if (!data.items || data.items.length === 0) break
+
+                    data.items.forEach(item => {
+                        const track = item.track
+                        // Convert to simple CSV-like format (Track, Artist, Album)
+                        allTracks.push({
+                            name: track.name,
+                            artist: track.artists.map(a => a.name).join(', '),
+                            album: track.album.name,
+                            captured_at: new Date().toISOString(),
+                            added_at: item.added_at
+                        })
                     })
 
-                    if (tracks.length === 0) {
-                        showNotification('⚠️ No valid tracks found in CSV. Check format: Track,Artist,Album')
-                        return
-                    }
-
-                    console.log('Parsed', tracks.length, 'tracks from CSV')
-
-                    // Store locally
-                    localStorage.setItem('spotify_music_data', JSON.stringify(tracks))
-
-                    // Save to Supabase
-                    if (user && user.email) {
-                        try {
-                            const { data, error } = await supabaseClient
-                                .from('legacy_content')
-                                .upsert({
-                                    user_email: user.email,
-                                    content_type: 'spotify_music',
-                                    data: {
-                                        tracks: tracks,
-                                        total_count: tracks.length,
-                                        captured_at: new Date().toISOString()
-                                    },
-                                    updated_at: new Date().toISOString()
-                                })
-                            
-                            if (error) {
-                                console.error('Supabase error:', error)
-                                showNotification(`⚠️ ${tracks.length} songs saved locally but could not sync to cloud`)
-                            } else {
-                                console.log('Saved to Supabase successfully!')
-                                showNotification(`🎵 ${tracks.length} songs saved to your vault!`)
-                            }
-                        } catch (dbError) {
-                            console.error('Database error:', dbError)
-                            showNotification(`⚠️ ${tracks.length} songs saved locally but could not sync to cloud`)
-                        }
-                    } else {
-                        showNotification(`🎵 ${tracks.length} songs loaded!`)
-                    }
-
-                    // Display tracks
-                    displayMusicList(tracks)
-
-                } catch (error) {
-                    console.error('CSV parsing error:', error)
-                    showNotification('Error reading CSV file. Format should be: Track,Artist,Album')
+                    offset += limit
+                    if (data.items.length < limit) break
                 }
+
+                console.log('Extracted', allTracks.length, 'tracks from Spotify')
+
+                if (allTracks.length === 0) {
+                    showNotification('⚠️ No saved songs found. Save some songs to your Spotify library!')
+                    return
+                }
+
+                // Store locally
+                localStorage.setItem('spotify_music_data', JSON.stringify(allTracks))
+
+                // Save to Supabase
+                if (user && user.email) {
+                    try {
+                        console.log('Saving to Supabase for user:', user.email)
+                        const { data, error } = await supabaseClient
+                            .from('legacy_content')
+                            .upsert({
+                                user_email: user.email,
+                                content_type: 'spotify_music',
+                                data: {
+                                    tracks: allTracks,
+                                    total_count: allTracks.length,
+                                    captured_at: new Date().toISOString()
+                                },
+                                updated_at: new Date().toISOString()
+                            }, {
+                                onConflict: 'user_email,content_type'
+                            })
+                        
+                        if (error) {
+                            console.error('Supabase save error:', error)
+                            showNotification(`⚠️ ${allTracks.length} songs saved locally but sync failed: ${error.message}`)
+                        } else {
+                            console.log('Successfully saved to Supabase!')
+                            showNotification(`🎵 ${allTracks.length} songs preserved to your vault!`)
+                        }
+                    } catch (dbError) {
+                        console.error('Database error:', dbError)
+                        showNotification(`⚠️ ${allTracks.length} songs saved locally but sync failed`)
+                    }
+                } else {
+                    showNotification(`🎵 ${allTracks.length} songs loaded!`)
+                }
+
+                // Display tracks
+                displayMusicList(allTracks)
+
+            } catch (error) {
+                showNotification('Error loading Spotify data. Please try again.')
+                console.error('Spotify fetch error:', error)
             }
-            reader.readAsText(file)
         }
 
         function displayMusicList(tracks) {
@@ -1191,9 +1190,9 @@
                             <p style="color:#6b7280;">${tracks.length} songs preserved • ${captureDate}</p>
                         </div>
                     </div>
-                    <label for="spotify-csv-upload" class="action-button secondary" onclick="event.stopPropagation()" style="cursor:pointer; display:inline-block;">
-                        🔄 Update CSV
-                    </label>
+                    <button class="action-button secondary" onclick="event.stopPropagation(); reconnectSpotify()">
+                        🔄 Update
+                    </button>
                 </div>
 
                 <div id="spotify-tracks-body" style="background:white; border-radius:10px; border:1px solid #e5e7eb; max-height:600px; overflow-y:auto; display:none;">
@@ -1218,17 +1217,106 @@
             container.innerHTML = html
         }
 
-        // Load saved music on startup
-        function loadSavedMusic() {
+        async function getValidSpotifyToken() {
+            const token = localStorage.getItem('spotify_token')
+            const expiresAt = localStorage.getItem('spotify_token_expires')
+            const refreshToken = localStorage.getItem('spotify_refresh_token')
+
+            // If token is still valid, return it
+            if (token && expiresAt && Date.now() < parseInt(expiresAt)) {
+                return token
+            }
+
+            // If we have a refresh token, use it to get new access token
+            if (refreshToken) {
+                console.log('Access token expired. Refreshing...')
+                try {
+                    const response = await fetch('https://accounts.spotify.com/api/token', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({
+                            grant_type: 'refresh_token',
+                            refresh_token: refreshToken,
+                            client_id: SPOTIFY_CLIENT_ID
+                        })
+                    })
+
+                    const data = await response.json()
+
+                    if (data.access_token) {
+                        localStorage.setItem('spotify_token', data.access_token)
+                        const newExpiresAt = Date.now() + (data.expires_in * 1000)
+                        localStorage.setItem('spotify_token_expires', newExpiresAt)
+                        
+                        if (data.refresh_token) {
+                            localStorage.setItem('spotify_refresh_token', data.refresh_token)
+                        }
+                        
+                        console.log('Token refreshed successfully!')
+                        return data.access_token
+                    }
+                } catch (error) {
+                    console.error('Token refresh failed:', error)
+                }
+            }
+
+            // No valid token available
+            console.log('No valid Spotify token. User needs to reconnect.')
+            return null
+        }
+
+        function reconnectSpotify() {
+            localStorage.removeItem('spotify_token')
+            localStorage.removeItem('spotify_refresh_token')
+            localStorage.removeItem('spotify_token_expires')
+            localStorage.removeItem('spotify_music_data')
+            connectSpotify()
+        }
+
+        // Load saved music on startup and auto-refresh if old
+        async function loadSavedMusic() {
             const musicData = localStorage.getItem('spotify_music_data')
+            
             if (musicData) {
                 try {
                     const tracks = JSON.parse(musicData)
                     if (tracks.length > 0) {
                         displayMusicList(tracks)
+                        
+                        // Check if data is older than 30 days
+                        const capturedAt = tracks[0]?.captured_at
+                        if (capturedAt) {
+                            const daysSinceCapture = Math.floor((Date.now() - new Date(capturedAt)) / (1000 * 60 * 60 * 24))
+                            
+                            if (daysSinceCapture > 30) {
+                                console.log('Music data is', daysSinceCapture, 'days old. Auto-refreshing...')
+                                showNotification('🔄 Updating your music library...')
+                                
+                                // Get valid token (will auto-refresh if needed)
+                                const validToken = await getValidSpotifyToken()
+                                if (validToken) {
+                                    setTimeout(() => {
+                                        fetchSpotifyData(validToken)
+                                    }, 2000)
+                                } else {
+                                    showNotification('⚠️ Spotify disconnected. Please reconnect to update.')
+                                }
+                            } else {
+                                console.log('Music data is', daysSinceCapture, 'days old. No refresh needed.')
+                            }
+                        }
                     }
                 } catch(e) {
                     console.error('Error loading saved music:', e)
+                }
+            } else {
+                // No music data but check if we have a token
+                const validToken = await getValidSpotifyToken()
+                if (validToken) {
+                    console.log('No music data found but Spotify is connected. Auto-fetching...')
+                    setTimeout(() => {
+                        fetchSpotifyData(validToken)
+                    }, 2000)
                 }
             }
         }
@@ -1274,8 +1362,18 @@
                 const data = await response.json()
 
                 if (data.access_token) {
+                    // Store both access token and refresh token
                     localStorage.setItem('spotify_token', data.access_token)
+                    if (data.refresh_token) {
+                        localStorage.setItem('spotify_refresh_token', data.refresh_token)
+                    }
+                    
+                    // Store token expiration time
+                    const expiresAt = Date.now() + (data.expires_in * 1000)
+                    localStorage.setItem('spotify_token_expires', expiresAt)
+                    
                     localStorage.removeItem('spotify_code_verifier')
+                    
                     await fetchSpotifyData(data.access_token)
                     setTimeout(() => showSection('dashboard'), 500)
                 } else {
@@ -2012,12 +2110,11 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
                         <div>
                             <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">🎵 Your Music Library</h4>
-                            <p style="color:#6b7280;">Upload your Spotify data CSV to preserve your music</p>
+                            <p style="color:#6b7280;">Automatically preserve your Spotify music collection</p>
                         </div>
-                        <label for="spotify-csv-upload" class="action-button" style="background:#1db954; cursor:pointer; display:inline-block;">
-                            📁 Upload CSV
-                        </label>
-                        <input type="file" id="spotify-csv-upload" accept=".csv" style="display:none;" onchange="handleSpotifyCSV(this)">
+                        <button class="action-button" onclick="connectSpotify()" style="background:#1db954;">
+                            Connect Spotify
+                        </button>
                     </div>
                 </div>
 
