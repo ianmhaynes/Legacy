@@ -1989,6 +1989,107 @@
             }
         }
 
+        // Share Modal Functions
+        function openShareModal() {
+            if (!user || !user.email) {
+                showNotification('Please log in first!')
+                showLogin()
+                return
+            }
+
+            // Update modal with user info
+            document.getElementById('share-user-initial').textContent = user.name.charAt(0).toUpperCase()
+            document.getElementById('share-user-name').textContent = user.name + "'s Legacy Vault"
+            
+            // Calculate stats
+            const songs = getUserData('spotify_music_data', []).length
+            const contacts = getUserData('vault_contacts', []).length
+            const stories = Object.keys(getUserData('vault_stories', {})).length
+            const photos = uploadedPhotos.length
+            const total = songs + contacts + stories + photos
+            
+            document.getElementById('share-stats').textContent = `${total} memories • ${songs} songs • ${contacts} contacts • ${stories} stories`
+            
+            document.getElementById('share-modal').classList.add('active')
+        }
+
+        function closeShareModal() {
+            document.getElementById('share-modal').classList.remove('active')
+        }
+
+        function generateShareLink() {
+            if (!user || !user.email) return
+
+            const shareCode = btoa(user.email).replace(/=/g, '').substring(0, 12)
+            const shareUrl = window.location.origin + window.location.pathname + '?share=' + shareCode
+            
+            setUserData('share_code', shareCode)
+            
+            document.getElementById('share-modal-link').value = shareUrl
+            document.getElementById('copy-btn').disabled = false
+            document.getElementById('copy-btn').style.background = '#a855f7'
+            document.getElementById('copy-btn').style.color = 'white'
+            document.getElementById('copy-btn').style.cursor = 'pointer'
+            
+            showNotification('📤 Share link generated!')
+        }
+
+        function copyShareLinkModal() {
+            const input = document.getElementById('share-modal-link')
+            input.select()
+            input.setSelectionRange(0, 99999) // For mobile
+            document.execCommand('copy')
+            
+            const btn = document.getElementById('copy-btn')
+            btn.textContent = '✓ Copied!'
+            setTimeout(() => {
+                btn.textContent = 'Copy'
+            }, 2000)
+            
+            showNotification('✅ Link copied to clipboard!')
+        }
+
+        // Share with Friends
+        function shareVault() {
+            if (!user || !user.email) {
+                showNotification('Please log in first!')
+                return
+            }
+
+            // Generate unique share code based on user email
+            const shareCode = btoa(user.email).replace(/=/g, '').substring(0, 12)
+            const shareUrl = window.location.origin + window.location.pathname + '?share=' + shareCode
+            
+            // Store share code
+            setUserData('share_code', shareCode)
+            
+            // Show share link
+            document.getElementById('share-link-input').value = shareUrl
+            document.getElementById('share-link-box').style.display = 'block'
+            
+            showNotification('📤 Share link generated!')
+        }
+
+        function copyShareLink() {
+            const input = document.getElementById('share-link-input')
+            input.select()
+            document.execCommand('copy')
+            showNotification('✅ Link copied to clipboard!')
+        }
+
+        // Check if viewing a shared vault
+        function checkSharedVault() {
+            const urlParams = new URLSearchParams(window.location.search)
+            const shareCode = urlParams.get('share')
+            
+            if (shareCode) {
+                // Find user by share code (in real app, query Supabase)
+                // For now, show a preview message
+                showNotification('👀 Viewing a shared vault...')
+                // You'd load that user's public data here
+            }
+        }
+
         // Life Stories
         let currentStoryKey = ''
         let savedStories = {}
@@ -2069,6 +2170,7 @@
                 <li><a href="#home" onclick="showSection('home')">Home</a></li>
                 <li><a href="#how" onclick="scrollToSection('how-it-works')">How It Works</a></li>
                 <li><a href="#pricing" onclick="scrollToSection('pricing')">Pricing</a></li>
+                <li id="nav-share" class="hidden"><a href="#" onclick="openShareModal()">🔗 Share</a></li>
                 <li id="nav-dashboard" class="hidden"><a href="#dashboard" onclick="showSection('dashboard')">My Vault</a></li>
                 <li id="nav-login"><a href="#" onclick="showLogin()" class="btn-nav">Start Your Legacy</a></li>
                 <li id="nav-logout" class="hidden"><a href="#" onclick="logout()">Logout</a></li>
@@ -2578,6 +2680,25 @@
 
                     </div>
                 </div>
+
+                <!-- Share with Friends Card -->
+                <div style="background:linear-gradient(135deg, #a855f7 0%, #ec4899 100%); border-radius:10px; padding:2rem; margin-bottom:1rem; color:white; text-align:center;">
+                    <div style="font-size:2.5rem; margin-bottom:0.5rem;">🔗</div>
+                    <h4 style="font-size:1.5rem; margin-bottom:0.5rem; font-weight:600;">Share Your Legacy</h4>
+                    <p style="opacity:0.9; margin-bottom:1.5rem; font-size:0.95rem;">Show friends & family what you're preserving</p>
+                    <button class="action-button" onclick="shareVault()" style="background:white; color:#a855f7; font-weight:600;">
+                        📤 Generate Share Link
+                    </button>
+                    
+                    <div id="share-link-box" style="display:none; margin-top:1.5rem; background:rgba(255,255,255,0.2); border-radius:8px; padding:1rem;">
+                        <p style="font-size:0.85rem; margin-bottom:0.5rem; opacity:0.9;">Your shareable link:</p>
+                        <div style="display:flex; gap:0.5rem; align-items:center;">
+                            <input id="share-link-input" readonly style="flex:1; padding:0.75rem; border-radius:6px; border:none; background:white; color:#1e3a8a; font-size:0.85rem;" value="">
+                            <button onclick="copyShareLink()" style="background:white; color:#a855f7; border:none; padding:0.75rem 1.5rem; border-radius:6px; font-weight:600; cursor:pointer;">Copy</button>
+                        </div>
+                        <p style="font-size:0.75rem; margin-top:0.75rem; opacity:0.8;">⚠️ Anyone with this link can view your vault (but not edit it)</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Founder Badge -->
@@ -2609,6 +2730,55 @@
                     <button type="button" class="btn-secondary" onclick="closeLogin()">Cancel</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="modal">
+        <div class="modal-content" style="max-width:600px;">
+            <div style="text-align:center; margin-bottom:2rem;">
+                <div style="font-size:4rem; margin-bottom:1rem;">🔗</div>
+                <h2 style="margin-bottom:0.5rem;">Share Your Legacy</h2>
+                <p style="color:#6b7280;">Show friends & family what you're preserving</p>
+            </div>
+
+            <div style="background:linear-gradient(135deg, #a855f7 0%, #ec4899 100%); border-radius:12px; padding:2rem; margin-bottom:1.5rem;">
+                <div style="background:rgba(255,255,255,0.95); border-radius:8px; padding:1.5rem; margin-bottom:1rem;">
+                    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+                        <div style="width:60px; height:60px; background:linear-gradient(135deg, #a855f7, #ec4899); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:1.5rem; font-weight:700; flex-shrink:0;">
+                            <span id="share-user-initial">?</span>
+                        </div>
+                        <div style="flex:1;">
+                            <h3 style="color:#1e3a8a; margin-bottom:0.25rem; font-size:1.2rem;" id="share-user-name">Your Vault</h3>
+                            <p style="color:#6b7280; font-size:0.9rem;" id="share-stats">0 memories preserved</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; gap:0.5rem;">
+                        <input id="share-modal-link" readonly 
+                            style="flex:1; padding:0.85rem; border-radius:6px; border:2px solid #e5e7eb; font-size:0.9rem; color:#1e3a8a; font-weight:500;" 
+                            value="Click Generate Link below">
+                        <button onclick="copyShareLinkModal()" id="copy-btn" disabled
+                            style="background:#e5e7eb; color:#9ca3af; border:none; padding:0.85rem 1.5rem; border-radius:6px; font-weight:600; cursor:not-allowed;">
+                            Copy
+                        </button>
+                    </div>
+                </div>
+
+                <button onclick="generateShareLink()" class="btn-primary" style="width:100%; background:white; color:#a855f7;">
+                    📤 Generate Share Link
+                </button>
+            </div>
+
+            <div style="background:#fef3c7; border:1px solid #fbbf24; border-radius:8px; padding:1rem; margin-bottom:1.5rem;">
+                <p style="color:#92400e; font-size:0.85rem; margin:0;">
+                    ⚠️ <strong>Privacy Notice:</strong> Anyone with this link can view your vault (but not edit it). Only share with people you trust!
+                </p>
+            </div>
+
+            <div style="text-align:center;">
+                <button onclick="closeShareModal()" class="btn-secondary" style="width:100%;">Close</button>
+            </div>
         </div>
     </div>
 
@@ -2652,6 +2822,8 @@
         let user = JSON.parse(localStorage.getItem('user') || 'null');
 
         document.addEventListener('DOMContentLoaded', function() {
+            checkSharedVault()
+            
             const urlParams = new URLSearchParams(window.location.search)
             const spotifyCode = urlParams.get('code')
             const spotifyError = urlParams.get('error')
@@ -2734,6 +2906,7 @@
             document.getElementById('nav-login').classList.add('hidden');
             document.getElementById('nav-logout').classList.remove('hidden');
             document.getElementById('nav-dashboard').classList.remove('hidden');
+            document.getElementById('nav-share').classList.remove('hidden');
             document.getElementById('user-name').textContent = user.name;
             updateDashboardStats();
             
@@ -2750,6 +2923,7 @@
             document.getElementById('nav-login').classList.remove('hidden');
             document.getElementById('nav-logout').classList.add('hidden');
             document.getElementById('nav-dashboard').classList.add('hidden');
+            document.getElementById('nav-share').classList.add('hidden');
         }
 
         function updateDashboardStats() {
