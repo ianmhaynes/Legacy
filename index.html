@@ -1270,50 +1270,120 @@
             connectSpotify()
         }
 
-        // Load saved music on startup and auto-refresh if old
-        async function loadSavedMusic() {
+        function handleMusicCSV(input) {
+            const file = input.files[0]
+            if (!file) return
+
+            showNotification('Processing CSV...')
+
+            const reader = new FileReader()
+            reader.onload = function(e) {
+                try {
+                    const text = e.target.result
+                    const lines = text.split('\n').filter(l => l.trim())
+                    
+                    // Skip header row
+                    const dataLines = lines.slice(1)
+                    
+                    const songs = []
+                    dataLines.forEach(line => {
+                        // Parse CSV (handle commas in quotes)
+                        const matches = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g)
+                        if (!matches || matches.length < 2) return
+                        
+                        const track = matches[0]?.replace(/"/g, '').trim()
+                        const artist = matches[1]?.replace(/"/g, '').trim()
+                        const album = matches[2]?.replace(/"/g, '').trim() || 'Unknown Album'
+                        
+                        if (track && artist) {
+                            songs.push({
+                                name: track,
+                                artist: artist,
+                                album: album,
+                                captured_at: new Date().toISOString()
+                            })
+                        }
+                    })
+
+                    if (songs.length === 0) {
+                        showNotification('⚠️ No songs found in CSV. Check format!')
+                        return
+                    }
+
+                    // Save
+                    localStorage.setItem('spotify_music_data', JSON.stringify(songs))
+                    displayMusicList(songs)
+                    showNotification(`🎵 ${songs.length} songs imported!`)
+
+                    // Save to Supabase
+                    if (user && user.email) {
+                        supabaseClient.from('legacy_content').upsert({
+                            user_email: user.email,
+                            content_type: 'spotify_music',
+                            data: { tracks: songs, total_count: songs.length, captured_at: new Date().toISOString() },
+                            updated_at: new Date().toISOString()
+                        }, { onConflict: 'user_email,content_type' }).then(() => {
+                            console.log('Saved to Supabase')
+                        }).catch(err => {
+                            console.error('Supabase error:', err)
+                        })
+                    }
+
+                } catch (error) {
+                    console.error('CSV error:', error)
+                    showNotification('Error reading CSV. Format: Track,Artist,Album')
+                }
+            }
+            reader.readAsText(file)
+        }
+
+        function displayMusicList(tracks) {
+            const container = document.getElementById('spotify-card')
+            if (!container) return
+
+            let html = `
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
+                    <div>
+                        <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">🎵 Your Music Library</h4>
+                        <p style="color:#6b7280;">${tracks.length} song${tracks.length !== 1 ? 's' : ''} preserved</p>
+                    </div>
+                    <label for="csv-upload" class="action-button" style="background:#1db954; cursor:pointer; display:inline-block;">
+                        🔄 Update CSV
+                    </label>
+                </div>
+
+                <div style="background:white; border-radius:10px; border:1px solid #e5e7eb; max-height:400px; overflow-y:auto;">
+            `
+
+            tracks.forEach((track, index) => {
+                html += `
+                    <div style="display:flex; align-items:center; padding:1rem; border-bottom:1px solid #f3f4f6; gap:1rem; transition:background 0.2s;" 
+                         onmouseover="this.style.background='#f9fafb'" 
+                         onmouseout="this.style.background='white'">
+                        <div style="color:#9ca3af; font-size:0.9rem; width:30px; text-align:right; flex-shrink:0;">${index + 1}</div>
+                        <div style="width:50px; height:50px; background:#1db954; border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; color:white; font-size:1.2rem;">🎵</div>
+                        <div style="flex:1; min-width:0;">
+                            <div style="font-weight:600; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${track.name}</div>
+                            <div style="color:#6b7280; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${track.artist}${track.album ? ' • ' + track.album : ''}</div>
+                        </div>
+                    </div>
+                `
+            })
+
+            html += '</div>'
+            container.innerHTML = html
+        }
+
+        function loadSavedMusic() {
             const musicData = localStorage.getItem('spotify_music_data')
-            
             if (musicData) {
                 try {
                     const tracks = JSON.parse(musicData)
                     if (tracks.length > 0) {
                         displayMusicList(tracks)
-                        
-                        // Check if data is older than 30 days
-                        const capturedAt = tracks[0]?.captured_at
-                        if (capturedAt) {
-                            const daysSinceCapture = Math.floor((Date.now() - new Date(capturedAt)) / (1000 * 60 * 60 * 24))
-                            
-                            if (daysSinceCapture > 30) {
-                                console.log('Music data is', daysSinceCapture, 'days old. Auto-refreshing...')
-                                showNotification('🔄 Updating your music library...')
-                                
-                                // Get valid token (will auto-refresh if needed)
-                                const validToken = await getValidSpotifyToken()
-                                if (validToken) {
-                                    setTimeout(() => {
-                                        fetchSpotifyData(validToken)
-                                    }, 2000)
-                                } else {
-                                    showNotification('⚠️ Spotify disconnected. Please reconnect to update.')
-                                }
-                            } else {
-                                console.log('Music data is', daysSinceCapture, 'days old. No refresh needed.')
-                            }
-                        }
                     }
                 } catch(e) {
                     console.error('Error loading saved music:', e)
-                }
-            } else {
-                // No music data but check if we have a token
-                const validToken = await getValidSpotifyToken()
-                if (validToken) {
-                    console.log('No music data found but Spotify is connected. Auto-fetching...')
-                    setTimeout(() => {
-                        fetchSpotifyData(validToken)
-                    }, 2000)
                 }
             }
         }
@@ -2107,11 +2177,20 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
                         <div>
                             <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">🎵 Your Music Library</h4>
-                            <p style="color:#6b7280;">Automatically preserve your Spotify music collection</p>
+                            <p style="color:#6b7280;">Upload a CSV file with your songs (Track, Artist, Album)</p>
                         </div>
-                        <button class="action-button" onclick="connectSpotify()" style="background:#1db954;">
-                            Connect Spotify
-                        </button>
+                        <label for="csv-upload" class="action-button" style="background:#1db954; cursor:pointer; display:inline-block;">
+                            📁 Upload CSV
+                        </label>
+                        <input type="file" id="csv-upload" accept=".csv" style="display:none;" onchange="handleMusicCSV(this)">
+                    </div>
+                    <div style="margin-top:1rem; padding:1rem; background:white; border-radius:8px; border:1px solid #e5e7eb;">
+                        <p style="color:#6b7280; font-size:0.85rem; margin-bottom:0.5rem;">CSV format (first row should be headers):</p>
+                        <code style="background:#f3f4f6; padding:0.5rem; border-radius:4px; display:block; font-size:0.8rem;">
+                            Track,Artist,Album<br>
+                            Dancing Queen,ABBA,Arrival<br>
+                            Bohemian Rhapsody,Queen,A Night at the Opera
+                        </code>
                     </div>
                 </div>
 
