@@ -921,7 +921,7 @@
     <script>
         const SPOTIFY_CLIENT_ID = '26e87baf40af41e18e088c0359a30537'
         const SPOTIFY_REDIRECT_URI = 'https://www.mydatalegacy.co'
-        const SPOTIFY_SCOPES = 'user-library-read playlist-read-private user-read-email'
+        const SPOTIFY_SCOPES = 'playlist-read-private playlist-read-collaborative user-library-read user-read-email'
 
         // PKCE Helper Functions
         function generateRandomString(length) {
@@ -1090,46 +1090,70 @@
 
         async function fetchSpotifyData(accessToken) {
             try {
-                showNotification('Extracting your Spotify library...')
+                showNotification('Extracting your Spotify playlists...')
 
                 const headers = { 'Authorization': 'Bearer ' + accessToken }
 
-                // Fetch saved tracks (liked songs)
-                const allTracks = []
+                // Fetch all playlists
+                const allTracks = new Map() // Use Map to avoid duplicates
                 let offset = 0
                 const limit = 50
 
-                while (offset < 500) { // Get up to 500 saved songs
-                    const res = await fetch(`https://api.spotify.com/v1/me/tracks?limit=${limit}&offset=${offset}`, { headers })
+                // First get all playlists
+                const playlists = []
+                while (offset < 200) { // Get up to 200 playlists
+                    const res = await fetch(`https://api.spotify.com/v1/me/playlists?limit=${limit}&offset=${offset}`, { headers })
                     const data = await res.json()
 
                     if (!data.items || data.items.length === 0) break
 
-                    data.items.forEach(item => {
-                        const track = item.track
-                        // Convert to simple CSV-like format (Track, Artist, Album)
-                        allTracks.push({
-                            name: track.name,
-                            artist: track.artists.map(a => a.name).join(', '),
-                            album: track.album.name,
-                            captured_at: new Date().toISOString(),
-                            added_at: item.added_at
-                        })
-                    })
-
+                    playlists.push(...data.items)
                     offset += limit
                     if (data.items.length < limit) break
                 }
 
-                console.log('Extracted', allTracks.length, 'tracks from Spotify')
+                console.log('Found', playlists.length, 'playlists. Extracting tracks...')
 
-                if (allTracks.length === 0) {
-                    showNotification('⚠️ No saved songs found. Save some songs to your Spotify library!')
+                // Now get tracks from each playlist
+                for (const playlist of playlists) {
+                    try {
+                        let trackOffset = 0
+                        while (trackOffset < 500) { // Max 500 tracks per playlist
+                            const res = await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks?limit=50&offset=${trackOffset}`, { headers })
+                            const data = await res.json()
+
+                            if (!data.items || data.items.length === 0) break
+
+                            data.items.forEach(item => {
+                                if (item.track && item.track.id && !allTracks.has(item.track.id)) {
+                                    allTracks.set(item.track.id, {
+                                        name: item.track.name,
+                                        artist: item.track.artists.map(a => a.name).join(', '),
+                                        album: item.track.album.name,
+                                        captured_at: new Date().toISOString(),
+                                        playlist: playlist.name
+                                    })
+                                }
+                            })
+
+                            trackOffset += 50
+                            if (data.items.length < 50) break
+                        }
+                    } catch (err) {
+                        console.error('Error fetching playlist', playlist.name, err)
+                    }
+                }
+
+                const tracks = Array.from(allTracks.values())
+                console.log('Extracted', tracks.length, 'unique tracks from', playlists.length, 'playlists')
+
+                if (tracks.length === 0) {
+                    showNotification('⚠️ No playlists or songs found. Create some playlists in Spotify!')
                     return
                 }
 
                 // Store locally
-                localStorage.setItem('spotify_music_data', JSON.stringify(allTracks))
+                localStorage.setItem('spotify_music_data', JSON.stringify(tracks))
 
                 // Save to Supabase
                 if (user && user.email) {
@@ -1141,8 +1165,9 @@
                                 user_email: user.email,
                                 content_type: 'spotify_music',
                                 data: {
-                                    tracks: allTracks,
-                                    total_count: allTracks.length,
+                                    tracks: tracks,
+                                    total_count: tracks.length,
+                                    playlists_count: playlists.length,
                                     captured_at: new Date().toISOString()
                                 },
                                 updated_at: new Date().toISOString()
@@ -1152,21 +1177,21 @@
                         
                         if (error) {
                             console.error('Supabase save error:', error)
-                            showNotification(`⚠️ ${allTracks.length} songs saved locally but sync failed: ${error.message}`)
+                            showNotification(`⚠️ ${tracks.length} songs saved locally but sync failed: ${error.message}`)
                         } else {
                             console.log('Successfully saved to Supabase!')
-                            showNotification(`🎵 ${allTracks.length} songs preserved to your vault!`)
+                            showNotification(`🎵 ${tracks.length} songs from ${playlists.length} playlists preserved!`)
                         }
                     } catch (dbError) {
                         console.error('Database error:', dbError)
-                        showNotification(`⚠️ ${allTracks.length} songs saved locally but sync failed`)
+                        showNotification(`⚠️ ${tracks.length} songs saved locally but sync failed`)
                     }
                 } else {
-                    showNotification(`🎵 ${allTracks.length} songs loaded!`)
+                    showNotification(`🎵 ${tracks.length} songs loaded!`)
                 }
 
                 // Display tracks
-                displayMusicList(allTracks)
+                displayMusicList(tracks)
 
             } catch (error) {
                 showNotification('Error loading Spotify data. Please try again.')
