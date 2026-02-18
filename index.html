@@ -12,246 +12,229 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.7;
-            color: #1a1a1a;
-            background: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
         }
 
         /* Navigation */
         nav {
-            background: rgba(255, 255, 255, 0.98);
+            background: rgba(251, 251, 253, 0.8);
             backdrop-filter: saturate(180%) blur(20px);
-            color: #1a1a1a;
+            color: #1d1d1f;
             padding: 0;
-            box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.1);
             position: sticky;
             top: 0;
             z-index: 100;
         }
 
         nav .container {
-            max-width: 1400px;
+            max-width: 980px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 3rem;
-            height: 80px;
+            padding: 0 1.5rem;
+            height: 44px;
         }
 
         nav .logo {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            font-size: 1.5rem;
-            font-weight: 300;
-            color: #1a1a1a;
-            letter-spacing: -0.02em;
+            gap: 0.5rem;
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: #1d1d1f;
         }
 
         nav .nav-links {
             display: flex;
-            gap: 3rem;
+            gap: 2rem;
             list-style: none;
             align-items: center;
         }
 
         nav a {
-            color: #1a1a1a;
+            color: #1d1d1f;
             text-decoration: none;
             font-weight: 400;
-            font-size: 0.95rem;
+            font-size: 0.875rem;
             transition: opacity 0.3s;
-            letter-spacing: 0.01em;
         }
 
         nav a:hover {
-            opacity: 0.5;
+            opacity: 0.6;
         }
 
         .btn-nav {
-            background: #1a1a1a;
+            background: #0071e3;
             color: white;
-            padding: 0.75rem 1.75rem;
-            border-radius: 2px;
+            padding: 0.4rem 1rem;
+            border-radius: 980px;
             font-weight: 400;
         }
 
         .btn-nav:hover {
-            opacity: 0.85;
+            opacity: 0.9;
         }
 
         /* Hero Section */
         .hero {
-            background: #ffffff;
-            color: #1a1a1a;
-            padding: 10rem 3rem 8rem;
-            text-align: left;
+            background: #fbfbfd;
+            color: #1d1d1f;
+            padding: 8rem 2rem 6rem;
+            text-align: center;
             position: relative;
-            border-bottom: 1px solid #e8e8e8;
         }
 
         .hero-content {
-            max-width: 1400px;
+            max-width: 980px;
             margin: 0 auto;
             position: relative;
         }
 
         .hero h1 {
-            font-size: 5.5rem;
-            margin-bottom: 2rem;
-            font-weight: 300;
-            line-height: 1.15;
-            letter-spacing: -0.03em;
-            color: #1a1a1a;
-            max-width: 900px;
-        }
-
-        .hero h1 strong {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
             font-weight: 600;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            color: #1d1d1f;
         }
 
         .hero .subtitle {
-            font-size: 1.5rem;
-            margin-bottom: 3rem;
-            font-weight: 300;
-            color: #666666;
-            line-height: 1.6;
-            max-width: 700px;
+            font-size: 1.75rem;
+            margin-bottom: 2rem;
+            font-weight: 400;
+            color: #6e6e73;
+            line-height: 1.4;
         }
 
         .hero p {
-            font-size: 1.1rem;
+            font-size: 1.25rem;
             margin-bottom: 3rem;
-            color: #666666;
-            font-weight: 300;
-            line-height: 1.8;
-            max-width: 650px;
+            color: #86868b;
+            font-weight: 400;
+            line-height: 1.5;
         }
 
         .cta-buttons {
             display: flex;
-            gap: 1.5rem;
+            gap: 1rem;
+            justify-content: center;
             flex-wrap: wrap;
         }
 
         .cta-button {
-            background: #1a1a1a;
+            background: #0071e3;
             color: white;
-            padding: 1.1rem 2.5rem;
+            padding: 0.85rem 1.5rem;
             border: none;
-            border-radius: 2px;
-            font-size: 1rem;
+            border-radius: 980px;
+            font-size: 1.05rem;
             font-weight: 400;
             cursor: pointer;
             transition: all 0.3s;
             display: inline-block;
             text-decoration: none;
-            letter-spacing: 0.02em;
+            box-shadow: none;
         }
 
         .cta-button:hover {
-            background: #333333;
+            background: #0077ed;
+            transform: scale(1.02);
         }
 
         .cta-button.secondary {
             background: transparent;
-            color: #1a1a1a;
-            border: 1px solid #d0d0d0;
+            color: #0071e3;
+            border: none;
         }
 
         .cta-button.secondary:hover {
-            border-color: #1a1a1a;
+            color: #0077ed;
             background: transparent;
         }
 
         /* Trust Indicators */
         .trust-bar {
-            background: #fafafa;
-            padding: 2rem 3rem;
+            background: white;
+            padding: 1.5rem 2rem;
             text-align: center;
-            border-bottom: 1px solid #e8e8e8;
+            border-bottom: 1px solid #d2d2d7;
         }
 
         .trust-bar p {
-            color: #666666;
-            font-size: 0.95rem;
-            font-weight: 300;
-            letter-spacing: 0.02em;
+            color: #86868b;
+            font-size: 0.875rem;
+            font-weight: 400;
         }
 
         .trust-bar strong {
-            color: #1a1a1a;
+            color: #1d1d1f;
             font-weight: 500;
         }
 
         /* Container */
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 3rem;
+            padding: 2rem;
         }
 
         /* Problem Section */
         .problem-section {
-            padding: 10rem 3rem;
-            background: #fafafa;
-            border-bottom: 1px solid #e8e8e8;
+            padding: 6rem 2rem;
+            background: white;
         }
 
         .problem-section h2 {
-            text-align: left;
-            font-size: 3.5rem;
-            margin-bottom: 5rem;
-            color: #1a1a1a;
-            font-weight: 300;
-            letter-spacing: -0.02em;
-            max-width: 1400px;
-            margin-left: auto;
-            margin-right: auto;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #1d1d1f;
+            font-weight: 600;
+            letter-spacing: -0.01em;
         }
 
         .problem-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 4rem;
-            max-width: 1400px;
-            margin: 0 auto;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 980px;
+            margin: 3rem auto 0;
         }
 
         .problem-card {
-            background: transparent;
-            padding: 0;
-            border-radius: 0;
-            border: none;
+            background: #fbfbfd;
+            padding: 2rem;
+            border-radius: 18px;
+            border: 1px solid #d2d2d7;
             transition: all 0.3s;
         }
 
         .problem-card:hover {
-            transform: translateY(0);
-            box-shadow: none;
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
         }
 
         .problem-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            color: #1a1a1a;
-            font-weight: 500;
-            letter-spacing: -0.01em;
+            font-size: 1.3rem;
+            margin-bottom: 0.75rem;
+            color: #1d1d1f;
+            font-weight: 600;
         }
 
         .problem-card p {
-            color: #666666;
-            line-height: 1.8;
+            color: #6e6e73;
+            line-height: 1.6;
             font-size: 1rem;
-            font-weight: 300;
         }
 
         .problem-icon {
-            font-size: 2rem;
-            margin-bottom: 1.5rem;
-            opacity: 0.6;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
         }
 
         /* Solution Section */
@@ -2078,12 +2061,12 @@
         <!-- Hero -->
         <section class="hero">
             <div class="hero-content">
-                <h1>Your **digital life** won't outlive you</h1>
-                <p class="subtitle">Unless you preserve it now.</p>
-                <p>When you pass, your iPhone locks forever. Your iCloud account closes. Every photo, message, and memory—gone. <br>We help you preserve what matters for the people who matter most.</p>
+                <h1>What Will Your Grandchildren Know About You?</h1>
+                <p class="subtitle">Your Digital Legacy, Preserved Forever</p>
+                <p>Don't let your memories die with your phone. Create a time capsule of your life—photos, music, messages, and stories—for future generations to discover.</p>
                 <div class="cta-buttons">
-                    <button class="cta-button" onclick="showLogin()">Start preserving your legacy</button>
-                    <button class="cta-button secondary" onclick="scrollToSection('how-it-works')">See how it works</button>
+                    <button class="cta-button" onclick="showLogin()">Start Preserving Your Legacy</button>
+                    <button class="cta-button secondary" onclick="scrollToSection('how-it-works')">See How It Works</button>
                 </div>
             </div>
         </section>
@@ -2095,7 +2078,7 @@
 
         <!-- Problem Section -->
         <section class="problem-section">
-            <h2>The reality of **digital mortality**</h2>
+            <h2>Your Digital Life Won't Outlive You</h2>
             <div class="problem-grid">
                 <div class="problem-card">
                     <div class="problem-icon">📱</div>
