@@ -1670,8 +1670,47 @@
         let savedContacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]')
 
         function showAddContactForm() {
+            // First, ensure contacts section is expanded
+            const contactsBody = document.getElementById('contacts-body')
+            const contactsArrow = document.getElementById('contacts-arrow')
+            if (contactsBody.style.display === 'none') {
+                contactsBody.style.display = 'block'
+                if (contactsArrow) contactsArrow.textContent = '▼'
+            }
+            
+            // Then show/hide the form
             const form = document.getElementById('add-contact-form')
-            form.style.display = form.style.display === 'none' ? 'block' : 'none'
+            if (form.style.display === 'none') {
+                form.style.display = 'block'
+                // Scroll to form
+                setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100)
+            } else {
+                form.style.display = 'none'
+            }
+        }
+
+        function showImportInstructions() {
+            // Expand contacts section
+            const contactsBody = document.getElementById('contacts-body')
+            const contactsArrow = document.getElementById('contacts-arrow')
+            if (contactsBody.style.display === 'none') {
+                contactsBody.style.display = 'block'
+                if (contactsArrow) contactsArrow.textContent = '▼'
+            }
+            
+            // Show instructions
+            const instructions = document.getElementById('export-instructions')
+            if (instructions) {
+                instructions.style.display = 'block'
+                setTimeout(() => instructions.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100)
+            }
+            
+            // Also trigger file picker after a moment
+            setTimeout(() => {
+                if (confirm('Have you already exported your contacts? Click OK to select the file, or Cancel to read the instructions first.')) {
+                    document.getElementById('vcf-upload-input').click()
+                }
+            }, 500)
         }
 
         function saveContact() {
@@ -2491,7 +2530,7 @@
                             </div>
                         </div>
                         <div style="display:flex; gap:0.5rem; flex-wrap:wrap;" onclick="event.stopPropagation()">
-                            <button class="action-button" onclick="document.getElementById('vcf-upload-input').click()" style="background:#8b5cf6;">
+                            <button class="action-button" onclick="showImportInstructions()" style="background:#8b5cf6;">
                                 📁 Import
                             </button>
                             <button class="action-button" onclick="showAddContactForm()" style="background:#6d28d9;">
@@ -2500,6 +2539,49 @@
                         </div>
                     </div>
                     <div id="contacts-body" style="padding:0 1.5rem 1.5rem; display:none;">
+
+                    <!-- Export Instructions -->
+                    <div id="export-instructions" style="background:#eff6ff; border:1px solid #3b82f6; border-radius:8px; padding:1.25rem; margin-bottom:1.5rem;">
+                        <h5 style="color:#1e40af; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                            <span style="font-size:1.3rem;">📱</span> How to Export Contacts from Your Phone
+                        </h5>
+                        
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.5rem;">
+                            <!-- iPhone Instructions -->
+                            <div style="background:white; padding:1rem; border-radius:6px;">
+                                <h6 style="color:#1e3a8a; margin-bottom:0.75rem; font-size:1.05rem;">📱 iPhone (iOS)</h6>
+                                <ol style="color:#4b5563; font-size:0.9rem; line-height:1.7; padding-left:1.25rem; margin:0;">
+                                    <li style="margin-bottom:0.5rem;"><strong>Open iCloud.com</strong> on your computer</li>
+                                    <li style="margin-bottom:0.5rem;">Sign in with your Apple ID</li>
+                                    <li style="margin-bottom:0.5rem;">Click <strong>Contacts</strong></li>
+                                    <li style="margin-bottom:0.5rem;">Click the <strong>gear icon</strong> (⚙️) → <strong>Select All</strong></li>
+                                    <li style="margin-bottom:0.5rem;">Click the gear again → <strong>Export vCard</strong></li>
+                                    <li>Upload the .vcf file here</li>
+                                </ol>
+                            </div>
+                            
+                            <!-- Android Instructions -->
+                            <div style="background:white; padding:1rem; border-radius:6px;">
+                                <h6 style="color:#1e3a8a; margin-bottom:0.75rem; font-size:1.05rem;">🤖 Android</h6>
+                                <ol style="color:#4b5563; font-size:0.9rem; line-height:1.7; padding-left:1.25rem; margin:0;">
+                                    <li style="margin-bottom:0.5rem;"><strong>Open Contacts app</strong></li>
+                                    <li style="margin-bottom:0.5rem;">Tap the <strong>3-dot menu</strong> (⋮)</li>
+                                    <li style="margin-bottom:0.5rem;">Select <strong>Settings</strong> → <strong>Export</strong></li>
+                                    <li style="margin-bottom:0.5rem;">Choose <strong>Export to .vcf file</strong></li>
+                                    <li style="margin-bottom:0.5rem;">Save to your device</li>
+                                    <li>Upload the .vcf file here</li>
+                                </ol>
+                                <p style="color:#6b7280; font-size:0.8rem; margin-top:0.75rem; font-style:italic;">
+                                    Note: Steps may vary by Android version
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <button class="action-button secondary" onclick="document.getElementById('export-instructions').style.display='none'" 
+                            style="margin-top:1rem; font-size:0.85rem; padding:0.5rem 1rem;">
+                            Got it, hide this
+                        </button>
+                    </div>
 
                     <input type="file" id="vcf-upload-input" accept=".vcf,.csv" style="display:none;" onchange="handleContactsUpload(this)">
 
