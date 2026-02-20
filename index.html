@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeverForgotten - Preserve Your Digital Legacy Before It's Too Late</title>
+    <title>That's My Life - Preserve Your Story, Music, Photos & Memories Forever</title>
     <style>
         * {
             margin: 0;
@@ -68,7 +68,7 @@
         }
 
         .btn-nav {
-            background: #ea580c;
+            background: #059669;
             color: white;
             padding: 0.4rem 1rem;
             border-radius: 980px;
@@ -76,7 +76,7 @@
         }
 
         .btn-nav:hover {
-            background: #c2410c;
+            background: #047857;
             opacity: 1;
         }
 
@@ -128,7 +128,7 @@
         }
 
         .cta-button {
-            background: #ea580c;
+            background: #059669;
             color: white;
             padding: 0.85rem 1.5rem;
             border: none;
@@ -143,7 +143,7 @@
         }
 
         .cta-button:hover {
-            background: #c2410c;
+            background: #047857;
             transform: scale(1.02);
         }
 
@@ -2020,6 +2020,109 @@
             }
         }
 
+        // LIFE BOOK FUNCTIONS
+        let savedLifebook = {}
+        let currentLifebookKey = ''
+
+        function openLifebookEditor(key, title, prompt) {
+            currentLifebookKey = key
+            document.getElementById('lifebook-editor-title').textContent = title
+            document.getElementById('lifebook-editor-prompt').textContent = prompt
+            document.getElementById('lifebook-editor-text').value = savedLifebook[key] || ''
+            document.getElementById('lifebook-editor').style.display = 'block'
+            document.getElementById('lifebook-editor').scrollIntoView({ behavior: 'smooth' })
+        }
+
+        function closeLifebookEditor() {
+            document.getElementById('lifebook-editor').style.display = 'none'
+            currentLifebookKey = ''
+        }
+
+        function saveLifebook() {
+            const text = document.getElementById('lifebook-editor-text').value.trim()
+            if (!text) { showNotification('Please write something first!'); return }
+
+            savedLifebook[currentLifebookKey] = text
+            localStorage.setItem('vault_lifebook', JSON.stringify(savedLifebook))
+
+            const indicator = document.getElementById('indicator-lb-' + currentLifebookKey)
+            if (indicator) indicator.style.display = 'block'
+
+            const count = Object.keys(savedLifebook).length
+            const header = document.getElementById('lifebook-count-header')
+            if (header) header.textContent = count + ' chapter' + (count !== 1 ? 's' : '') + ' written'
+
+            // Show "View All" button if chapters exist
+            const viewAll = document.getElementById('lifebook-view-all')
+            if (viewAll && count > 0) viewAll.style.display = 'block'
+
+            closeLifebookEditor()
+            refreshDashboardStats()
+            showNotification('📖 Chapter saved!')
+        }
+
+        function loadLifebook() {
+            savedLifebook = JSON.parse(localStorage.getItem('vault_lifebook') || '{}')
+            const count = Object.keys(savedLifebook).length
+            if (count > 0) {
+                const header = document.getElementById('lifebook-count-header')
+                if (header) header.textContent = count + ' chapter' + (count !== 1 ? 's' : '') + ' written'
+                Object.keys(savedLifebook).forEach(key => {
+                    const indicator = document.getElementById('indicator-lb-' + key)
+                    if (indicator) indicator.style.display = 'block'
+                })
+                const viewAll = document.getElementById('lifebook-view-all')
+                if (viewAll) viewAll.style.display = 'block'
+                const body = document.getElementById('lifebook-body')
+                const arrow = document.getElementById('lifebook-arrow')
+                if (body) body.style.display = 'block'
+                if (arrow) arrow.textContent = '▼'
+            }
+        }
+
+        function viewAllChapters() {
+            const chapters = [
+                { key: 'childhood', title: '👶 Childhood', icon: '👶' },
+                { key: 'school_years', title: '🎓 School Years', icon: '🎓' },
+                { key: 'first_love', title: '💕 First Love', icon: '💕' },
+                { key: 'career', title: '💼 Career Journey', icon: '💼' },
+                { key: 'family', title: '👨‍👩‍👧‍👦 Family Life', icon: '👨‍👩‍👧‍👦' },
+                { key: 'travels', title: '✈️ Adventures & Travels', icon: '✈️' },
+                { key: 'challenges', title: '⛰️ Overcoming Challenges', icon: '⛰️' },
+                { key: 'wisdom', title: '🧠 Life Lessons', icon: '🧠' }
+            ]
+
+            let html = '<div style="background:white; border-radius:10px; padding:2rem; max-width:800px; margin:0 auto;">'
+            html += '<h3 style="color:#1e3a8a; text-align:center; margin-bottom:2rem; font-size:2rem;">📖 My Life Book</h3>'
+            
+            chapters.forEach(chapter => {
+                if (savedLifebook[chapter.key]) {
+                    html += `<div style="margin-bottom:2rem; padding-bottom:2rem; border-bottom:1px solid #e5e7eb;">`
+                    html += `<h4 style="color:#8b5cf6; margin-bottom:1rem; font-size:1.5rem;">${chapter.title}</h4>`
+                    html += `<p style="white-space:pre-wrap; line-height:1.8; color:#374151;">${savedLifebook[chapter.key]}</p>`
+                    html += `</div>`
+                }
+            })
+
+            if (Object.keys(savedLifebook).length === 0) {
+                html += '<p style="text-align:center; color:#9ca3af; padding:2rem;">No chapters written yet. Start writing your life story!</p>'
+            }
+
+            html += '<div style="text-align:center; margin-top:2rem;">'
+            html += '<button class="action-button secondary" onclick="document.getElementById(\'lifebook-view-modal\').remove()">Close</button>'
+            html += '</div></div>'
+
+            const modal = document.createElement('div')
+            modal.id = 'lifebook-view-modal'
+            modal.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:10000; overflow-y:auto; padding:2rem; display:flex; align-items:center; justify-content:center;'
+            modal.innerHTML = html
+            document.body.appendChild(modal)
+
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.remove()
+            }
+        }
+
         // Check for existing Spotify data on load
         function checkExistingSpotifyData() {
             const musicData = localStorage.getItem('spotify_music_data')
@@ -2041,7 +2144,7 @@
     <!-- Navigation -->
     <nav>
         <div class="container">
-            <div class="logo">🕊️ NeverForgotten</div>
+            <div class="logo">📖 That's My Life</div>
             <ul class="nav-links">
                 <li><a href="#home" onclick="showSection('home')">Home</a></li>
                 <li><a href="#how" onclick="scrollToSection('how-it-works')">How It Works</a></li>
@@ -2062,11 +2165,11 @@
         <!-- Hero -->
         <section class="hero">
             <div class="hero-content">
-                <h1>You will be forgotten.</h1>
-                <p class="subtitle">Unless you do something about it today.</p>
-                <p>Your iPhone locks forever when you die. Your iCloud account closes. Every photo, song, message—gone. <strong>Preserve what matters. Starting now.</strong></p>
+                <h1>Your life. Your story. Preserved forever.</h1>
+                <p class="subtitle">Share who you are with the people who matter most.</p>
+                <p>Your music, photos, memories, and life story—all in one place. Create a digital time capsule that your family will treasure for generations.</p>
                 <div class="cta-buttons">
-                    <button class="cta-button" onclick="showLogin()">Preserve Your Legacy Today</button>
+                    <button class="cta-button" onclick="showLogin()">Start Preserving Your Story</button>
                     <button class="cta-button secondary" onclick="scrollToSection('how-it-works')">See How It Works</button>
                 </div>
             </div>
@@ -2074,12 +2177,12 @@
 
         <!-- Trust Bar -->
         <div class="trust-bar">
-            <p><strong>Act now before it's too late</strong> • 100-year guarantee • Bank-level encryption • Thousands of families protected</p>
+            <p><strong>100-year guarantee</strong> • Bank-level encryption • Thousands of families preserving their stories</p>
         </div>
 
         <!-- Problem Section -->
         <section class="problem-section">
-            <h2>What happens when you die?</h2>
+            <h2>Don't let your story disappear</h2>
             <div class="problem-grid">
                 <div class="problem-card">
                     <div class="problem-icon">📱</div>
@@ -2106,8 +2209,8 @@
 
         <!-- Solution Section -->
         <section class="solution-section">
-            <h2>Preserve what matters. Today.</h2>
-            <p class="intro">NeverForgotten captures your digital life so future generations can discover who you really were—decades from now.</p>
+            <h2>Tell your story. Share your life.</h2>
+            <p class="intro">That's My Life helps you preserve everything that makes you who you are—for the people you love.</p>
             <div class="feature-grid">
                 <div class="feature-card">
                     <div class="feature-icon">🎵</div>
@@ -2511,6 +2614,135 @@
                     </div>
                 </div>
 
+                <!-- Life Book Card -->
+                <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #8b5cf6; margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem; cursor:pointer; user-select:none;"
+                         onclick="toggleSection('lifebook-body','lifebook-arrow')">
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <span id="lifebook-arrow" style="color:#8b5cf6; font-size:1rem;">▶</span>
+                            <div>
+                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">📖 My Life Book</h4>
+                                <p style="color:#6b7280; font-size:0.9rem;"><span id="lifebook-count-header">Write your autobiography</span></p>
+                            </div>
+                        </div>
+                        <button class="action-button" onclick="event.stopPropagation(); toggleSection('lifebook-body','lifebook-arrow')" style="background:#8b5cf6;">
+                            + Add Chapter
+                        </button>
+                    </div>
+
+                    <div id="lifebook-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                        
+                        <!-- Chapter Prompts -->
+                        <div id="lifebook-prompts" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+                            
+                            <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
+                                 onclick="openLifebookEditor('childhood', '👶 Childhood', 'Where did you grow up? What are your earliest memories?')">
+                                <div style="font-size:2rem; margin-bottom:0.5rem;">👶</div>
+                                <h5 style="color:#1e3a8a; margin-bottom:0.3rem;">Childhood</h5>
+                                <p style="color:#9ca3af; font-size:0.85rem;">Your earliest years</p>
+                                <div id="indicator-lb-childhood" style="margin-top:0.5rem; display:none;">
+                                    <span style="background:#ede9fe; color:#5b21b6; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem;">✓ Written</span>
+                                </div>
+                            </div>
+
+                            <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
+                                 onclick="openLifebookEditor('school_years', '🎓 School Years', 'Tell us about your education, friends, and formative experiences.')">
+                                <div style="font-size:2rem; margin-bottom:0.5rem;">🎓</div>
+                                <h5 style="color:#1e3a8a; margin-bottom:0.3rem;">School Years</h5>
+                                <p style="color:#9ca3af; font-size:0.85rem;">Education & friends</p>
+                                <div id="indicator-lb-school_years" style="margin-top:0.5rem; display:none;">
+                                    <span style="background:#ede9fe; color:#5b21b6; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem;">✓ Written</span>
+                                </div>
+                            </div>
+
+                            <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
+                                 onclick="openLifebookEditor('first_love', '💕 First Love', 'Tell the story of your first romantic relationship.')">
+                                <div style="font-size:2rem; margin-bottom:0.5rem;">💕</div>
+                                <h5 style="color:#1e3a8a; margin-bottom:0.3rem;">First Love</h5>
+                                <p style="color:#9ca3af; font-size:0.85rem;">Romance & heartbreak</p>
+                                <div id="indicator-lb-first_love" style="margin-top:0.5rem; display:none;">
+                                    <span style="background:#ede9fe; color:#5b21b6; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem;">✓ Written</span>
+                                </div>
+                            </div>
+
+                            <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
+                                 onclick="openLifebookEditor('career', '💼 Career Journey', 'How did you build your career? What were the highlights and challenges?')">
+                                <div style="font-size:2rem; margin-bottom:0.5rem;">💼</div>
+                                <h5 style="color:#1e3a8a; margin-bottom:0.3rem;">Career Journey</h5>
+                                <p style="color:#9ca3af; font-size:0.85rem;">Work & achievements</p>
+                                <div id="indicator-lb-career" style="margin-top:0.5rem; display:none;">
+                                    <span style="background:#ede9fe; color:#5b21b6; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem;">✓ Written</span>
+                                </div>
+                            </div>
+
+                            <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
+                                 onclick="openLifebookEditor('family', '👨‍👩‍👧‍👦 Family Life', 'Tell us about your spouse, children, and family relationships.')">
+                                <div style="font-size:2rem; margin-bottom:0.5rem;">👨‍👩‍👧‍👦</div>
+                                <h5 style="color:#1e3a8a; margin-bottom:0.3rem;">Family Life</h5>
+                                <p style="color:#9ca3af; font-size:0.85rem;">Spouse & children</p>
+                                <div id="indicator-lb-family" style="margin-top:0.5rem; display:none;">
+                                    <span style="background:#ede9fe; color:#5b21b6; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem;">✓ Written</span>
+                                </div>
+                            </div>
+
+                            <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
+                                 onclick="openLifebookEditor('travels', '✈️ Adventures & Travels', 'Where have you traveled? What adventures stand out?')">
+                                <div style="font-size:2rem; margin-bottom:0.5rem;">✈️</div>
+                                <h5 style="color:#1e3a8a; margin-bottom:0.3rem;">Adventures</h5>
+                                <p style="color:#9ca3af; font-size:0.85rem;">Travels & experiences</p>
+                                <div id="indicator-lb-travels" style="margin-top:0.5rem; display:none;">
+                                    <span style="background:#ede9fe; color:#5b21b6; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem;">✓ Written</span>
+                                </div>
+                            </div>
+
+                            <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
+                                 onclick="openLifebookEditor('challenges', '⛰️ Overcoming Challenges', 'What obstacles have you faced? How did you overcome them?')">
+                                <div style="font-size:2rem; margin-bottom:0.5rem;">⛰️</div>
+                                <h5 style="color:#1e3a8a; margin-bottom:0.3rem;">Challenges</h5>
+                                <p style="color:#9ca3af; font-size:0.85rem;">Struggles & resilience</p>
+                                <div id="indicator-lb-challenges" style="margin-top:0.5rem; display:none;">
+                                    <span style="background:#ede9fe; color:#5b21b6; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem;">✓ Written</span>
+                                </div>
+                            </div>
+
+                            <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
+                                 onclick="openLifebookEditor('wisdom', '🧠 Life Lessons', 'What wisdom have you gained? What advice would you give?')">
+                                <div style="font-size:2rem; margin-bottom:0.5rem;">🧠</div>
+                                <h5 style="color:#1e3a8a; margin-bottom:0.3rem;">Life Lessons</h5>
+                                <p style="color:#9ca3af; font-size:0.85rem;">Wisdom & advice</p>
+                                <div id="indicator-lb-wisdom" style="margin-top:0.5rem; display:none;">
+                                    <span style="background:#ede9fe; color:#5b21b6; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem;">✓ Written</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Life Book Editor -->
+                        <div id="lifebook-editor" style="display:none; background:white; border-radius:10px; padding:1.5rem; border:1px solid #8b5cf6;">
+                            <h4 id="lifebook-editor-title" style="color:#1e3a8a; margin-bottom:0.5rem;"></h4>
+                            <p id="lifebook-editor-prompt" style="color:#6b7280; font-size:0.9rem; margin-bottom:1rem; font-style:italic;"></p>
+                            <textarea id="lifebook-editor-text" 
+                                placeholder="Write this chapter of your life..." 
+                                style="width:100%; padding:1rem; border:1px solid #e5e7eb; border-radius:8px; font-size:1rem; min-height:300px; resize:vertical; line-height:1.8; margin-bottom:1rem; font-family:inherit;"></textarea>
+                            <div style="color:#6b7280; font-size:0.85rem; margin-bottom:1rem;">
+                                💡 <strong>Tip:</strong> Write as much as you want. This is your autobiography—tell your full story.
+                            </div>
+                            <div style="display:flex; gap:0.5rem;">
+                                <button class="action-button" onclick="saveLifebook()" style="background:#8b5cf6;">📖 Save Chapter</button>
+                                <button class="action-button secondary" onclick="closeLifebookEditor()">Cancel</button>
+                            </div>
+                        </div>
+
+                        <!-- View All Chapters Button -->
+                        <div id="lifebook-view-all" style="display:none; margin-top:1.5rem; text-align:center;">
+                            <button class="action-button" onclick="viewAllChapters()" style="background:#8b5cf6;">
+                                📚 View All Chapters
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
                 <!-- Inheritors Card -->
                 <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #ec4899; margin-bottom:1rem;">
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem;">
@@ -2757,6 +2989,7 @@
                 loadContacts()
                 loadSavedPhotos()
                 loadStories()
+                loadLifebook()
                 loadSavedMusic()
                 loadInheritors()
             }, 400);
@@ -2804,10 +3037,11 @@
             const songs = JSON.parse(localStorage.getItem('spotify_music_data') || '[]').length
             const contacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]').length
             const stories = Object.keys(JSON.parse(localStorage.getItem('vault_stories') || '{}')).length
+            const lifebook = Object.keys(JSON.parse(localStorage.getItem('vault_lifebook') || '{}')).length
             const inheritors = JSON.parse(localStorage.getItem('vault_inheritors') || '[]').length
             const photos = uploadedPhotos.length // Will be updated when photos load
             
-            const totalMemories = songs + contacts + stories + photos
+            const totalMemories = songs + contacts + stories + lifebook + photos
             
             document.getElementById('total-memories').textContent = totalMemories
             
