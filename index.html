@@ -2178,7 +2178,16 @@
     </script>
     
 </head>
-<body>
+<body><script>
+function showLogin() {
+    alert('showLogin called!');
+    document.getElementById('login-modal').classList.add('active');
+}
+function scrollToSection(id) {
+    const element = document.getElementById(id);
+    if (element) element.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
     <!-- Navigation -->
     <nav>
         <div class="container">
