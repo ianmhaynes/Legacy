@@ -2878,7 +2878,7 @@
                                     <ol style="color:#4b5563; font-size:0.9rem; line-height:1.7; padding-left:1.25rem; margin:0;">
                                         <li style="margin-bottom:0.5rem;">Click "Export as PDF" or "Export as DOCX" below</li>
                                         <li style="margin-bottom:0.5rem;">Go to <strong>Amazon.com</strong> → Account → Content & Devices → Preferences</li>
-                                        <li style="margin-bottom:0.5rem;">Find your <strong>Send to Kindle email</strong> (like <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="334a5c46415d525e5673585a5d575f561d505c5e">[email&#160;protected]</a>)</li>
+                                        <li style="margin-bottom:0.5rem;">Find your <strong>Send to Kindle email</strong> (like yourname@kindle.com)</li>
                                         <li style="margin-bottom:0.5rem;">Add your personal email to <strong>Approved Email List</strong></li>
                                         <li style="margin-bottom:0.5rem;">Email the file to your Kindle email address</li>
                                         <li>Within minutes, it'll appear on your Kindle device/app!</li>
@@ -3057,7 +3057,7 @@
         </div>
     </footer>
 
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <script>
         let user = JSON.parse(localStorage.getItem('user') || 'null');
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -3226,4 +3226,13 @@
 
         function showNotification(message) {
             const notification = document.getElementById('notification');
-            notific
+            notification.textContent = message;
+            notification.classList.add('active');
+
+            setTimeout(() => {
+                notification.classList.remove('active');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
