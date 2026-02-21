@@ -954,15 +954,14 @@
             }
         }
     </style>
-    
-    <!-- Supabase Connection -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        const SUPABASE_URL = 'https://cusfryouqtrivwbejrkj.supabase.co'
-        const SUPABASE_KEY = 'sb_publishable_fZCVUL2XlsBkgQvMPxFriA_ca2OOVHk'
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
-    </script>
 
+    <script>
+        // Supabase stub - data stored locally for beta testing
+        const supabaseClient = {
+            from: () => ({ upsert: async () => ({}) }),
+            storage: { from: () => ({ upload: async () => ({}), getPublicUrl: () => ({ data: { publicUrl: '' } }) }) }
+        }
+    </script>
     <!-- Spotify Configuration -->
     <script>
         const SPOTIFY_CLIENT_ID = '26e87baf40af41e18e088c0359a30537'
