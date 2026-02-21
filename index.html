@@ -970,127 +970,6 @@
 
         async function fetchSpotifyData(accessToken) {
             try {
-                showNotification('Loading your saved music from Spotify...')
-
-                const headers = { 'Authorization': 'Bearer ' + accessToken }
-
-                // Fetch profile
-                const profileRes = await fetch('https://api.spotify.com/v1/me', { headers })
-                const profile = await profileRes.json()
-
-                if (profile.error) {
-                    console.error('Profile error:', profile.error)
-                    showNotification('Could not load Spotify data. Please reconnect.')
-                    return
-                }
-
-                // Fetch saved tracks (liked songs) - these are tracks YOU saved
-                const allTracks = new Map()
-                let offset = 0
-                const limit = 50
-
-                while (offset < 200) { // Get up to 200 saved songs
-                    const res = await fetch(`https://api.spotify.com/v1/me/tracks?limit=${limit}&offset=${offset}`, { headers })
-                    const data = await res.json()
-                    console.log(`Saved tracks offset ${offset}:`, data)
-
-                    if (!data.items || data.items.length === 0) break
-
-                    data.items.forEach(item => {
-                        const track = item.track
-                        if (!allTracks.has(track.id)) {
-                            allTracks.set(track.id, {
-                                name: track.name,
-                                artist: track.artists.map(a => a.name).join(', '),
-                                album: track.album.name,
-                                image: track.album.images[0]?.url || null,
-                                duration_ms: track.duration_ms,
-                                popularity: track.popularity,
-                                spotify_url: track.external_urls.spotify,
-                                captured_at: new Date().toISOString(),
-                                added_at: item.added_at // When YOU saved it
-                            })
-                        }
-                    })
-
-                    offset += limit
-                    if (data.items.length < limit) break // No more tracks
-                }
-
-                const musicData = Array.from(allTracks.values())
-                console.log('Collected', musicData.length, 'saved tracks')
-
-                if (musicData.length === 0) {
-                    showNotification('⚠️ No saved songs found. Save some songs to your Spotify library first!')
-                    const container = document.getElementById('spotify-card')
-                    if (container) {
-                        container.innerHTML = `
-                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
-                                <div>
-                                    <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">🎵 Spotify Connected</h4>
-                                    <p style="color:#6b7280;">No saved songs found. Go to Spotify and save some songs!</p>
-                                </div>
-                                <button class="action-button secondary" onclick="reconnectSpotify()">
-                                    🔄 Refresh
-                                </button>
-                            </div>
-                        `
-                    }
-                    return
-                }
-
-                // Store locally
-                localStorage.setItem('spotify_music_data', JSON.stringify(musicData))
-                localStorage.setItem('spotify_profile', JSON.stringify({
-                    name: profile.display_name || profile.id,
-                    email: profile.email,
-                    connected_at: new Date().toISOString()
-                }))
-
-                // Update UI
-                displayMusicList(musicData)
-                showNotification(`🎵 ${musicData.length} saved songs preserved to your vault!`)
-
-                // Store in Supabase
-                if (user && user.email) {
-                    try {
-                        console.log('Saving to Supabase for user:', user.email)
-                        const { data: savedData, error } = await supabaseClient
-                            .from('legacy_content')
-                            .upsert({
-                                user_email: user.email,
-                                content_type: 'spotify_music',
-                                data: {
-                                    profile: profile.display_name || profile.id,
-                                    tracks: musicData,
-                                    total_count: musicData.length,
-                                    captured_at: new Date().toISOString()
-                                },
-                                updated_at: new Date().toISOString()
-                            }, {
-                                onConflict: 'user_email,content_type'
-                            })
-                        
-                        if (error) {
-                            console.error('Supabase save error:', error)
-                            showNotification('⚠️ Music saved locally but could not sync to cloud')
-                        } else {
-                            console.log('Successfully saved to Supabase!', savedData)
-                        }
-                    } catch (dbError) {
-                        console.error('Database error:', dbError)
-                        showNotification('⚠️ Music saved locally but could not sync to cloud')
-                    }
-                }
-
-            } catch (error) {
-                showNotification('Error loading Spotify data. Please try again.')
-                console.error('Spotify fetch error:', error)
-            }
-        }
-
-        async function fetchSpotifyData(accessToken) {
-            try {
                 showNotification('Extracting your music library...')
 
                 const headers = { 'Authorization': 'Bearer ' + accessToken }
@@ -1220,12 +1099,10 @@
             const expiresAt = localStorage.getItem('spotify_token_expires')
             const refreshToken = localStorage.getItem('spotify_refresh_token')
 
-            // If token is still valid, return it
             if (token && expiresAt && Date.now() < parseInt(expiresAt)) {
                 return token
             }
 
-            // If we have a refresh token, use it to get new access token
             if (refreshToken) {
                 console.log('Access token expired. Refreshing...')
                 try {
@@ -1258,7 +1135,6 @@
                 }
             }
 
-            // No valid token available
             console.log('No valid Spotify token. User needs to reconnect.')
             return null
         }
@@ -1271,7 +1147,7 @@
             connectSpotify()
         }
 
-        // Spotify Song Search (Alternative without Client Secret)
+        // Spotify Song Search
         let searchTimeout
         let savedSongs = JSON.parse(localStorage.getItem('spotify_music_data') || '[]')
 
@@ -1285,7 +1161,6 @@
 
             searchTimeout = setTimeout(async () => {
                 try {
-                    // Use iTunes API as alternative (no auth needed!)
                     const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=10`)
                     const data = await response.json()
                     displaySearchResults(data.results)
@@ -1319,7 +1194,6 @@
         }
 
         function addSongToLibrary(id, name, artist, album, image) {
-            // Check if already added
             if (savedSongs.find(s => s.id === id)) {
                 showNotification('Song already in your library!')
                 return
@@ -1337,16 +1211,13 @@
             savedSongs.push(song)
             localStorage.setItem('spotify_music_data', JSON.stringify(savedSongs))
             
-            // Clear search
             document.getElementById('song-search').value = ''
             document.getElementById('search-results').style.display = 'none'
             
-            // Update UI
             updateSavedSongsDisplay()
             refreshDashboardStats()
             showNotification(`🎵 "${name}" added to your library!`)
 
-            // Save to Supabase
             if (user && user.email) {
                 supabaseClient.from('legacy_content').upsert({
                     user_email: user.email,
@@ -1408,7 +1279,6 @@
             refreshDashboardStats()
             showNotification('Song removed')
 
-            // Update Supabase
             if (user && user.email) {
                 supabaseClient.from('legacy_content').upsert({
                     user_email: user.email,
@@ -1424,12 +1294,6 @@
             if (savedSongs.length > 0) {
                 updateSavedSongsDisplay()
             }
-        }
-
-        function reconnectSpotify() {
-            localStorage.removeItem('spotify_token')
-            localStorage.removeItem('spotify_music_data')
-            connectSpotify()
         }
 
         // Handle Spotify callback
@@ -1467,13 +1331,11 @@
                 const data = await response.json()
 
                 if (data.access_token) {
-                    // Store both access token and refresh token
                     localStorage.setItem('spotify_token', data.access_token)
                     if (data.refresh_token) {
                         localStorage.setItem('spotify_refresh_token', data.refresh_token)
                     }
                     
-                    // Store token expiration time
                     const expiresAt = Date.now() + (data.expires_in * 1000)
                     localStorage.setItem('spotify_token_expires', expiresAt)
                     
@@ -1555,7 +1417,6 @@
                     `
                     grid.insertBefore(div, grid.firstChild)
 
-                    // Upload to Supabase
                     try {
                         const currentUser = JSON.parse(localStorage.getItem('user') || 'null')
                         const userEmail = currentUser ? currentUser.email.replace('@','_').replace(/\./g,'_') : 'anonymous'
@@ -1670,7 +1531,6 @@
         let savedContacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]')
 
         function showAddContactForm() {
-            // First, ensure contacts section is expanded
             const contactsBody = document.getElementById('contacts-body')
             const contactsArrow = document.getElementById('contacts-arrow')
             if (contactsBody.style.display === 'none') {
@@ -1678,11 +1538,9 @@
                 if (contactsArrow) contactsArrow.textContent = '▼'
             }
             
-            // Then show/hide the form
             const form = document.getElementById('add-contact-form')
             if (form.style.display === 'none') {
                 form.style.display = 'block'
-                // Scroll to form
                 setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100)
             } else {
                 form.style.display = 'none'
@@ -1690,7 +1548,6 @@
         }
 
         function showImportInstructions() {
-            // Expand contacts section
             const contactsBody = document.getElementById('contacts-body')
             const contactsArrow = document.getElementById('contacts-arrow')
             if (contactsBody.style.display === 'none') {
@@ -1698,14 +1555,12 @@
                 if (contactsArrow) contactsArrow.textContent = '▼'
             }
             
-            // Show instructions
             const instructions = document.getElementById('export-instructions')
             if (instructions) {
                 instructions.style.display = 'block'
                 setTimeout(() => instructions.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100)
             }
             
-            // Also trigger file picker after a moment
             setTimeout(() => {
                 if (confirm('Have you already exported your contacts? Click OK to select the file, or Cancel to read the instructions first.')) {
                     document.getElementById('vcf-upload-input').click()
@@ -1944,7 +1799,6 @@
             savedInheritors.push(inheritor)
             localStorage.setItem('vault_inheritors', JSON.stringify(savedInheritors))
             
-            // Clear form
             document.getElementById('inheritor-name').value = ''
             document.getElementById('inheritor-email').value = ''
             document.getElementById('inheritor-relation').value = ''
@@ -2161,7 +2015,6 @@
             }
         }
 
-        // Check for existing Spotify data on load
         function checkExistingSpotifyData() {
             const musicData = localStorage.getItem('spotify_music_data')
             if (musicData) {
@@ -2178,16 +2031,7 @@
     </script>
     
 </head>
-<body><script>
-function showLogin() {
-    alert('showLogin called!');
-    document.getElementById('login-modal').classList.add('active');
-}
-function scrollToSection(id) {
-    const element = document.getElementById(id);
-    if (element) element.scrollIntoView({ behavior: 'smooth' });
-}
-</script>
+<body>
     <!-- Navigation -->
     <nav>
         <div class="container">
@@ -2356,15 +2200,15 @@ function scrollToSection(id) {
                     <div class="price">$2</div>
                     <span class="price-period">per month (USD)</span>
                     <ul class="pricing-features">
-                        <li>✅ Unlimited music library</li>
-                        <li>✅ Unlimited photos & videos</li>
-                        <li>✅ Unlimited contacts</li>
-                        <li>✅ Write your Life Book</li>
-                        <li>✅ Export to Kindle</li>
-                        <li>✅ Unlimited inheritors</li>
-                        <li>✅ 100-year guarantee</li>
-                        <li>✅ Bank-level encryption</li>
-                        <li>✅ Cancel anytime</li>
+                        <li>Unlimited music library</li>
+                        <li>Unlimited photos & videos</li>
+                        <li>Unlimited contacts</li>
+                        <li>Write your Life Book</li>
+                        <li>Export to Kindle</li>
+                        <li>Unlimited inheritors</li>
+                        <li>100-year guarantee</li>
+                        <li>Bank-level encryption</li>
+                        <li>Cancel anytime</li>
                     </ul>
                     <button class="pricing-cta" onclick="showLogin()">Start Your Story</button>
                 </div>
@@ -2375,13 +2219,13 @@ function scrollToSection(id) {
                     <div class="price">$1,000</div>
                     <span class="price-period">one-time payment (USD)</span>
                     <ul class="pricing-features">
-                        <li>✅ Everything in Monthly</li>
-                        <li>✅ Never pay again</li>
-                        <li>✅ Priority support</li>
-                        <li>✅ Early access to new features</li>
-                        <li>✅ Founding member badge</li>
-                        <li>✅ Pass to your children</li>
-                        <li>💎 <strong>Pay once, preserve forever</strong></li>
+                        <li>Everything in Monthly</li>
+                        <li>Never pay again</li>
+                        <li>Priority support</li>
+                        <li>Early access to new features</li>
+                        <li>Founding member badge</li>
+                        <li>Pass to your children</li>
+                        <li><strong>Pay once, preserve forever</strong></li>
                     </ul>
                     <button class="pricing-cta" onclick="showLogin()">Preserve Forever</button>
                 </div>
@@ -2545,7 +2389,6 @@ function scrollToSection(id) {
                         </h5>
                         
                         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.5rem;">
-                            <!-- iPhone Instructions -->
                             <div style="background:white; padding:1rem; border-radius:6px;">
                                 <h6 style="color:#1e3a8a; margin-bottom:0.75rem; font-size:1.05rem;">📱 iPhone (iOS)</h6>
                                 <ol style="color:#4b5563; font-size:0.9rem; line-height:1.7; padding-left:1.25rem; margin:0;">
@@ -2558,7 +2401,6 @@ function scrollToSection(id) {
                                 </ol>
                             </div>
                             
-                            <!-- Android Instructions -->
                             <div style="background:white; padding:1rem; border-radius:6px;">
                                 <h6 style="color:#1e3a8a; margin-bottom:0.75rem; font-size:1.05rem;">🤖 Android</h6>
                                 <ol style="color:#4b5563; font-size:0.9rem; line-height:1.7; padding-left:1.25rem; margin:0;">
@@ -2569,9 +2411,6 @@ function scrollToSection(id) {
                                     <li style="margin-bottom:0.5rem;">Save to your device</li>
                                     <li>Upload the .vcf file here</li>
                                 </ol>
-                                <p style="color:#6b7280; font-size:0.8rem; margin-top:0.75rem; font-style:italic;">
-                                    Note: Steps may vary by Android version
-                                </p>
                             </div>
                         </div>
                         
@@ -2633,7 +2472,6 @@ function scrollToSection(id) {
                     </div>
 
                     <div id="stories-body" style="display:none; padding:0 1.5rem 1.5rem;">
-                        
                         <div id="stories-prompts" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
                             
                             <div class="story-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
@@ -2675,7 +2513,6 @@ function scrollToSection(id) {
                                     <span style="background:#fef3c7; color:#92400e; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem;">✓ Written</span>
                                 </div>
                             </div>
-
                         </div>
 
                         <div id="story-editor" style="display:none; background:white; border-radius:10px; padding:1.5rem; border:1px solid #f59e0b;">
@@ -2689,7 +2526,6 @@ function scrollToSection(id) {
                                 <button class="action-button secondary" onclick="closeStoryEditor()">Cancel</button>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
@@ -2710,7 +2546,6 @@ function scrollToSection(id) {
                     </div>
 
                     <div id="lifebook-body" style="display:none; padding:0 1.5rem 1.5rem;">
-                        
                         <div id="lifebook-prompts" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
                             
                             <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
@@ -2792,7 +2627,6 @@ function scrollToSection(id) {
                                     <span style="background:#ede9fe; color:#5b21b6; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem;">✓ Written</span>
                                 </div>
                             </div>
-
                         </div>
 
                         <div id="lifebook-editor" style="display:none; background:white; border-radius:10px; padding:1.5rem; border:1px solid #8b5cf6;">
@@ -2815,7 +2649,6 @@ function scrollToSection(id) {
                                 📚 View All Chapters
                             </button>
                         </div>
-
                     </div>
                 </div>
 
@@ -2836,7 +2669,6 @@ function scrollToSection(id) {
                     </div>
 
                     <div id="inheritors-body" style="display:none; padding:0 1.5rem 1.5rem;">
-                        
                         <div id="add-inheritor-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
                             <h4 style="color:#1e3a8a; margin-bottom:1rem;">Add an Inheritor</h4>
                             <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
@@ -2861,7 +2693,6 @@ function scrollToSection(id) {
 
                         <div id="inheritors-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1rem;"></div>
                         <p id="inheritors-empty" style="color:#9ca3af; text-align:center; padding:2rem;">No inheritors added yet. Add someone who will receive your digital legacy.</p>
-
                     </div>
                 </div>
             </div>
@@ -3034,7 +2865,7 @@ function scrollToSection(id) {
             updateUIForLoggedIn();
             closeLogin();
             showSection('dashboard');
-            showNotification('Welcome to That's My Life!');
+            showNotification('Welcome to That\'s My Life!');
         }
 
         function logout() {
@@ -3078,7 +2909,6 @@ function scrollToSection(id) {
             document.getElementById('nav-share').classList.add('hidden');
         }
 
-        // Share Modal Functions
         function openShareModal() {
             if (!user || !user.email) {
                 showNotification('Please log in first!')
@@ -3109,19 +2939,17 @@ function scrollToSection(id) {
         }
 
         function updateDashboardStats() {
-            // Count actual memories
             const songs = JSON.parse(localStorage.getItem('spotify_music_data') || '[]').length
             const contacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]').length
             const stories = Object.keys(JSON.parse(localStorage.getItem('vault_stories') || '{}')).length
             const lifebook = Object.keys(JSON.parse(localStorage.getItem('vault_lifebook') || '{}')).length
             const inheritors = JSON.parse(localStorage.getItem('vault_inheritors') || '[]').length
-            const photos = uploadedPhotos.length // Will be updated when photos load
+            const photos = uploadedPhotos.length
             
             const totalMemories = songs + contacts + stories + lifebook + photos
             
             document.getElementById('total-memories').textContent = totalMemories
             
-            // Estimate storage (very rough)
             const storageGB = ((photos * 2) + (songs * 0.1) + (contacts * 0.001)).toFixed(2)
             document.getElementById('storage-used').textContent = storageGB + ' MB'
             
@@ -3129,7 +2957,6 @@ function scrollToSection(id) {
             document.getElementById('inheritors-count').textContent = inheritors
         }
 
-        // Update stats when data changes
         function refreshDashboardStats() {
             if (user) {
                 setTimeout(() => {
