@@ -2102,6 +2102,7 @@
                 <li id="nav-dashboard" class="hidden"><a href="#dashboard" onclick="showSection('dashboard'); closeMobileNav()">My Vault</a></li>
                 <li id="nav-login"><a href="#" onclick="showLogin(); closeMobileNav()" class="btn-nav">Start Your Legacy</a></li>
                 <li id="nav-logout" class="hidden"><a href="#" onclick="logout(); closeMobileNav()">Logout</a></li>
+                <li id="nav-admin" class="hidden"><a href="#" onclick="showSection('admin'); closeMobileNav()" style="color:#ef4444; font-weight:600;">⚙️ Admin</a></li>
             </ul>
         </div>
     </nav>
@@ -2854,7 +2855,190 @@
         </div>
     </div>
 
-    <!-- Footer -->
+    <!-- Admin Section -->
+    <section id="admin-section" style="display:none; min-height:100vh; background:#0f172a; padding:2rem;">
+        
+        <!-- Admin Login -->
+        <div id="admin-login-screen" style="max-width:400px; margin:4rem auto; background:#1e293b; border-radius:16px; padding:2.5rem; border:1px solid #334155;">
+            <div style="text-align:center; margin-bottom:2rem;">
+                <div style="font-size:2.5rem; margin-bottom:0.5rem;">⚙️</div>
+                <h2 style="color:white; font-size:1.5rem; margin-bottom:0.25rem;">Admin Panel</h2>
+                <p style="color:#64748b; font-size:0.9rem;">That's My Life • Beta Dashboard</p>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <input type="password" id="admin-password-input" placeholder="Enter admin password" 
+                    style="width:100%; padding:0.85rem 1rem; background:#0f172a; border:1px solid #334155; border-radius:8px; color:white; font-size:1rem; outline:none;"
+                    onkeydown="if(event.key==='Enter') checkAdminPassword()">
+            </div>
+            <div id="admin-login-error" style="display:none; color:#f87171; font-size:0.85rem; margin-bottom:1rem; text-align:center;"></div>
+            <button onclick="checkAdminPassword()" style="width:100%; padding:0.85rem; background:#3730a3; color:white; border:none; border-radius:8px; font-size:1rem; font-weight:600; cursor:pointer;">
+                Enter Admin Panel
+            </button>
+        </div>
+
+        <!-- Admin Dashboard (shown after login) -->
+        <div id="admin-dashboard" style="display:none; max-width:1100px; margin:0 auto;">
+            
+            <!-- Header -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem;">
+                <div>
+                    <h1 style="color:white; font-size:1.8rem; font-weight:700; margin-bottom:0.25rem;">⚙️ Admin Panel</h1>
+                    <p style="color:#64748b; font-size:0.9rem;">That's My Life Beta • <span id="admin-last-refresh"></span></p>
+                </div>
+                <div style="display:flex; gap:0.75rem;">
+                    <button onclick="refreshAdminData()" style="background:#1e293b; color:#94a3b8; border:1px solid #334155; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer; font-size:0.9rem;">
+                        🔄 Refresh
+                    </button>
+                    <button onclick="exportAdminCSV()" style="background:#059669; color:white; border:none; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer; font-size:0.9rem; font-weight:600;">
+                        📥 Export CSV
+                    </button>
+                    <button onclick="lockAdmin()" style="background:#ef4444; color:white; border:none; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer; font-size:0.9rem;">
+                        🔒 Lock
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-bottom:2rem;">
+                <div style="background:#1e293b; border-radius:12px; padding:1.25rem; border:1px solid #334155;">
+                    <p style="color:#64748b; font-size:0.8rem; margin-bottom:0.25rem; text-transform:uppercase; letter-spacing:0.05em;">Total Testers</p>
+                    <p id="stat-total-testers" style="color:white; font-size:2rem; font-weight:700;">0</p>
+                </div>
+                <div style="background:#1e293b; border-radius:12px; padding:1.25rem; border:1px solid #334155;">
+                    <p style="color:#64748b; font-size:0.8rem; margin-bottom:0.25rem; text-transform:uppercase; letter-spacing:0.05em;">Total Songs</p>
+                    <p id="stat-total-songs" style="color:#1db954; font-size:2rem; font-weight:700;">0</p>
+                </div>
+                <div style="background:#1e293b; border-radius:12px; padding:1.25rem; border:1px solid #334155;">
+                    <p style="color:#64748b; font-size:0.8rem; margin-bottom:0.25rem; text-transform:uppercase; letter-spacing:0.05em;">Total Contacts</p>
+                    <p id="stat-total-contacts" style="color:#8b5cf6; font-size:2rem; font-weight:700;">0</p>
+                </div>
+                <div style="background:#1e293b; border-radius:12px; padding:1.25rem; border:1px solid #334155;">
+                    <p style="color:#64748b; font-size:0.8rem; margin-bottom:0.25rem; text-transform:uppercase; letter-spacing:0.05em;">Stories Written</p>
+                    <p id="stat-total-stories" style="color:#f59e0b; font-size:2rem; font-weight:700;">0</p>
+                </div>
+                <div style="background:#1e293b; border-radius:12px; padding:1.25rem; border:1px solid #334155;">
+                    <p style="color:#64748b; font-size:0.8rem; margin-bottom:0.25rem; text-transform:uppercase; letter-spacing:0.05em;">Lifetime Plans</p>
+                    <p id="stat-lifetime-plans" style="color:#ec4899; font-size:2rem; font-weight:700;">0</p>
+                </div>
+            </div>
+
+            <!-- Tester Table -->
+            <div style="background:#1e293b; border-radius:12px; border:1px solid #334155; margin-bottom:2rem; overflow:hidden;">
+                <div style="padding:1.25rem 1.5rem; border-bottom:1px solid #334155; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                    <h3 style="color:white; font-size:1.1rem; font-weight:600;">👥 Registered Testers</h3>
+                    <input id="admin-search" placeholder="🔍 Search testers..." oninput="filterAdminTesters(this.value)"
+                        style="padding:0.5rem 0.75rem; background:#0f172a; border:1px solid #334155; border-radius:6px; color:white; font-size:0.9rem; outline:none; width:220px;">
+                </div>
+                <div id="admin-testers-table" style="overflow-x:auto;">
+                    <table style="width:100%; border-collapse:collapse;">
+                        <thead>
+                            <tr style="background:#0f172a;">
+                                <th style="padding:0.75rem 1rem; text-align:left; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Name / Email</th>
+                                <th style="padding:0.75rem 1rem; text-align:left; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Plan</th>
+                                <th style="padding:0.75rem 1rem; text-align:center; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">🎵</th>
+                                <th style="padding:0.75rem 1rem; text-align:center; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">👥</th>
+                                <th style="padding:0.75rem 1rem; text-align:center; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">📸</th>
+                                <th style="padding:0.75rem 1rem; text-align:center; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">✨</th>
+                                <th style="padding:0.75rem 1rem; text-align:center; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">📖</th>
+                                <th style="padding:0.75rem 1rem; text-align:left; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-testers-tbody"></tbody>
+                    </table>
+                    <div id="admin-no-testers" style="display:none; padding:3rem; text-align:center; color:#475569;">
+                        No testers registered yet.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedback Section -->
+            <div style="background:#1e293b; border-radius:12px; border:1px solid #334155; margin-bottom:2rem; overflow:hidden;">
+                <div style="padding:1.25rem 1.5rem; border-bottom:1px solid #334155;">
+                    <h3 style="color:white; font-size:1.1rem; font-weight:600;">💬 Tester Feedback</h3>
+                    <p style="color:#64748b; font-size:0.85rem; margin-top:0.25rem;">Notes and feedback submitted by testers</p>
+                </div>
+                <div id="admin-feedback-list" style="padding:1.5rem;">
+                    <p style="color:#475569; text-align:center; padding:1rem;">No feedback submitted yet.</p>
+                </div>
+
+                <!-- Add manual note -->
+                <div style="padding:1.25rem 1.5rem; border-top:1px solid #334155; background:#0f172a;">
+                    <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.75rem; font-weight:600;">📝 Add Admin Note</p>
+                    <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                        <input id="admin-note-tester" placeholder="Tester email (optional)" 
+                            style="flex:1; min-width:160px; padding:0.6rem 0.75rem; background:#1e293b; border:1px solid #334155; border-radius:6px; color:white; font-size:0.9rem; outline:none;">
+                        <input id="admin-note-text" placeholder="Note or observation..." 
+                            style="flex:3; min-width:200px; padding:0.6rem 0.75rem; background:#1e293b; border:1px solid #334155; border-radius:6px; color:white; font-size:0.9rem; outline:none;">
+                        <button onclick="saveAdminNote()" style="background:#3730a3; color:white; border:none; padding:0.6rem 1.2rem; border-radius:6px; font-size:0.9rem; font-weight:600; cursor:pointer;">
+                            Save Note
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div style="background:#1e293b; border-radius:12px; border:1px solid #7f1d1d; padding:1.5rem;">
+                <h3 style="color:#f87171; font-size:1rem; font-weight:600; margin-bottom:1rem;">⚠️ Danger Zone</h3>
+                <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                    <button onclick="clearAllTesters()" style="background:#7f1d1d; color:#fca5a5; border:1px solid #991b1b; padding:0.6rem 1.2rem; border-radius:6px; font-size:0.9rem; cursor:pointer;">
+                        🗑️ Clear All Tester Accounts
+                    </button>
+                    <button onclick="clearAllFeedback()" style="background:#1e293b; color:#94a3b8; border:1px solid #334155; padding:0.6rem 1.2rem; border-radius:6px; font-size:0.9rem; cursor:pointer;">
+                        🗑️ Clear All Feedback
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tester Feedback Button (visible on dashboard to logged-in testers) -->
+    <div id="feedback-fab" style="display:none; position:fixed; bottom:2rem; right:2rem; z-index:500;">
+        <button onclick="openFeedbackModal()" style="background:#3730a3; color:white; border:none; border-radius:980px; padding:0.75rem 1.25rem; font-size:0.9rem; font-weight:600; cursor:pointer; box-shadow:0 4px 20px rgba(55,48,163,0.4);">
+            💬 Give Feedback
+        </button>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-bottom:0.5rem;">💬 Beta Feedback</h2>
+            <p style="color:#6b7280; font-size:0.9rem; margin-bottom:1.5rem;">Help us improve That's My Life. What's working? What's broken?</p>
+            <div style="margin-bottom:1rem;">
+                <label style="display:block; font-weight:600; color:#4b5563; margin-bottom:0.5rem; font-size:0.9rem;">Rating</label>
+                <div id="feedback-stars" style="display:flex; gap:0.5rem; font-size:1.8rem; cursor:pointer;">
+                    <span onclick="setRating(1)" class="star">⭐</span>
+                    <span onclick="setRating(2)" class="star">⭐</span>
+                    <span onclick="setRating(3)" class="star">⭐</span>
+                    <span onclick="setRating(4)" class="star">⭐</span>
+                    <span onclick="setRating(5)" class="star">⭐</span>
+                </div>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <label style="display:block; font-weight:600; color:#4b5563; margin-bottom:0.5rem; font-size:0.9rem;">What did you try?</label>
+                <select id="feedback-feature" style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                    <option value="">Select a feature...</option>
+                    <option value="music">🎵 Music Library</option>
+                    <option value="photos">📸 Photos</option>
+                    <option value="contacts">👥 Contacts</option>
+                    <option value="stories">✨ Life Stories</option>
+                    <option value="lifebook">📖 Life Book</option>
+                    <option value="inheritors">👨‍👩‍👧‍👦 Inheritors</option>
+                    <option value="general">🌐 General / Other</option>
+                </select>
+            </div>
+            <div style="margin-bottom:1.5rem;">
+                <label style="display:block; font-weight:600; color:#4b5563; margin-bottom:0.5rem; font-size:0.9rem;">Your feedback</label>
+                <textarea id="feedback-text" placeholder="Tell us what you think, what's broken, or what you'd love to see..." 
+                    style="width:100%; padding:0.75rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; min-height:120px; resize:vertical; font-family:inherit;"></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-primary" onclick="submitFeedback()">Submit Feedback</button>
+                <button class="btn-secondary" onclick="closeFeedbackModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    
     <footer>
         <div class="footer-content">
             <div class="footer-section">
@@ -2965,15 +3149,20 @@
         function showSection(section) {
             document.getElementById('home-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.remove('active');
+            document.getElementById('admin-section').style.display = 'none';
 
             if (section === 'home') {
                 document.getElementById('home-section').classList.remove('hidden');
             } else if (section === 'dashboard') {
                 if (user) {
                     document.getElementById('dashboard-section').classList.add('active');
+                    const fab = document.getElementById('feedback-fab')
+                    if (fab) fab.style.display = 'block'
                 } else {
                     showLogin();
                 }
+            } else if (section === 'admin') {
+                showAdminSection();
             }
         }
 
@@ -3024,7 +3213,7 @@
                     return;
                 }
                 const fullname = document.getElementById('fullname').value.trim();
-                users[email] = { password: password, name: fullname || email.split('@')[0], plan: selectedPlan };
+                users[email] = { password: password, name: fullname || email.split('@')[0], plan: selectedPlan, registeredAt: new Date().toISOString() };
                 saveUsers(users);
                 user = { email, name: users[email].name, plan: selectedPlan };
             } else {
@@ -3071,6 +3260,7 @@
             document.getElementById('nav-dashboard').classList.remove('hidden');
             document.getElementById('nav-share').classList.remove('hidden');
             document.getElementById('user-name').textContent = user.name;
+            showAdminControls();
             updateDashboardStats();
             
             setTimeout(() => {
@@ -3088,6 +3278,9 @@
             document.getElementById('nav-logout').classList.add('hidden');
             document.getElementById('nav-dashboard').classList.add('hidden');
             document.getElementById('nav-share').classList.add('hidden');
+            document.getElementById('nav-admin').classList.add('hidden');
+            const fab = document.getElementById('feedback-fab')
+            if (fab) fab.style.display = 'none'
         }
 
         function openShareModal() {
@@ -3147,7 +3340,276 @@
             }
         }
 
-        function showNotification(message) {
+        // ============ ADMIN PANEL ============
+        const ADMIN_PASSWORD = 'tmlbeta2026'
+        let adminAuthenticated = false
+        let feedbackRating = 0
+        let allTesters = []
+
+        // Check if URL hash is /admin
+        function checkAdminRoute() {
+            if (window.location.hash === '#/admin' || window.location.search.includes('admin=1')) {
+                showAdminSection()
+            }
+        }
+
+        function showAdminSection() {
+            document.getElementById('home-section').classList.add('hidden')
+            document.getElementById('dashboard-section').classList.remove('active')
+            document.getElementById('admin-section').style.display = 'block'
+            if (adminAuthenticated) {
+                document.getElementById('admin-login-screen').style.display = 'none'
+                document.getElementById('admin-dashboard').style.display = 'block'
+                refreshAdminData()
+            }
+        }
+
+        function checkAdminPassword() {
+            const input = document.getElementById('admin-password-input').value
+            const errorEl = document.getElementById('admin-login-error')
+            if (input === ADMIN_PASSWORD) {
+                adminAuthenticated = true
+                document.getElementById('admin-login-screen').style.display = 'none'
+                document.getElementById('admin-dashboard').style.display = 'block'
+                refreshAdminData()
+            } else {
+                errorEl.textContent = 'Incorrect password. Try again.'
+                errorEl.style.display = 'block'
+                document.getElementById('admin-password-input').value = ''
+            }
+        }
+
+        function lockAdmin() {
+            adminAuthenticated = false
+            document.getElementById('admin-login-screen').style.display = 'block'
+            document.getElementById('admin-dashboard').style.display = 'none'
+            document.getElementById('admin-password-input').value = ''
+            document.getElementById('admin-login-error').style.display = 'none'
+        }
+
+        function refreshAdminData() {
+            const users = getUsers()
+            allTesters = Object.entries(users).map(([email, data]) => ({ email, ...data }))
+
+            // Stats
+            let totalSongs = 0, totalContacts = 0, totalStories = 0, lifetimePlans = 0
+
+            allTesters.forEach(t => {
+                const songs = JSON.parse(localStorage.getItem('spotify_music_data') || '[]')
+                const contacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]')
+                const stories = Object.keys(JSON.parse(localStorage.getItem('vault_stories') || '{}'))
+                // Note: in a real multi-user app these would be per-user; for beta they're shared localStorage
+                if (t.plan === 'lifetime') lifetimePlans++
+            })
+
+            // Use global counts for now (single-device beta)
+            totalSongs = JSON.parse(localStorage.getItem('spotify_music_data') || '[]').length
+            totalContacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]').length
+            totalStories = Object.keys(JSON.parse(localStorage.getItem('vault_stories') || '{}')).length +
+                           Object.keys(JSON.parse(localStorage.getItem('vault_lifebook') || '{}')).length
+
+            document.getElementById('stat-total-testers').textContent = allTesters.length
+            document.getElementById('stat-total-songs').textContent = totalSongs
+            document.getElementById('stat-total-contacts').textContent = totalContacts
+            document.getElementById('stat-total-stories').textContent = totalStories
+            document.getElementById('stat-lifetime-plans').textContent = lifetimePlans
+
+            document.getElementById('admin-last-refresh').textContent = 'Refreshed ' + new Date().toLocaleTimeString()
+
+            renderTesterTable(allTesters)
+            renderFeedback()
+        }
+
+        function renderTesterTable(testers) {
+            const tbody = document.getElementById('admin-testers-tbody')
+            const noTesters = document.getElementById('admin-no-testers')
+
+            if (testers.length === 0) {
+                tbody.innerHTML = ''
+                noTesters.style.display = 'block'
+                return
+            }
+            noTesters.style.display = 'none'
+
+            const songs = JSON.parse(localStorage.getItem('spotify_music_data') || '[]').length
+            const contacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]').length
+            const stories = Object.keys(JSON.parse(localStorage.getItem('vault_stories') || '{}')).length
+            const lifebook = Object.keys(JSON.parse(localStorage.getItem('vault_lifebook') || '{}')).length
+            const photos = JSON.parse(localStorage.getItem('vault_photos_count') || '0')
+
+            tbody.innerHTML = testers.map((t, i) => `
+                <tr style="border-bottom:1px solid #1e293b; transition:background 0.15s;" 
+                    onmouseover="this.style.background='#0f172a'" onmouseout="this.style.background='transparent'">
+                    <td style="padding:1rem; color:white;">
+                        <div style="font-weight:600; font-size:0.95rem;">${t.name || '—'}</div>
+                        <div style="color:#64748b; font-size:0.8rem;">${t.email}</div>
+                    </td>
+                    <td style="padding:1rem;">
+                        <span style="background:${t.plan === 'lifetime' ? '#1e3a8a' : '#064e3b'}; color:${t.plan === 'lifetime' ? '#93c5fd' : '#6ee7b7'}; padding:0.2rem 0.6rem; border-radius:980px; font-size:0.75rem; font-weight:600; text-transform:uppercase;">
+                            ${t.plan || 'monthly'}
+                        </span>
+                    </td>
+                    <td style="padding:1rem; text-align:center; color:#1db954; font-weight:600;">${i === 0 ? songs : '—'}</td>
+                    <td style="padding:1rem; text-align:center; color:#8b5cf6; font-weight:600;">${i === 0 ? contacts : '—'}</td>
+                    <td style="padding:1rem; text-align:center; color:#3b82f6; font-weight:600;">${i === 0 ? (photos || '—') : '—'}</td>
+                    <td style="padding:1rem; text-align:center; color:#f59e0b; font-weight:600;">${i === 0 ? stories : '—'}</td>
+                    <td style="padding:1rem; text-align:center; color:#8b5cf6; font-weight:600;">${i === 0 ? lifebook : '—'}</td>
+                    <td style="padding:1rem;">
+                        <button onclick="deleteAdminTester('${t.email}')" 
+                            style="background:#7f1d1d; color:#fca5a5; border:none; padding:0.3rem 0.75rem; border-radius:6px; font-size:0.8rem; cursor:pointer;">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            `).join('')
+        }
+
+        function filterAdminTesters(query) {
+            const filtered = allTesters.filter(t =>
+                t.email.toLowerCase().includes(query.toLowerCase()) ||
+                (t.name && t.name.toLowerCase().includes(query.toLowerCase()))
+            )
+            renderTesterTable(filtered)
+        }
+
+        function deleteAdminTester(email) {
+            if (!confirm(`Delete tester account: ${email}?\n\nThis cannot be undone.`)) return
+            const users = getUsers()
+            delete users[email]
+            saveUsers(users)
+            refreshAdminData()
+            showAdminNotification('🗑️ Tester deleted: ' + email)
+        }
+
+        function clearAllTesters() {
+            if (!confirm('Delete ALL tester accounts? This cannot be undone.')) return
+            localStorage.removeItem('tml_users')
+            refreshAdminData()
+            showAdminNotification('🗑️ All tester accounts cleared')
+        }
+
+        // Feedback
+        function renderFeedback() {
+            const feedbackList = document.getElementById('admin-feedback-list')
+            const feedback = JSON.parse(localStorage.getItem('tml_feedback') || '[]')
+            const notes = JSON.parse(localStorage.getItem('tml_admin_notes') || '[]')
+            const all = [...feedback, ...notes].sort((a, b) => new Date(b.date) - new Date(a.date))
+
+            if (all.length === 0) {
+                feedbackList.innerHTML = '<p style="color:#475569; text-align:center; padding:1rem;">No feedback or notes yet.</p>'
+                return
+            }
+
+            feedbackList.innerHTML = all.map(f => `
+                <div style="background:#0f172a; border-radius:8px; padding:1rem; margin-bottom:0.75rem; border-left:3px solid ${f.isAdminNote ? '#3730a3' : '#059669'};">
+                    <div style="display:flex; justify-content:space-between; align-items:start; gap:1rem; flex-wrap:wrap;">
+                        <div>
+                            <span style="color:${f.isAdminNote ? '#818cf8' : '#34d399'}; font-size:0.75rem; font-weight:600; text-transform:uppercase;">
+                                ${f.isAdminNote ? '📝 Admin Note' : '💬 Tester Feedback'}
+                            </span>
+                            ${f.rating ? '<span style="margin-left:0.5rem; font-size:0.85rem;">' + '⭐'.repeat(f.rating) + '</span>' : ''}
+                            ${f.feature ? '<span style="margin-left:0.5rem; background:#1e293b; color:#94a3b8; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.75rem;">' + f.feature + '</span>' : ''}
+                        </div>
+                        <span style="color:#475569; font-size:0.75rem;">${new Date(f.date).toLocaleString()}</span>
+                    </div>
+                    <p style="color:#e2e8f0; margin-top:0.5rem; font-size:0.9rem; line-height:1.5;">${f.text}</p>
+                    ${f.email ? '<p style="color:#475569; font-size:0.8rem; margin-top:0.25rem;">— ' + f.email + '</p>' : ''}
+                </div>
+            `).join('')
+        }
+
+        function saveAdminNote() {
+            const tester = document.getElementById('admin-note-tester').value.trim()
+            const text = document.getElementById('admin-note-text').value.trim()
+            if (!text) return
+            const notes = JSON.parse(localStorage.getItem('tml_admin_notes') || '[]')
+            notes.unshift({ text, email: tester || null, date: new Date().toISOString(), isAdminNote: true })
+            localStorage.setItem('tml_admin_notes', JSON.stringify(notes))
+            document.getElementById('admin-note-tester').value = ''
+            document.getElementById('admin-note-text').value = ''
+            renderFeedback()
+            showAdminNotification('📝 Note saved')
+        }
+
+        function clearAllFeedback() {
+            if (!confirm('Clear all feedback and admin notes?')) return
+            localStorage.removeItem('tml_feedback')
+            localStorage.removeItem('tml_admin_notes')
+            renderFeedback()
+            showAdminNotification('🗑️ Feedback cleared')
+        }
+
+        function exportAdminCSV() {
+            const users = getUsers()
+            const rows = [['Name', 'Email', 'Plan', 'Registered']]
+            Object.entries(users).forEach(([email, data]) => {
+                rows.push([data.name || '', email, data.plan || 'monthly', data.registeredAt || ''])
+            })
+            const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n')
+            const blob = new Blob([csv], { type: 'text/csv' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = 'thatsmylife-testers-' + new Date().toISOString().split('T')[0] + '.csv'
+            a.click()
+            URL.revokeObjectURL(url)
+        }
+
+        function showAdminNotification(msg) {
+            showNotification(msg)
+        }
+
+        // Tester Feedback (for users on dashboard)
+        function openFeedbackModal() {
+            feedbackRating = 0
+            document.getElementById('feedback-text').value = ''
+            document.getElementById('feedback-feature').value = ''
+            updateStars(0)
+            document.getElementById('feedback-modal').classList.add('active')
+        }
+
+        function closeFeedbackModal() {
+            document.getElementById('feedback-modal').classList.remove('active')
+        }
+
+        function setRating(n) {
+            feedbackRating = n
+            updateStars(n)
+        }
+
+        function updateStars(n) {
+            document.querySelectorAll('.star').forEach((s, i) => {
+                s.style.opacity = i < n ? '1' : '0.3'
+            })
+        }
+
+        function submitFeedback() {
+            const text = document.getElementById('feedback-text').value.trim()
+            if (!text) { showNotification('Please write something first!'); return }
+            const feature = document.getElementById('feedback-feature').value
+            const feedback = JSON.parse(localStorage.getItem('tml_feedback') || '[]')
+            feedback.unshift({
+                text,
+                rating: feedbackRating,
+                feature,
+                email: user ? user.email : 'anonymous',
+                date: new Date().toISOString(),
+                isAdminNote: false
+            })
+            localStorage.setItem('tml_feedback', JSON.stringify(feedback))
+            closeFeedbackModal()
+            showNotification('🙏 Thanks for your feedback!')
+        }
+
+        // Show admin nav link and feedback FAB when on dashboard
+        function showAdminControls() {
+            document.getElementById('nav-admin').classList.remove('hidden')
+            const fab = document.getElementById('feedback-fab')
+            if (fab) fab.style.display = 'block'
+        }
+        // ============ END ADMIN PANEL ============
+
+        
             const notification = document.getElementById('notification');
             notification.textContent = message;
             notification.classList.add('active');
