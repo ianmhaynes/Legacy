@@ -2077,16 +2077,7 @@
     
 </head>
 <body>
-    <!-- Page loader -->
-    <div id="page-loader" style="position:fixed; inset:0; background:#fbfbfd; z-index:9999; display:flex; align-items:center; justify-content:center; transition:opacity 0.3s;">
-        <div style="text-align:center;">
-            <div style="font-size:3rem; margin-bottom:1rem; animation: pulse 1s infinite;">📖</div>
-            <p style="color:#6e6e73; font-size:1rem;">Loading your vault...</p>
-        </div>
-    </div>
-    <style>
-        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
-    </style>
+
     <!-- Navigation -->
     <nav>
         <div class="container">
@@ -3118,10 +3109,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Show loading overlay briefly
-            const loader = document.getElementById('page-loader')
-            if (loader) setTimeout(() => { loader.style.opacity = '0'; setTimeout(() => loader.remove(), 300) }, 400)
-
             const urlParams = new URLSearchParams(window.location.search)
             const spotifyCode = urlParams.get('code')
             const spotifyError = urlParams.get('error')
