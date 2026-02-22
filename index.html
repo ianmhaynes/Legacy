@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>That's My Life - Preserve Your Story, Music, Photos & Memories Forever</title>
+    <title>We Love Life - Preserve Your Story, Music, Photos & Memories Forever</title>
     <style>
         * {
             margin: 0;
@@ -955,17 +955,26 @@
         }
     </style>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Supabase stub - data stored locally for beta testing
-        const supabaseClient = {
-            from: () => ({ upsert: async () => ({}) }),
-            storage: { from: () => ({ upload: async () => ({}), getPublicUrl: () => ({ data: { publicUrl: '' } }) }) }
+        const SUPABASE_URL = 'https://cusfryouqtrivwbejrkj.supabase.co'
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN1c2ZyeW91cXRyaXZ3YmVqcmtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyNjk3MDcsImV4cCI6MjA4Njg0NTcwN30.tPHqgf-pV8g_rWgasDOVXXmUoPabfd_fBxQgqcnr0Ac'
+        let supabaseClient
+        try {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+        } catch(e) {
+            console.warn('Supabase failed to init, falling back to localStorage:', e)
+            supabaseClient = {
+                from: () => ({ upsert: async () => ({}), select: async () => ({ data: [], error: null }), delete: () => ({ eq: async () => ({}) }) }),
+                storage: { from: () => ({ upload: async () => ({}), getPublicUrl: () => ({ data: { publicUrl: '' } }) }) },
+                auth: { signUp: async () => ({ data: null, error: { message: 'Offline mode' } }), signInWithPassword: async () => ({ data: null, error: { message: 'Offline mode' } }), signOut: async () => ({}), getSession: async () => ({ data: { session: null } }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe: ()=>{} } } }) }
+            }
         }
     </script>
     <!-- Spotify Configuration -->
     <script>
         const SPOTIFY_CLIENT_ID = '26e87baf40af41e18e088c0359a30537'
-        const SPOTIFY_REDIRECT_URI = 'https://www.mydatalegacy.co'
+        const SPOTIFY_REDIRECT_URI = 'https://www.welovedlife.com'
         const SPOTIFY_SCOPES = 'user-read-private user-read-email user-library-read playlist-read-private playlist-read-collaborative user-read-recently-played user-top-read'
 
         // PKCE Helper Functions
@@ -1254,6 +1263,7 @@
 
             savedSongs.push(song)
             localStorage.setItem('spotify_music_data', JSON.stringify(savedSongs))
+            syncVaultToSupabase('spotify_music_data', savedSongs)
             
             document.getElementById('song-search').value = ''
             document.getElementById('search-results').style.display = 'none'
@@ -1319,6 +1329,7 @@
         function removeSong(id) {
             savedSongs = savedSongs.filter(s => s.id !== id)
             localStorage.setItem('spotify_music_data', JSON.stringify(savedSongs))
+            syncVaultToSupabase('spotify_music_data', savedSongs)
             updateSavedSongsDisplay()
             refreshDashboardStats()
             showNotification('Song removed')
@@ -1628,6 +1639,7 @@
 
             savedContacts.push(contact)
             localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
+            syncVaultToSupabase('vault_contacts', savedContacts)
             renderContacts()
             refreshDashboardStats()
             showNotification('👥 Contact saved: ' + name)
@@ -1643,6 +1655,7 @@
         function deleteContact(id) {
             savedContacts = savedContacts.filter(c => c.id !== id)
             localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
+            syncVaultToSupabase('vault_contacts', savedContacts)
             renderContacts()
             showNotification('Contact removed')
         }
@@ -1669,6 +1682,7 @@
 
                 savedContacts = [...savedContacts, ...parsed]
                 localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
+            syncVaultToSupabase('vault_contacts', savedContacts)
                 renderContacts()
                 showNotification('👥 ' + parsed.length + ' contacts imported!')
             }
@@ -1842,6 +1856,7 @@
 
             savedInheritors.push(inheritor)
             localStorage.setItem('vault_inheritors', JSON.stringify(savedInheritors))
+            syncVaultToSupabase('vault_inheritors', savedInheritors)
             
             document.getElementById('inheritor-name').value = ''
             document.getElementById('inheritor-email').value = ''
@@ -1858,6 +1873,7 @@
             if (!confirm('Remove this inheritor?')) return
             savedInheritors = savedInheritors.filter(i => i.id !== id)
             localStorage.setItem('vault_inheritors', JSON.stringify(savedInheritors))
+            syncVaultToSupabase('vault_inheritors', savedInheritors)
             renderInheritors()
             refreshDashboardStats()
             showNotification('Inheritor removed')
@@ -1927,6 +1943,7 @@
 
             savedStories[currentStoryKey] = text
             localStorage.setItem('vault_stories', JSON.stringify(savedStories))
+            syncVaultToSupabase('vault_stories', savedStories)
 
             const indicator = document.getElementById('indicator-' + currentStoryKey)
             if (indicator) indicator.style.display = 'block'
@@ -1981,6 +1998,7 @@
 
             savedLifebook[currentLifebookKey] = text
             localStorage.setItem('vault_lifebook', JSON.stringify(savedLifebook))
+            syncVaultToSupabase('vault_lifebook', savedLifebook)
 
             const indicator = document.getElementById('indicator-lb-' + currentLifebookKey)
             if (indicator) indicator.style.display = 'block'
@@ -2080,7 +2098,7 @@
     <!-- Navigation -->
     <nav>
         <div class="container">
-            <div class="logo">📖 That's My Life</div>
+            <div class="logo">📖 We Love Life</div>
             <button class="hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="Menu">
                 <span></span><span></span><span></span>
             </button>
@@ -2150,7 +2168,7 @@
         <!-- Solution Section -->
         <section class="solution-section">
             <h2>A Digital Time Capsule for Future Generations</h2>
-            <p class="intro">That's My Life preserves your digital life so your family can discover who you really were—decades after you're gone.</p>
+            <p class="intro">We Love Life preserves your digital life so your family can discover who you really were—decades after you're gone.</p>
             <div class="feature-grid">
                 <div class="feature-card">
                     <div class="feature-icon">🎵</div>
@@ -2227,7 +2245,7 @@
             <h2>Stories from Families</h2>
             <div class="testimonial-grid">
                 <div class="testimonial">
-                    <p class="testimonial-text">"When my father passed, we couldn't access his phone. All his photos were locked forever. I created a That's My Life vault so my kids never experience that loss."</p>
+                    <p class="testimonial-text">"When my father passed, we couldn't access his phone. All his photos were locked forever. I created a We Love Life vault so my kids never experience that loss."</p>
                     <p class="testimonial-author">Sarah M.</p>
                     <p class="testimonial-role">Mother of three</p>
                 </div>
@@ -2239,7 +2257,7 @@
                 <div class="testimonial">
                     <p class="testimonial-text">"This isn't just backup software—it's an heirloom. I'm creating something my great-great-grandchildren will treasure."</p>
                     <p class="testimonial-author">Maria R.</p>
-                    <p class="testimonial-role">That's My Life member</p>
+                    <p class="testimonial-role">We Love Life member</p>
                 </div>
             </div>
         </section>
@@ -2295,7 +2313,7 @@
     <section id="dashboard-section" class="dashboard">
         <div class="container">
             <div class="dashboard-header">
-                <h2>Your That's My Life</h2>
+                <h2>Your We Love Life</h2>
                 <p>Welcome back, <span id="user-name">User</span></p>
             </div>
 
@@ -2771,7 +2789,7 @@
             <div id="login-plan-badge" style="text-align:center; margin-bottom:1.5rem; display:none;">
                 <span id="login-plan-label" style="background:#059669; color:white; padding:0.4rem 1.2rem; border-radius:980px; font-size:0.9rem; font-weight:500;"></span>
             </div>
-            <h2 id="login-modal-title">Start Your That's My Life</h2>
+            <h2 id="login-modal-title">Start Your We Love Life</h2>
             <p style="color:#6b7280; font-size:0.9rem; margin-bottom:1.5rem;" id="login-modal-subtitle">Create your account to start preserving your story.</p>
 
             <!-- Beta tester notice -->
@@ -2853,7 +2871,7 @@
             <div style="text-align:center; margin-bottom:2rem;">
                 <div style="font-size:2.5rem; margin-bottom:0.5rem;">⚙️</div>
                 <h2 style="color:white; font-size:1.5rem; margin-bottom:0.25rem;">Admin Panel</h2>
-                <p style="color:#64748b; font-size:0.9rem;">That's My Life • Beta Dashboard</p>
+                <p style="color:#64748b; font-size:0.9rem;">We Love Life • Beta Dashboard</p>
             </div>
             <div style="margin-bottom:1rem;">
                 <input type="password" id="admin-password-input" placeholder="Enter admin password" 
@@ -2873,7 +2891,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem;">
                 <div>
                     <h1 style="color:white; font-size:1.8rem; font-weight:700; margin-bottom:0.25rem;">⚙️ Admin Panel</h1>
-                    <p style="color:#64748b; font-size:0.9rem;">That's My Life Beta • <span id="admin-last-refresh"></span></p>
+                    <p style="color:#64748b; font-size:0.9rem;">We Love Life Beta • <span id="admin-last-refresh"></span></p>
                 </div>
                 <div style="display:flex; gap:0.75rem;">
                     <button onclick="refreshAdminData()" style="background:#1e293b; color:#94a3b8; border:1px solid #334155; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer; font-size:0.9rem;">
@@ -2992,7 +3010,7 @@
     <div id="feedback-modal" class="modal">
         <div class="modal-content">
             <h2 style="margin-bottom:0.5rem;">💬 Beta Feedback</h2>
-            <p style="color:#6b7280; font-size:0.9rem; margin-bottom:1.5rem;">Help us improve That's My Life. What's working? What's broken?</p>
+            <p style="color:#6b7280; font-size:0.9rem; margin-bottom:1.5rem;">Help us improve We Love Life. What's working? What's broken?</p>
             <div style="margin-bottom:1rem;">
                 <label style="display:block; font-weight:600; color:#4b5563; margin-bottom:0.5rem; font-size:0.9rem;">Rating</label>
                 <div id="feedback-stars" style="display:flex; gap:0.5rem; font-size:1.8rem; cursor:pointer;">
@@ -3032,7 +3050,7 @@
     <footer>
         <div class="footer-content">
             <div class="footer-section">
-                <h3>That's My Life</h3>
+                <h3>We Love Life</h3>
                 <p style="color: #9ca3af; margin-top: 0.5rem;">Preserving your digital legacy for future generations.</p>
             </div>
             <div class="footer-section">
@@ -3060,7 +3078,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 That's My Life. Your memories, preserved forever.</p>
+            <p>&copy; 2026 We Love Life. Your memories, preserved forever.</p>
         </div>
     </footer>
 
@@ -3079,7 +3097,7 @@
             document.getElementById('name-group').style.display = isSignup ? 'block' : 'none'
             document.getElementById('password-hint').style.display = isSignup ? 'block' : 'none'
             document.getElementById('login-submit-btn').textContent = isSignup ? 'Create My Vault' : 'Log In'
-            document.getElementById('login-modal-title').textContent = isSignup ? 'Start Your That\'s My Life' : 'Welcome Back'
+            document.getElementById('login-modal-title').textContent = isSignup ? 'Start Your We Love Life' : 'Welcome Back'
             document.getElementById('login-modal-subtitle').textContent = isSignup
                 ? 'Create your account to start preserving your story.'
                 : 'Log in to access your vault.'
@@ -3122,14 +3140,71 @@
             }
         });
 
-        let user = JSON.parse(localStorage.getItem('user') || 'null');
+        let user = null;
 
-        // Simple in-memory "user store" for beta testing (keyed by email)
+        // ---- Supabase Auth Helpers ----
+        // Keep localStorage as cache for offline resilience
         function getUsers() {
             return JSON.parse(localStorage.getItem('tml_users') || '{}')
         }
         function saveUsers(users) {
             localStorage.setItem('tml_users', JSON.stringify(users))
+        }
+
+        // Save vault data to Supabase (with localStorage fallback)
+        async function syncVaultToSupabase(key, data) {
+            if (!user) return
+            try {
+                await supabaseClient.from('vault_data').upsert({
+                    user_email: user.email,
+                    data_key: key,
+                    data_value: JSON.stringify(data),
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'user_email,data_key' })
+            } catch(e) {
+                console.warn('Supabase sync failed, data saved locally:', e)
+            }
+        }
+
+        // Load vault data from Supabase (with localStorage fallback)
+        async function loadVaultFromSupabase(key, fallback) {
+            if (!user) return fallback
+            try {
+                const { data, error } = await supabaseClient
+                    .from('vault_data')
+                    .select('data_value')
+                    .eq('user_email', user.email)
+                    .eq('data_key', key)
+                    .single()
+                if (data && data.data_value) {
+                    const parsed = JSON.parse(data.data_value)
+                    // Also update localStorage cache
+                    localStorage.setItem(key, data.data_value)
+                    return parsed
+                }
+            } catch(e) {
+                console.warn('Supabase load failed, using localStorage:', e)
+            }
+            return fallback
+        }
+
+        // Load ALL vault data for this user from Supabase on login
+        async function loadAllVaultData() {
+            if (!user) return
+            try {
+                const { data, error } = await supabaseClient
+                    .from('vault_data')
+                    .select('data_key, data_value')
+                    .eq('user_email', user.email)
+                if (data && data.length > 0) {
+                    data.forEach(row => {
+                        localStorage.setItem(row.data_key, row.data_value)
+                    })
+                    showNotification('☁️ Vault synced from cloud!')
+                }
+            } catch(e) {
+                console.warn('Could not load from Supabase, using local data:', e)
+            }
         }
 
         function showSection(section) {
@@ -3170,61 +3245,119 @@
             document.getElementById('login-form').reset();
         }
 
-        function login(event) {
+        async function login(event) {
             event.preventDefault();
             const email = document.getElementById('email').value.trim().toLowerCase();
             const password = document.getElementById('password').value;
             const errorEl = document.getElementById('login-error');
+            const submitBtn = document.getElementById('login-submit-btn');
             errorEl.style.display = 'none';
 
-            // Basic email validation
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                 errorEl.textContent = 'Please enter a valid email address.';
                 errorEl.style.display = 'block';
                 return;
             }
 
-            const users = getUsers();
+            submitBtn.textContent = authMode === 'signup' ? 'Creating vault...' : 'Logging in...';
+            submitBtn.disabled = true;
 
-            if (authMode === 'signup') {
-                if (password.length < 8) {
-                    errorEl.textContent = 'Password must be at least 8 characters.';
-                    errorEl.style.display = 'block';
-                    return;
+            try {
+                if (authMode === 'signup') {
+                    if (password.length < 8) {
+                        errorEl.textContent = 'Password must be at least 8 characters.';
+                        errorEl.style.display = 'block';
+                        submitBtn.textContent = 'Create My Vault';
+                        submitBtn.disabled = false;
+                        return;
+                    }
+                    const fullname = document.getElementById('fullname').value.trim();
+
+                    // Try Supabase signup first
+                    const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+                        email,
+                        password,
+                        options: { data: { name: fullname || email.split('@')[0], plan: selectedPlan } }
+                    })
+
+                    if (authError && authError.message !== 'Offline mode') {
+                        // If already registered, switch to login
+                        if (authError.message.includes('already registered') || authError.message.includes('already exists')) {
+                            errorEl.textContent = 'Account already exists. Please log in instead.';
+                            errorEl.style.display = 'block';
+                            switchAuthTab('login');
+                            submitBtn.textContent = 'Log In';
+                            submitBtn.disabled = false;
+                            return;
+                        }
+                        throw authError;
+                    }
+
+                    const name = fullname || email.split('@')[0]
+                    user = { email, name, plan: selectedPlan }
+
+                    // Also save to local user store as backup
+                    const users = getUsers()
+                    users[email] = { password, name, plan: selectedPlan, registeredAt: new Date().toISOString() }
+                    saveUsers(users)
+
+                } else {
+                    // Login
+                    const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({ email, password })
+
+                    if (authError && authError.message !== 'Offline mode') {
+                        // Try local fallback
+                        const users = getUsers()
+                        if (!users[email]) {
+                            errorEl.textContent = 'No account found. Please sign up first.';
+                            errorEl.style.display = 'block';
+                            switchAuthTab('signup');
+                            submitBtn.textContent = 'Create My Vault';
+                            submitBtn.disabled = false;
+                            return;
+                        }
+                        if (users[email].password !== password) {
+                            errorEl.textContent = 'Incorrect password. Please try again.';
+                            errorEl.style.display = 'block';
+                            submitBtn.textContent = 'Log In';
+                            submitBtn.disabled = false;
+                            return;
+                        }
+                        user = { email, name: users[email].name, plan: users[email].plan }
+                    } else {
+                        const users = getUsers()
+                        const meta = authData?.user?.user_metadata || {}
+                        const localUser = users[email] || {}
+                        user = { email, name: meta.name || localUser.name || email.split('@')[0], plan: meta.plan || localUser.plan || 'monthly' }
+
+                        // Also save/update local backup
+                        users[email] = { ...localUser, password, name: user.name, plan: user.plan }
+                        saveUsers(users)
+                    }
                 }
-                if (users[email]) {
-                    errorEl.textContent = 'An account with this email already exists. Please log in instead.';
-                    errorEl.style.display = 'block';
-                    switchAuthTab('login');
-                    return;
-                }
-                const fullname = document.getElementById('fullname').value.trim();
-                users[email] = { password: password, name: fullname || email.split('@')[0], plan: selectedPlan, registeredAt: new Date().toISOString() };
-                saveUsers(users);
-                user = { email, name: users[email].name, plan: selectedPlan };
-            } else {
-                if (!users[email]) {
-                    errorEl.textContent = 'No account found with this email. Please sign up first.';
-                    errorEl.style.display = 'block';
-                    switchAuthTab('signup');
-                    return;
-                }
-                if (users[email].password !== password) {
-                    errorEl.textContent = 'Incorrect password. Please try again.';
-                    errorEl.style.display = 'block';
-                    return;
-                }
-                user = { email, name: users[email].name, plan: users[email].plan };
+
+                localStorage.setItem('user', JSON.stringify(user));
+
+                // Load all vault data from Supabase
+                await loadAllVaultData()
+
+                updateUIForLoggedIn();
+                closeLogin();
+                showSection('dashboard');
+                showNotification(authMode === 'signup' ? '🎉 Welcome to We Love Life!' : '👋 Welcome back, ' + user.name + '!');
+
+            } catch(e) {
+                console.error('Auth error:', e)
+                errorEl.textContent = 'Something went wrong: ' + (e.message || 'Please try again.');
+                errorEl.style.display = 'block';
             }
 
-            localStorage.setItem('user', JSON.stringify(user));
-            updateUIForLoggedIn();
-            closeLogin();
-            showSection('dashboard');
-            showNotification(authMode === 'signup' ? '🎉 Welcome to That\'s My Life!' : '👋 Welcome back, ' + user.name + '!');
+            submitBtn.textContent = authMode === 'signup' ? 'Create My Vault' : 'Log In';
+            submitBtn.disabled = false;
         }
 
-        function logout() {
+        async function logout() {
+            try { await supabaseClient.auth.signOut() } catch(e) {}
             user = null;
             localStorage.removeItem('user');
             updateUIForLoggedOut();
@@ -3232,7 +3365,25 @@
             showNotification('Logged out');
         }
 
-        function checkLogin() {
+        async function checkLogin() {
+            // Try Supabase session first
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession()
+                if (session && session.user) {
+                    const users = getUsers()
+                    const email = session.user.email
+                    const meta = session.user.user_metadata || {}
+                    const localUser = users[email] || {}
+                    user = { email, name: meta.name || localUser.name || email.split('@')[0], plan: meta.plan || localUser.plan || 'monthly' }
+                    localStorage.setItem('user', JSON.stringify(user))
+                    await loadAllVaultData()
+                    updateUIForLoggedIn()
+                    return
+                }
+            } catch(e) {
+                console.warn('Supabase session check failed, trying localStorage:', e)
+            }
+            // Fallback to localStorage
             const stored = localStorage.getItem('user');
             if (stored) {
                 user = JSON.parse(stored);
@@ -3536,7 +3687,7 @@
             const url = URL.createObjectURL(blob)
             const a = document.createElement('a')
             a.href = url
-            a.download = 'thatsmylife-testers-' + new Date().toISOString().split('T')[0] + '.csv'
+            a.download = 'welovedlife-testers-' + new Date().toISOString().split('T')[0] + '.csv'
             a.click()
             URL.revokeObjectURL(url)
         }
