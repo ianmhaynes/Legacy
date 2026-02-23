@@ -1235,18 +1235,19 @@
                 <div style="display:flex; align-items:center; padding:1rem; border-bottom:1px solid #f3f4f6; gap:1rem; cursor:pointer; transition:background 0.2s;"
                      onmouseover="this.style.background='#f9fafb'"
                      onmouseout="this.style.background='white'"
-                     onclick="addSongToLibrary('${track.trackId}', '${(track.trackName || '').replace(/'/g, "\\'")}', '${(track.artistName || '').replace(/'/g, "\\'")}', '${(track.collectionName || '').replace(/'/g, "\\'")}', '${track.artworkUrl100 || ""}')">
+                     onclick="addSongToLibrary('${track.trackId}', '${(track.trackName || '').replace(/'/g, "\\'")}', '${(track.artistName || '').replace(/'/g, "\\'")}', '${(track.collectionName || '').replace(/'/g, "\\'")}', '${track.artworkUrl100 || ""}', '${track.trackViewUrl || ""}', '${track.previewUrl || ""}')">
                     <img src="${track.artworkUrl60 || track.artworkUrl100}" style="width:50px; height:50px; border-radius:6px;">
                     <div style="flex:1; min-width:0;">
                         <div style="font-weight:600; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${track.trackName}</div>
                         <div style="color:#6b7280; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${track.artistName} • ${track.collectionName}</div>
                     </div>
-                    <button style="background:#1db954; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; font-size:0.85rem; font-weight:600;">+ Add</button>
+                    ${track.previewUrl ? `<button onclick="event.stopPropagation(); playPreview('${track.previewUrl}', this)" style="background:#1db954; color:white; border:none; padding:0.4rem 0.7rem; border-radius:6px; font-size:0.8rem; flex-shrink:0;">▶ Preview</button>` : ''}
+                    <button style="background:#3730a3; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; font-size:0.85rem; font-weight:600; flex-shrink:0;">+ Add</button>
                 </div>
             `).join('')
         }
 
-        function addSongToLibrary(id, name, artist, album, image) {
+        function addSongToLibrary(id, name, artist, album, image, trackUrl, previewUrl) {
             if (savedSongs.find(s => s.id === id)) {
                 showNotification('Song already in your library!')
                 return
@@ -1258,6 +1259,8 @@
                 artist: artist,
                 album: album,
                 image: image,
+                trackUrl: trackUrl || '',
+                previewUrl: previewUrl || '',
                 why: '',
                 period: '',
                 meaning: '',
@@ -1285,6 +1288,23 @@
                     data: { tracks: savedSongs, total_count: savedSongs.length, captured_at: new Date().toISOString() },
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'user_email,content_type' })
+            }
+        }
+
+        // Audio preview player
+        let currentAudio = null
+        function playPreview(url, btn) {
+            if (currentAudio) {
+                currentAudio.pause()
+                document.querySelectorAll('.preview-btn').forEach(b => b.textContent = '▶ Preview')
+                if (currentAudio.src === url) { currentAudio = null; return }
+            }
+            currentAudio = new Audio(url)
+            currentAudio.play()
+            if (btn) { btn.classList.add('preview-btn'); btn.textContent = '⏸ Stop' }
+            currentAudio.onended = () => {
+                if (btn) btn.textContent = '▶ Preview'
+                currentAudio = null
             }
         }
 
@@ -1344,9 +1364,11 @@
                                     ${song.meaning ? `<div style="color:#0ea5e9; font-size:0.8rem; margin-top:0.2rem;">❤️ ${song.meaning}</div>` : ''}
                                     ${!song.why && !song.period && !song.meaning ? `<div style="color:#d1d5db; font-size:0.75rem; margin-top:0.2rem; font-style:italic;">No memory added yet — click ✏️ to add one</div>` : ''}
                                 </div>
-                                <div style="display:flex; gap:0.5rem; flex-shrink:0;">
-                                    <button onclick="openSongMemory('${song.id}')" style="background:#ede9fe; border:none; color:#7c3aed; cursor:pointer; padding:0.4rem 0.6rem; border-radius:6px; font-size:0.85rem;" title="Add memory">✏️</button>
-                                    <button onclick="removeSong('${song.id}')" style="background:#fee2e2; border:none; color:#ef4444; cursor:pointer; padding:0.4rem 0.6rem; border-radius:6px; font-size:0.85rem;" title="Remove">🗑️</button>
+                                <div style="display:flex; gap:0.5rem; flex-shrink:0; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+                                    ${song.previewUrl ? `<button onclick="playPreview('${song.previewUrl}', this)" class="preview-btn" style="background:#1db954; color:white; border:none; padding:0.35rem 0.6rem; border-radius:6px; font-size:0.8rem; cursor:pointer;">▶ Preview</button>` : ''}
+                                    ${song.trackUrl ? `<a href="${song.trackUrl}" target="_blank" style="background:#fc3c44; color:white; border:none; padding:0.35rem 0.6rem; border-radius:6px; font-size:0.8rem; text-decoration:none;">🎵 Play</a>` : ''}
+                                    <button onclick="openSongMemory('${song.id}')" style="background:#ede9fe; border:none; color:#7c3aed; cursor:pointer; padding:0.35rem 0.6rem; border-radius:6px; font-size:0.85rem;" title="Add memory">✏️</button>
+                                    <button onclick="removeSong('${song.id}')" style="background:#fee2e2; border:none; color:#ef4444; cursor:pointer; padding:0.35rem 0.6rem; border-radius:6px; font-size:0.85rem;" title="Remove">🗑️</button>
                                 </div>
                             </div>
                             <!-- Memory Form -->
@@ -1615,25 +1637,33 @@
                         .from('vault-photos')
                         .getPublicUrl(userEmail + '/' + file.name)
 
-                    // Load caption data from localStorage
                     const captions = JSON.parse(localStorage.getItem('vault_photo_captions') || '{}')
                     const caption = captions[file.name] || {}
-                    uploadedPhotos.push({ name: file.name, url: urlData.publicUrl })
+                    const hasCaption = !!(caption.date || caption.who || caption.why)
+                    uploadedPhotos.push({ name: file.name, url: urlData.publicUrl, caption })
 
                     const div = document.createElement('div')
                     div.style = 'aspect-ratio:1; border-radius:8px; overflow:hidden; position:relative; cursor:pointer; background:#f3f4f6;'
                     div.innerHTML = `
                         <img src="${urlData.publicUrl}" style="width:100%; height:100%; object-fit:cover;" 
+                             onclick="openPhotoLightbox('${urlData.publicUrl}', '${file.name.replace(/'/g,"\\'")}', ${JSON.stringify(caption).replace(/"/g,'&quot;')})"
                              onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📸</text></svg>'" />
+                        ${hasCaption ? `<div style="position:absolute; top:5px; right:5px; font-size:1.1rem; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5)); pointer-events:none;">❤️</div>` : ''}
                         <div style="position:absolute; inset:0; background:rgba(0,0,0,0.55); opacity:0; transition:opacity 0.2s; display:flex; flex-direction:column; justify-content:flex-end; padding:0.5rem;"
                              onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">
-                            ${caption.date ? `<div style="color:#fbbf24; font-size:0.7rem; margin-bottom:0.2rem;">📅 ${caption.date}</div>` : ''}
-                            ${caption.who ? `<div style="color:white; font-size:0.75rem; font-weight:600; margin-bottom:0.2rem;">👥 ${caption.who}</div>` : ''}
-                            ${caption.why ? `<div style="color:#d1d5db; font-size:0.7rem; font-style:italic; margin-bottom:0.4rem;">"${caption.why}"</div>` : ''}
-                            <button onclick="openPhotoCaptionModal('${file.name}', '${urlData.publicUrl}')" 
-                                style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:white; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.7rem; cursor:pointer; width:100%;">
-                                ✏️ ${caption.date || caption.who || caption.why ? 'Edit Caption' : 'Add Caption'}
-                            </button>
+                            ${caption.date ? `<div style="color:#fbbf24; font-size:0.7rem; margin-bottom:0.15rem;">📅 ${caption.date}</div>` : ''}
+                            ${caption.who ? `<div style="color:white; font-size:0.72rem; font-weight:600; margin-bottom:0.15rem;">👥 ${caption.who}</div>` : ''}
+                            ${caption.why ? `<div style="color:#d1d5db; font-size:0.68rem; font-style:italic; margin-bottom:0.3rem;">"${caption.why}"</div>` : ''}
+                            <div style="display:flex; gap:0.3rem;">
+                                <button onclick="event.stopPropagation(); openPhotoCaptionModal('${file.name}', '${urlData.publicUrl}')" 
+                                    style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:white; padding:0.2rem 0.4rem; border-radius:4px; font-size:0.68rem; cursor:pointer; flex:1;">
+                                    ✏️ ${hasCaption ? 'Edit' : 'Caption'}
+                                </button>
+                                <a href="${urlData.publicUrl}" download="${file.name}" onclick="event.stopPropagation()"
+                                    style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:white; padding:0.2rem 0.4rem; border-radius:4px; font-size:0.68rem; cursor:pointer; text-decoration:none; display:flex; align-items:center;">
+                                    ⬇️
+                                </a>
+                            </div>
                         </div>
                     `
                     grid.appendChild(div)
@@ -1797,7 +1827,7 @@
             return contacts
         }
 
-        function renderContacts(filter = '') {
+        function renderContacts(filter = '', activeCategory = 'All') {
             const list = document.getElementById('contacts-list')
             const count = document.getElementById('contacts-count')
             const searchBar = document.getElementById('contacts-search-bar')
@@ -1813,17 +1843,30 @@
             if (searchBar) searchBar.style.display = 'block'
 
             const term = filter.toLowerCase()
-            let filtered = savedContacts
+            const categoryEmoji = { 'Family':'👨‍👩‍👧‍👦', 'Friends':'👫', 'Business':'💼', 'Romantic':'💕', 'Disliked':'😬', 'Others':'⭐', '':'📋', 'All':'👥' }
+            const categoryOrder = ['Family', 'Friends', 'Business', 'Romantic', 'Disliked', 'Others', '']
 
-            if (term) {
-                filtered = savedContacts.filter(c =>
-                    c.name.toLowerCase().includes(term) ||
-                    (c.category && c.category.toLowerCase().includes(term)) ||
-                    (c.relation && c.relation.toLowerCase().includes(term)) ||
-                    (c.phone && c.phone.includes(term)) ||
-                    (c.email && c.email.toLowerCase().includes(term)) ||
-                    (c.note && c.note.toLowerCase().includes(term))
-                )
+            // Count per category for tabs
+            const catCounts = {}
+            savedContacts.forEach(c => {
+                const cat = c.category || ''
+                catCounts[cat] = (catCounts[cat] || 0) + 1
+            })
+
+            // Filter by search term
+            let filtered = savedContacts.filter(c =>
+                !term ||
+                c.name.toLowerCase().includes(term) ||
+                (c.category && c.category.toLowerCase().includes(term)) ||
+                (c.relation && c.relation.toLowerCase().includes(term)) ||
+                (c.phone && c.phone.includes(term)) ||
+                (c.email && c.email.toLowerCase().includes(term)) ||
+                (c.note && c.note.toLowerCase().includes(term))
+            )
+
+            // Filter by active category tab
+            if (activeCategory !== 'All') {
+                filtered = filtered.filter(c => (c.category || '') === activeCategory)
             }
 
             filtered.sort((a, b) => a.name.localeCompare(b.name))
@@ -1840,21 +1883,30 @@
                 if (ca) ca.textContent = '▼'
             }
 
+            // Build category tabs
+            let tabsHtml = '<div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:1rem;">'
+            const tabList = ['All', 'Family', 'Friends', 'Business', 'Romantic', 'Disliked', 'Others']
+            tabList.forEach(cat => {
+                const n = cat === 'All' ? savedContacts.length : (catCounts[cat] || 0)
+                if (n === 0 && cat !== 'All') return
+                const isActive = activeCategory === cat
+                tabsHtml += `<button onclick="renderContacts(document.getElementById('contact-search')?.value||'','${cat}')"
+                    style="padding:0.3rem 0.75rem; border-radius:980px; font-size:0.8rem; font-weight:600; cursor:pointer; border:2px solid ${isActive ? '#3730a3' : '#e5e7eb'}; background:${isActive ? '#3730a3' : 'white'}; color:${isActive ? 'white' : '#6b7280'};">
+                    ${categoryEmoji[cat]} ${cat} (${n})</button>`
+            })
+            const uncatCount = catCounts[''] || 0
+            if (uncatCount > 0) {
+                const isActive = activeCategory === ''
+                tabsHtml += `<button onclick="renderContacts(document.getElementById('contact-search')?.value||','')"
+                    style="padding:0.3rem 0.75rem; border-radius:980px; font-size:0.8rem; font-weight:600; cursor:pointer; border:2px solid ${isActive ? '#3730a3' : '#e5e7eb'}; background:${isActive ? '#3730a3' : 'white'}; color:${isActive ? 'white' : '#6b7280'};">
+                    📋 Uncategorised (${uncatCount})</button>`
+            }
+            tabsHtml += '</div>'
+
             if (filtered.length === 0) {
-                list.innerHTML = '<p style="color:#9ca3af; text-align:center; padding:1rem;">No contacts match your search</p>'
+                list.innerHTML = tabsHtml + '<p style="color:#9ca3af; text-align:center; padding:1rem;">No contacts in this category</p>'
                 return
             }
-
-            const categoryOrder = ['Family', 'Friends', 'Work Colleagues', 'Old Lovers', 'Mentors', 'Neighbours', 'Other', '']
-            const categoryEmoji = { 'Family': '👨‍👩‍👧‍👦', 'Friends': '👫', 'Work Colleagues': '💼', 'Old Lovers': '💕', 'Mentors': '🌟', 'Neighbours': '🏠', 'Other': '⭐', '': '📋' }
-
-            // Group contacts by category
-            const groups = {}
-            filtered.forEach(c => {
-                const cat = c.category || ''
-                if (!groups[cat]) groups[cat] = []
-                groups[cat].push(c)
-            })
 
             const contactCard = c => `
                 <div style="background:white; border-radius:8px; padding:1rem; display:flex; align-items:flex-start; gap:1rem; border:1px solid #e5e7eb;">
@@ -1863,52 +1915,63 @@
                     </div>
                     <div style="flex:1; min-width:0;">
                         <div style="font-weight:600; color:#1e3a8a;">${c.name}</div>
-                        <div style="color:#6b7280; font-size:0.85rem; margin-top:0.2rem;">
-                            ${c.relation ? '<span style="background:#ede9fe; color:#6d28d9; padding:0.1rem 0.5rem; border-radius:4px; margin-right:0.5rem; font-size:0.8rem;">' + c.relation + '</span>' : ''}
+                        <div style="color:#6b7280; font-size:0.85rem; margin-top:0.2rem; display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+                            ${c.relation ? `<span style="background:#ede9fe; color:#6d28d9; padding:0.1rem 0.5rem; border-radius:4px; font-size:0.8rem;">${c.relation}</span>` : ''}
                             ${c.phone ? '📞 ' + c.phone : ''} ${c.email ? '• ✉️ ' + c.email : ''}
                         </div>
-                        ${c.note ? '<div style="color:#6b7280; font-size:0.85rem; margin-top:0.4rem; font-style:italic; line-height:1.4;">"' + c.note + '"</div>' : ''}
+                        ${c.note ? `<div style="color:#6b7280; font-size:0.85rem; margin-top:0.4rem; font-style:italic; line-height:1.4;">"${c.note}"</div>` : ''}
+                        ${!c.category ? `<div style="margin-top:0.5rem; display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+                            <span style="color:#9ca3af; font-size:0.78rem;">Move to:</span>
+                            ${['Family','Friends','Business','Romantic','Disliked','Others'].map(cat =>
+                                `<button onclick="assignContactCategory(${c.id},'${cat}')" style="padding:0.15rem 0.5rem; border:1px solid #e5e7eb; border-radius:4px; font-size:0.75rem; background:#f9fafb; cursor:pointer; color:#374151;">${categoryEmoji[cat]} ${cat}</button>`
+                            ).join('')}
+                        </div>` : ''}
                         <div style="color:#d1d5db; font-size:0.75rem; margin-top:0.3rem;">Added ${new Date(c.addedAt).toLocaleDateString()}</div>
                     </div>
                     <button onclick="deleteContact(${c.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; flex-shrink:0;" title="Delete">🗑️</button>
                 </div>
             `
 
-            // Render All Contacts + grouped sections
-            let html = ''
-
-            // All contacts summary count bar
-            html += `<div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;">`
-            categoryOrder.forEach(cat => {
-                if (groups[cat] && groups[cat].length > 0) {
+            let html = tabsHtml
+            if (activeCategory === 'All') {
+                const groups = {}
+                filtered.forEach(c => {
+                    const cat = c.category || ''
+                    if (!groups[cat]) groups[cat] = []
+                    groups[cat].push(c)
+                })
+                categoryOrder.forEach(cat => {
+                    if (!groups[cat] || groups[cat].length === 0) return
                     const label = cat || 'Uncategorised'
                     const emoji = categoryEmoji[cat] || '📋'
-                    html += `<span style="background:#ede9fe; color:#6d28d9; padding:0.25rem 0.75rem; border-radius:980px; font-size:0.8rem; font-weight:600;">${emoji} ${label} (${groups[cat].length})</span>`
-                }
-            })
-            html += `</div>`
-
-            // Render each category group
-            categoryOrder.forEach(cat => {
-                if (!groups[cat] || groups[cat].length === 0) return
-                const label = cat || 'Uncategorised'
-                const emoji = categoryEmoji[cat] || '📋'
-                html += `
-                    <div style="margin-bottom:1.5rem;">
-                        <h4 style="color:#4b5563; font-size:0.95rem; font-weight:700; margin-bottom:0.75rem; padding-bottom:0.5rem; border-bottom:2px solid #ede9fe;">
+                    html += `<div style="margin-bottom:1.5rem;">
+                        <h4 style="color:#4b5563; font-size:0.95rem; font-weight:700; margin-bottom:0.75rem; padding-bottom:0.4rem; border-bottom:2px solid #ede9fe;">
                             ${emoji} ${label} <span style="color:#9ca3af; font-weight:400; font-size:0.85rem;">(${groups[cat].length})</span>
                         </h4>
                         <div style="display:flex; flex-direction:column; gap:0.5rem;">
                             ${groups[cat].map(contactCard).join('')}
                         </div>
-                    </div>
-                `
-            })
+                    </div>`
+                })
+            } else {
+                html += `<div style="display:flex; flex-direction:column; gap:0.5rem;">${filtered.map(contactCard).join('')}</div>`
+            }
 
             list.innerHTML = html
         }
 
-        function searchContacts(term) {
+        function assignContactCategory(id, category) {
+            const contact = savedContacts.find(c => c.id == id)
+            if (contact) {
+                contact.category = category
+                localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
+                syncVaultToSupabase('vault_contacts', savedContacts)
+                renderContacts(document.getElementById('contact-search')?.value || '')
+                showNotification('✅ Moved to ' + category)
+            }
+        }
+
+                function searchContacts(term) {
             renderContacts(term)
         }
 
@@ -2223,7 +2286,7 @@
             <ul class="nav-links" id="nav-links-list">
                 <li><a href="#home" onclick="showSection('home'); closeMobileNav()">Home</a></li>
                 <li><a href="#how" onclick="scrollToSection('how-it-works'); closeMobileNav()">How It Works</a></li>
-                <li><a href="#pricing" onclick="scrollToSection('pricing'); closeMobileNav()">Pricing</a></li>
+                <li><a href="#pricing" onclick="scrollToSection('pricing'); closeMobileNav()">Free</a></li>
                 <li id="nav-share" class="hidden"><a href="#" onclick="openShareModal(); closeMobileNav()">🔗 Share</a></li>
                 <li id="nav-dashboard" class="hidden"><a href="#dashboard" onclick="showSection('dashboard'); closeMobileNav()">My Vault</a></li>
                 <li id="nav-login"><a href="#" onclick="showLogin(); closeMobileNav()" class="btn-nav">Start Your Legacy</a></li>
@@ -2245,9 +2308,10 @@
                 <p class="subtitle">...and we won't let our family forget why!</p>
                 <p>Your music, photos, memories, and life story—all in one place. Create a digital time capsule that your family will treasure for generations.</p>
                 <div class="cta-buttons">
-                    <button class="cta-button" onclick="showLogin()">Start Preserving Your Story</button>
+                    <button class="cta-button" onclick="showLogin()">Claim Your Free Vault</button>
                     <button class="cta-button secondary" onclick="scrollToSection('how-it-works')">See How It Works</button>
                 </div>
+                <p style="margin-top:1rem; color:rgba(255,255,255,0.75); font-size:0.9rem;">🎁 Free forever for the first 10,000 members · No credit card needed</p>
             </div>
         </section>
 
@@ -2382,47 +2446,34 @@
 
         <!-- Pricing Section -->
         <section class="pricing" id="pricing">
-            <h2>Choose Your Plan</h2>
-            <p class="subtitle">Preserve your life story for generations</p>
-            <div class="pricing-grid">
-                <div class="pricing-card">
-                    <h3>Monthly</h3>
-                    <div class="price">$2</div>
-                    <span class="price-period">per month (USD)</span>
-                    <ul class="pricing-features">
-                        <li>Unlimited music library</li>
-                        <li>Unlimited photos & videos</li>
-                        <li>Unlimited contacts</li>
-                        <li>Write your Life Book</li>
-                        <li>Export to Kindle</li>
-                        <li>Unlimited inheritors</li>
-                        <li>100-year guarantee</li>
-                        <li>Bank-level encryption</li>
-                        <li>Cancel anytime</li>
+            <h2>Free. For Now. For You.</h2>
+            <p class="subtitle">We Loved Life is completely free for our first 10,000 members</p>
+
+            <div style="max-width:680px; margin:0 auto;">
+                <div style="background:linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%); border-radius:20px; padding:3rem 2.5rem; text-align:center; color:white; position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:-30px; right:-30px; width:120px; height:120px; background:rgba(255,255,255,0.05); border-radius:50%;"></div>
+                    <div style="position:absolute; bottom:-40px; left:-20px; width:160px; height:160px; background:rgba(255,255,255,0.04); border-radius:50%;"></div>
+                    <div style="font-size:3.5rem; margin-bottom:1rem;">🎁</div>
+                    <div style="font-size:3rem; font-weight:800; margin-bottom:0.5rem;">Free Forever</div>
+                    <div style="font-size:1.1rem; opacity:0.85; margin-bottom:2rem;">for the first 10,000 members</div>
+                    <ul style="list-style:none; text-align:left; display:inline-block; margin-bottom:2rem;">
+                        <li style="padding:0.4rem 0; font-size:1rem;">✅ Unlimited music library & memories</li>
+                        <li style="padding:0.4rem 0; font-size:1rem;">✅ Unlimited photos with captions</li>
+                        <li style="padding:0.4rem 0; font-size:1rem;">✅ Unlimited contacts & people</li>
+                        <li style="padding:0.4rem 0; font-size:1rem;">✅ Write your Life Book</li>
+                        <li style="padding:0.4rem 0; font-size:1rem;">✅ Unlimited inheritors</li>
+                        <li style="padding:0.4rem 0; font-size:1rem;">✅ 100-year preservation guarantee</li>
+                        <li style="padding:0.4rem 0; font-size:1rem;">✅ No ads. Ever.</li>
                     </ul>
-                    <button class="pricing-cta" onclick="showLoginWithPlan('monthly')">Start Your Story</button>
+                    <div>
+                        <button class="pricing-cta" onclick="showLogin()" style="font-size:1.1rem; padding:1rem 2.5rem;">Claim Your Free Vault</button>
+                    </div>
+                    <p style="opacity:0.6; font-size:0.85rem; margin-top:1.5rem;">No credit card. No catch. Just your story, preserved.</p>
                 </div>
 
-                <div class="pricing-card popular">
-                    <span class="popular-badge">Best Value</span>
-                    <h3>Lifetime</h3>
-                    <div class="price">$1,000</div>
-                    <span class="price-period">one-time payment (USD)</span>
-                    <ul class="pricing-features">
-                        <li>Everything in Monthly</li>
-                        <li>Never pay again</li>
-                        <li>Priority support</li>
-                        <li>Early access to new features</li>
-                        <li>Founding member badge</li>
-                        <li>Pass to your children</li>
-                        <li><strong>Pay once, preserve forever</strong></li>
-                    </ul>
-                    <button class="pricing-cta" onclick="showLoginWithPlan('lifetime')">Preserve Forever</button>
+                <div style="text-align:center; margin-top:1.5rem; color:#6b7280; font-size:0.9rem;">
+                    <p>🔒 <strong>100% Secure</strong> • All data encrypted • No ads ever • Pricing introduced later for new members only — early members stay free</p>
                 </div>
-            </div>
-            
-            <div style="text-align:center; margin-top:2rem; color:#6b7280; font-size:0.9rem;">
-                <p>🔒 <strong>100% Secure</strong> • All data encrypted • No ads ever • Cancel monthly plan anytime</p>
             </div>
         </section>
     </div>
@@ -2631,11 +2682,10 @@
                                 <option value="">Select category...</option>
                                 <option value="Family">👨‍👩‍👧‍👦 Family</option>
                                 <option value="Friends">👫 Friends</option>
-                                <option value="Work Colleagues">💼 Work Colleagues</option>
-                                <option value="Old Lovers">💕 Old Lovers</option>
-                                <option value="Mentors">🌟 Mentors</option>
-                                <option value="Neighbours">🏠 Neighbours</option>
-                                <option value="Other">⭐ Other</option>
+                                <option value="Business">💼 Business</option>
+                                <option value="Romantic">💕 Romantic</option>
+                                <option value="Disliked">😬 Disliked</option>
+                                <option value="Others">⭐ Others</option>
                             </select>
                             <input id="contact-relation" placeholder="Relationship (e.g. Sister, Best Friend)" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; grid-column:span 2;">
                         </div>
@@ -2923,8 +2973,9 @@
             <div id="login-plan-badge" style="text-align:center; margin-bottom:1.5rem; display:none;">
                 <span id="login-plan-label" style="background:#059669; color:white; padding:0.4rem 1.2rem; border-radius:980px; font-size:0.9rem; font-weight:500;"></span>
             </div>
+            <div style="text-align:center; margin-bottom:1rem;"><span style="background:#1e3a8a; color:white; padding:0.35rem 1rem; border-radius:980px; font-size:0.85rem; font-weight:600;">🎁 Free Founding Member</span></div>
             <h2 id="login-modal-title">Start Your We Loved Life</h2>
-            <p style="color:#6b7280; font-size:0.9rem; margin-bottom:1.5rem;" id="login-modal-subtitle">Create your account to start preserving your story.</p>
+            <p style="color:#6b7280; font-size:0.9rem; margin-bottom:1.5rem;" id="login-modal-subtitle">Join free — no credit card needed.</p>
 
             <!-- Beta tester notice -->
             <div style="background:#fef9c3; border:1px solid #fbbf24; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1.5rem; font-size:0.85rem; color:#92400e;">
@@ -3181,6 +3232,19 @@
     </div>
 
     
+    <!-- Photo Lightbox -->
+    <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; display:none; align-items:center; justify-content:center; padding:1rem;" onclick="closePhotoLightbox()">
+        <div style="max-width:900px; width:100%; position:relative;" onclick="event.stopPropagation()">
+            <button onclick="closePhotoLightbox()" style="position:absolute; top:-2.5rem; right:0; background:none; border:none; color:white; font-size:1.8rem; cursor:pointer; line-height:1;">✕</button>
+            <img id="lightbox-img" src="" style="width:100%; max-height:75vh; object-fit:contain; border-radius:8px; display:block;">
+            <div id="lightbox-caption" style="color:white; padding:1rem 0; min-height:60px;"></div>
+            <div style="display:flex; gap:0.75rem; justify-content:center;">
+                <button id="lightbox-caption-btn" onclick="lightboxAddCaption()" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; padding:0.5rem 1rem; border-radius:6px; cursor:pointer;">✏️ Add Caption</button>
+                <a id="lightbox-download-btn" href="" download="" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; text-decoration:none;">⬇️ Download</a>
+            </div>
+        </div>
+    </div>
+
     <!-- Photo Caption Modal -->
     <div id="photo-caption-modal" class="modal">
         <div class="modal-content" style="max-width:500px;">
@@ -3222,7 +3286,7 @@
             <div class="footer-section">
                 <h3>Product</h3>
                 <ul>
-                    <li><a href="#pricing">Pricing</a></li>
+                    <li><a href="#pricing">Free Access</a></li>
                     <li><a href="#how-it-works">How It Works</a></li>
                     <li><a href="#">Security</a></li>
                 </ul>
@@ -3251,7 +3315,7 @@
     <script>
         // Auth state
         let authMode = 'signup' // 'signup' or 'login'
-        let selectedPlan = 'monthly'
+        let selectedPlan = 'free'
 
         function switchAuthTab(mode) {
             authMode = mode
@@ -3273,12 +3337,12 @@
         }
 
         function showLoginWithPlan(plan) {
-            selectedPlan = plan
+            selectedPlan = 'free'
             const badge = document.getElementById('login-plan-badge')
             const label = document.getElementById('login-plan-label')
             badge.style.display = 'block'
-            label.textContent = plan === 'lifetime' ? '💎 Lifetime Plan Selected' : '📅 Monthly Plan Selected'
-            label.style.background = plan === 'lifetime' ? '#1e3a8a' : '#059669'
+            label.textContent = '🎁 Free Founding Member'
+            label.style.background = '#1e3a8a'
             switchAuthTab('signup')
             showLogin()
         }
@@ -3324,15 +3388,15 @@
 
         async function syncVaultToSupabase(key, data) {
             if (!user) return
-            // Always save to localStorage first - this never fails
+            const now = new Date().toISOString()
             localStorage.setItem(key, JSON.stringify(data))
-            // Then try Supabase
+            localStorage.setItem(key + '_updated_at', now)
             try {
                 const { error } = await supabaseClient.from('vault_data').upsert({
                     user_email: user.email,
                     data_key: key,
                     data_value: JSON.stringify(data),
-                    updated_at: new Date().toISOString()
+                    updated_at: now
                 }, { onConflict: 'user_email,data_key' })
                 if (error) console.warn('Supabase upsert error:', error.message)
             } catch(e) {
@@ -3340,7 +3404,6 @@
             }
         }
 
-        // Push ALL current localStorage vault data up to Supabase
         async function pushAllToSupabase() {
             if (!user) return
             const keys = ['spotify_music_data', 'vault_contacts', 'vault_inheritors', 'vault_stories', 'vault_lifebook', 'vault_photo_captions']
@@ -3348,12 +3411,13 @@
             for (const key of keys) {
                 const raw = localStorage.getItem(key)
                 if (raw && raw !== '[]' && raw !== '{}') {
+                    const ts = localStorage.getItem(key + '_updated_at') || new Date().toISOString()
                     try {
                         await supabaseClient.from('vault_data').upsert({
                             user_email: user.email,
                             data_key: key,
                             data_value: raw,
-                            updated_at: new Date().toISOString()
+                            updated_at: ts
                         }, { onConflict: 'user_email,data_key' })
                         pushed++
                     } catch(e) {
@@ -3364,39 +3428,49 @@
             return pushed
         }
 
-        // Pull ALL vault data from Supabase and merge with localStorage
-        // MERGE strategy: Supabase wins only if local is empty
+        // Newest version always wins — uses updated_at timestamps
         async function loadAllVaultData() {
             if (!user) return
             try {
                 const { data, error } = await supabaseClient
                     .from('vault_data')
-                    .select('data_key, data_value')
+                    .select('data_key, data_value, updated_at')
                     .eq('user_email', user.email)
 
                 if (error) throw error
 
                 if (data && data.length > 0) {
-                    let merged = 0
-                    data.forEach(row => {
-                        const local = localStorage.getItem(row.data_key)
-                        const localEmpty = !local || local === '[]' || local === '{}'
-                        // Only overwrite local if local is empty
+                    let fromCloud = 0, fromLocal = 0
+                    for (const row of data) {
+                        const localRaw = localStorage.getItem(row.data_key)
+                        const localTs = localStorage.getItem(row.data_key + '_updated_at')
+                        const cloudTs = row.updated_at
+                        const localEmpty = !localRaw || localRaw === '[]' || localRaw === '{}'
                         if (localEmpty) {
                             localStorage.setItem(row.data_key, row.data_value)
-                            merged++
+                            localStorage.setItem(row.data_key + '_updated_at', cloudTs)
+                            fromCloud++
+                        } else if (localTs && cloudTs) {
+                            if (new Date(cloudTs) > new Date(localTs)) {
+                                localStorage.setItem(row.data_key, row.data_value)
+                                localStorage.setItem(row.data_key + '_updated_at', cloudTs)
+                                fromCloud++
+                            } else {
+                                fromLocal++
+                            }
+                        } else {
+                            localStorage.setItem(row.data_key, row.data_value)
+                            fromCloud++
                         }
-                    })
-                    if (merged > 0) {
+                    }
+                    if (fromLocal > 0) await pushAllToSupabase()
+                    if (fromCloud > 0) {
                         showNotification('☁️ Vault synced from cloud!')
                         setSyncStatus('synced', 'Synced from cloud ✓')
                     } else {
-                        // Local has data - push it up to Supabase to keep in sync
-                        await pushAllToSupabase()
                         setSyncStatus('synced', 'Synced to cloud ✓')
                     }
                 } else {
-                    // Nothing in Supabase yet - push local data up
                     const pushed = await pushAllToSupabase()
                     if (pushed > 0) {
                         showNotification('☁️ Vault saved to cloud!')
@@ -3983,6 +4057,44 @@
             if (fab) fab.style.display = 'block'
         }
         // ============ END ADMIN PANEL ============
+
+        // ---- Photo Lightbox ----
+        let lightboxCurrentFile = ''
+        let lightboxCurrentUrl = ''
+
+        function openPhotoLightbox(url, filename, captionObj) {
+            lightboxCurrentFile = filename
+            lightboxCurrentUrl = url
+            const lb = document.getElementById('photo-lightbox')
+            document.getElementById('lightbox-img').src = url
+            const dl = document.getElementById('lightbox-download-btn')
+            dl.href = url
+            dl.download = filename
+
+            // Show caption info
+            const cap = typeof captionObj === 'string' ? JSON.parse(captionObj.replace(/&quot;/g,'"')) : captionObj
+            const captionEl = document.getElementById('lightbox-caption')
+            const captionBtn = document.getElementById('lightbox-caption-btn')
+            let capHtml = ''
+            if (cap.date) capHtml += `<div style="color:#fbbf24; font-size:0.9rem; margin-bottom:0.3rem;">📅 ${cap.date}</div>`
+            if (cap.who) capHtml += `<div style="color:white; font-size:1rem; font-weight:600; margin-bottom:0.3rem;">👥 ${cap.who}</div>`
+            if (cap.why) capHtml += `<div style="color:#d1d5db; font-size:0.9rem; font-style:italic;">"${cap.why}"</div>`
+            captionEl.innerHTML = capHtml
+            captionBtn.textContent = capHtml ? '✏️ Edit Caption' : '✏️ Add Caption'
+
+            lb.style.display = 'flex'
+            document.body.style.overflow = 'hidden'
+        }
+
+        function closePhotoLightbox() {
+            document.getElementById('photo-lightbox').style.display = 'none'
+            document.body.style.overflow = ''
+        }
+
+        function lightboxAddCaption() {
+            closePhotoLightbox()
+            openPhotoCaptionModal(lightboxCurrentFile, lightboxCurrentUrl)
+        }
 
         // ---- Photo Captions ----
         let currentCaptionFilename = ''
