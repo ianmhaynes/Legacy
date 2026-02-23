@@ -2344,8 +2344,14 @@
                 <p style="color: #6b7280; font-size: 1.2rem; max-width: 600px; margin: 0 auto 1.5rem;">
                     Start connecting your services to preserve your digital legacy for future generations.
                 </p>
-                <div style="display:inline-block; background:#fef9c3; border:1px solid #fbbf24; border-radius:8px; padding:0.6rem 1.2rem; font-size:0.85rem; color:#92400e;">
-                    🧪 <strong>Beta:</strong> Your data is saved in this browser. Don't clear your cache while testing.
+                <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap; align-items:center;">
+                    <div id="sync-status" style="display:inline-flex; align-items:center; gap:0.4rem; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:980px; padding:0.4rem 1rem; font-size:0.85rem; color:#16a34a;">
+                        <span id="sync-dot" style="width:8px; height:8px; border-radius:50%; background:#16a34a; display:inline-block;"></span>
+                        <span id="sync-label">Ready</span>
+                    </div>
+                    <button onclick="manualSync()" style="background:#3730a3; color:white; border:none; border-radius:980px; padding:0.4rem 1rem; font-size:0.85rem; cursor:pointer;">
+                        ☁️ Sync Now
+                    </button>
                 </div>
             </div>
 
@@ -3152,43 +3158,54 @@
         }
 
         // Save vault data to Supabase (with localStorage fallback)
+        // ---- Bulletproof Vault Sync ----
+        // Rule: localStorage is always source of truth locally.
+        // Supabase is synced ON TOP - never replaces local data unless it's newer.
+
         async function syncVaultToSupabase(key, data) {
             if (!user) return
+            // Always save to localStorage first - this never fails
+            localStorage.setItem(key, JSON.stringify(data))
+            // Then try Supabase
             try {
-                await supabaseClient.from('vault_data').upsert({
+                const { error } = await supabaseClient.from('vault_data').upsert({
                     user_email: user.email,
                     data_key: key,
                     data_value: JSON.stringify(data),
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'user_email,data_key' })
+                if (error) console.warn('Supabase upsert error:', error.message)
             } catch(e) {
-                console.warn('Supabase sync failed, data saved locally:', e)
+                console.warn('Supabase sync failed, data safe in localStorage:', e.message)
             }
         }
 
-        // Load vault data from Supabase (with localStorage fallback)
-        async function loadVaultFromSupabase(key, fallback) {
-            if (!user) return fallback
-            try {
-                const { data, error } = await supabaseClient
-                    .from('vault_data')
-                    .select('data_value')
-                    .eq('user_email', user.email)
-                    .eq('data_key', key)
-                    .single()
-                if (data && data.data_value) {
-                    const parsed = JSON.parse(data.data_value)
-                    // Also update localStorage cache
-                    localStorage.setItem(key, data.data_value)
-                    return parsed
+        // Push ALL current localStorage vault data up to Supabase
+        async function pushAllToSupabase() {
+            if (!user) return
+            const keys = ['spotify_music_data', 'vault_contacts', 'vault_inheritors', 'vault_stories', 'vault_lifebook']
+            let pushed = 0
+            for (const key of keys) {
+                const raw = localStorage.getItem(key)
+                if (raw && raw !== '[]' && raw !== '{}') {
+                    try {
+                        await supabaseClient.from('vault_data').upsert({
+                            user_email: user.email,
+                            data_key: key,
+                            data_value: raw,
+                            updated_at: new Date().toISOString()
+                        }, { onConflict: 'user_email,data_key' })
+                        pushed++
+                    } catch(e) {
+                        console.warn('Push failed for', key, e.message)
+                    }
                 }
-            } catch(e) {
-                console.warn('Supabase load failed, using localStorage:', e)
             }
-            return fallback
+            return pushed
         }
 
-        // Load ALL vault data for this user from Supabase on login
+        // Pull ALL vault data from Supabase and merge with localStorage
+        // MERGE strategy: Supabase wins only if local is empty
         async function loadAllVaultData() {
             if (!user) return
             try {
@@ -3196,14 +3213,75 @@
                     .from('vault_data')
                     .select('data_key, data_value')
                     .eq('user_email', user.email)
+
+                if (error) throw error
+
                 if (data && data.length > 0) {
+                    let merged = 0
                     data.forEach(row => {
-                        localStorage.setItem(row.data_key, row.data_value)
+                        const local = localStorage.getItem(row.data_key)
+                        const localEmpty = !local || local === '[]' || local === '{}'
+                        // Only overwrite local if local is empty
+                        if (localEmpty) {
+                            localStorage.setItem(row.data_key, row.data_value)
+                            merged++
+                        }
                     })
-                    showNotification('☁️ Vault synced from cloud!')
+                    if (merged > 0) {
+                        showNotification('☁️ Vault synced from cloud!')
+                        setSyncStatus('synced', 'Synced from cloud ✓')
+                    } else {
+                        // Local has data - push it up to Supabase to keep in sync
+                        await pushAllToSupabase()
+                        setSyncStatus('synced', 'Synced to cloud ✓')
+                    }
+                } else {
+                    // Nothing in Supabase yet - push local data up
+                    const pushed = await pushAllToSupabase()
+                    if (pushed > 0) {
+                        showNotification('☁️ Vault saved to cloud!')
+                        setSyncStatus('synced', 'Saved to cloud ✓')
+                    } else {
+                        setSyncStatus('synced', 'Ready')
+                    }
                 }
             } catch(e) {
-                console.warn('Could not load from Supabase, using local data:', e)
+                console.warn('Cloud sync failed, working offline:', e.message)
+                showNotification('⚠️ Working offline - data saved locally')
+                setSyncStatus('offline', 'Offline - saved locally')
+            }
+        }
+
+        function setSyncStatus(state, label) {
+            const dot = document.getElementById('sync-dot')
+            const lbl = document.getElementById('sync-label')
+            const box = document.getElementById('sync-status')
+            if (!dot || !lbl || !box) return
+            const states = {
+                synced:  { bg:'#f0fdf4', border:'#bbf7d0', color:'#16a34a', dotColor:'#16a34a' },
+                syncing: { bg:'#eff6ff', border:'#bfdbfe', color:'#2563eb', dotColor:'#2563eb' },
+                offline: { bg:'#fff7ed', border:'#fed7aa', color:'#ea580c', dotColor:'#ea580c' },
+                error:   { bg:'#fef2f2', border:'#fecaca', color:'#dc2626', dotColor:'#dc2626' },
+            }
+            const s = states[state] || states.synced
+            box.style.background = s.bg
+            box.style.border = '1px solid ' + s.border
+            box.style.color = s.color
+            dot.style.background = s.dotColor
+            lbl.textContent = label
+        }
+
+        // Manual sync button handler
+        async function manualSync() {
+            if (!user) return
+            setSyncStatus('syncing', 'Syncing...')
+            try {
+                const pushed = await pushAllToSupabase()
+                setSyncStatus('synced', 'Synced to cloud ✓')
+                showNotification('☁️ Synced ' + pushed + ' items to cloud!')
+            } catch(e) {
+                setSyncStatus('error', 'Sync failed')
+                showNotification('⚠️ Sync failed - check connection')
             }
         }
 
