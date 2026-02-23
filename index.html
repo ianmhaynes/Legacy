@@ -1258,6 +1258,9 @@
                 artist: artist,
                 album: album,
                 image: image,
+                why: '',
+                period: '',
+                meaning: '',
                 captured_at: new Date().toISOString()
             }
 
@@ -1270,7 +1273,10 @@
             
             updateSavedSongsDisplay()
             refreshDashboardStats()
-            showNotification(`🎵 "${name}" added to your library!`)
+            showNotification(`🎵 "${name}" added! Add your memory below.`)
+
+            // Open the memory form for the newly added song
+            setTimeout(() => openSongMemory(id), 300)
 
             if (user && user.email) {
                 supabaseClient.from('legacy_content').upsert({
@@ -1279,6 +1285,33 @@
                     data: { tracks: savedSongs, total_count: savedSongs.length, captured_at: new Date().toISOString() },
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'user_email,content_type' })
+            }
+        }
+
+        function openSongMemory(id) {
+            // Close any open memory forms first
+            document.querySelectorAll('.song-memory-form').forEach(f => f.style.display = 'none')
+            const form = document.getElementById('song-memory-' + id)
+            if (form) {
+                form.style.display = 'block'
+                form.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+            }
+        }
+
+        function saveSongMemory(id) {
+            const why = document.getElementById('song-why-' + id)?.value.trim() || ''
+            const period = document.getElementById('song-period-' + id)?.value.trim() || ''
+            const meaning = document.getElementById('song-meaning-' + id)?.value.trim() || ''
+            const song = savedSongs.find(s => s.id == id)
+            if (song) {
+                song.why = why
+                song.period = period
+                song.meaning = meaning
+                localStorage.setItem('spotify_music_data', JSON.stringify(savedSongs))
+                syncVaultToSupabase('spotify_music_data', savedSongs)
+                document.getElementById('song-memory-' + id).style.display = 'none'
+                updateSavedSongsDisplay()
+                showNotification('💾 Memory saved for "' + song.name + '"')
             }
         }
 
@@ -1297,16 +1330,50 @@
             count.textContent = `${savedSongs.length} song${savedSongs.length !== 1 ? 's' : ''} saved`
 
             list.innerHTML = `
-                <div style="background:white; border-radius:10px; border:1px solid #e5e7eb; max-height:500px; overflow-y:auto;">
+                <div style="background:white; border-radius:10px; border:1px solid #e5e7eb; overflow:hidden;">
                     ${savedSongs.map((song, index) => `
-                        <div style="display:flex; align-items:center; padding:1rem; border-bottom:1px solid #f3f4f6; gap:1rem;">
-                            <div style="color:#9ca3af; font-size:0.9rem; width:30px; text-align:right; flex-shrink:0;">${index + 1}</div>
-                            <img src="${song.image}" style="width:50px; height:50px; border-radius:6px; flex-shrink:0;" onerror="this.style.display='none'">
-                            <div style="flex:1; min-width:0;">
-                                <div style="font-weight:600; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${song.name}</div>
-                                <div style="color:#6b7280; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${song.artist} • ${song.album}</div>
+                        <div style="border-bottom:1px solid #f3f4f6;">
+                            <div style="display:flex; align-items:center; padding:1rem; gap:1rem;">
+                                <div style="color:#9ca3af; font-size:0.9rem; width:30px; text-align:right; flex-shrink:0;">${index + 1}</div>
+                                <img src="${song.image}" style="width:50px; height:50px; border-radius:6px; flex-shrink:0;" onerror="this.style.display='none'">
+                                <div style="flex:1; min-width:0;">
+                                    <div style="font-weight:600; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${song.name}</div>
+                                    <div style="color:#6b7280; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${song.artist} • ${song.album}</div>
+                                    ${song.period ? `<div style="color:#8b5cf6; font-size:0.8rem; margin-top:0.2rem;">📅 ${song.period}</div>` : ''}
+                                    ${song.why ? `<div style="color:#059669; font-size:0.8rem; margin-top:0.2rem; font-style:italic;">💬 "${song.why}"</div>` : ''}
+                                    ${song.meaning ? `<div style="color:#0ea5e9; font-size:0.8rem; margin-top:0.2rem;">❤️ ${song.meaning}</div>` : ''}
+                                    ${!song.why && !song.period && !song.meaning ? `<div style="color:#d1d5db; font-size:0.75rem; margin-top:0.2rem; font-style:italic;">No memory added yet — click ✏️ to add one</div>` : ''}
+                                </div>
+                                <div style="display:flex; gap:0.5rem; flex-shrink:0;">
+                                    <button onclick="openSongMemory('${song.id}')" style="background:#ede9fe; border:none; color:#7c3aed; cursor:pointer; padding:0.4rem 0.6rem; border-radius:6px; font-size:0.85rem;" title="Add memory">✏️</button>
+                                    <button onclick="removeSong('${song.id}')" style="background:#fee2e2; border:none; color:#ef4444; cursor:pointer; padding:0.4rem 0.6rem; border-radius:6px; font-size:0.85rem;" title="Remove">🗑️</button>
+                                </div>
                             </div>
-                            <button onclick="removeSong('${song.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem;" title="Remove">🗑️</button>
+                            <!-- Memory Form -->
+                            <div id="song-memory-${song.id}" class="song-memory-form" style="display:none; background:#f9f7ff; border-top:1px solid #ede9fe; padding:1rem; gap:0.75rem; flex-direction:column;">
+                                <p style="color:#7c3aed; font-weight:600; font-size:0.9rem; margin-bottom:0.5rem;">✏️ Add your memory for "${song.name}"</p>
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
+                                    <div>
+                                        <label style="display:block; font-size:0.8rem; color:#6b7280; margin-bottom:0.25rem;">Why did you love it?</label>
+                                        <input id="song-why-${song.id}" value="${song.why || ''}" placeholder="e.g. It was our wedding song..." 
+                                            style="width:100%; padding:0.5rem; border:1px solid #ddd6fe; border-radius:6px; font-size:0.9rem;">
+                                    </div>
+                                    <div>
+                                        <label style="display:block; font-size:0.8rem; color:#6b7280; margin-bottom:0.25rem;">What period of your life?</label>
+                                        <input id="song-period-${song.id}" value="${song.period || ''}" placeholder="e.g. University, 1990s, Summer of '85..." 
+                                            style="width:100%; padding:0.5rem; border:1px solid #ddd6fe; border-radius:6px; font-size:0.9rem;">
+                                    </div>
+                                </div>
+                                <div style="margin-bottom:0.75rem;">
+                                    <label style="display:block; font-size:0.8rem; color:#6b7280; margin-bottom:0.25rem;">Special meaning or memory</label>
+                                    <textarea id="song-meaning-${song.id}" placeholder="Tell the story behind this song..." 
+                                        style="width:100%; padding:0.5rem; border:1px solid #ddd6fe; border-radius:6px; font-size:0.9rem; height:70px; resize:vertical; font-family:inherit;">${song.meaning || ''}</textarea>
+                                </div>
+                                <div style="display:flex; gap:0.5rem;">
+                                    <button onclick="saveSongMemory('${song.id}')" style="background:#7c3aed; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; font-size:0.9rem; cursor:pointer; font-weight:600;">Save Memory</button>
+                                    <button onclick="document.getElementById('song-memory-${song.id}').style.display='none'" style="background:#f3f4f6; color:#6b7280; border:none; padding:0.5rem 1rem; border-radius:6px; font-size:0.9rem; cursor:pointer;">Cancel</button>
+                                </div>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
@@ -1548,16 +1615,25 @@
                         .from('vault-photos')
                         .getPublicUrl(userEmail + '/' + file.name)
 
+                    // Load caption data from localStorage
+                    const captions = JSON.parse(localStorage.getItem('vault_photo_captions') || '{}')
+                    const caption = captions[file.name] || {}
                     uploadedPhotos.push({ name: file.name, url: urlData.publicUrl })
 
                     const div = document.createElement('div')
-                    div.style = 'aspect-ratio:1; border-radius:8px; overflow:hidden; position:relative; cursor:pointer;'
+                    div.style = 'aspect-ratio:1; border-radius:8px; overflow:hidden; position:relative; cursor:pointer; background:#f3f4f6;'
                     div.innerHTML = `
                         <img src="${urlData.publicUrl}" style="width:100%; height:100%; object-fit:cover;" 
                              onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📸</text></svg>'" />
-                        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.4); opacity:0; transition:opacity 0.2s; display:flex; align-items:center; justify-content:center;"
+                        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.55); opacity:0; transition:opacity 0.2s; display:flex; flex-direction:column; justify-content:flex-end; padding:0.5rem;"
                              onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">
-                            <span style="color:white; font-size:0.75rem; text-align:center; padding:0.25rem;">${file.name.substring(0,20)}</span>
+                            ${caption.date ? `<div style="color:#fbbf24; font-size:0.7rem; margin-bottom:0.2rem;">📅 ${caption.date}</div>` : ''}
+                            ${caption.who ? `<div style="color:white; font-size:0.75rem; font-weight:600; margin-bottom:0.2rem;">👥 ${caption.who}</div>` : ''}
+                            ${caption.why ? `<div style="color:#d1d5db; font-size:0.7rem; font-style:italic; margin-bottom:0.4rem;">"${caption.why}"</div>` : ''}
+                            <button onclick="openPhotoCaptionModal('${file.name}', '${urlData.publicUrl}')" 
+                                style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:white; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.7rem; cursor:pointer; width:100%;">
+                                ✏️ ${caption.date || caption.who || caption.why ? 'Edit Caption' : 'Add Caption'}
+                            </button>
                         </div>
                     `
                     grid.appendChild(div)
@@ -1632,6 +1708,7 @@
                 name: name,
                 phone: document.getElementById('contact-phone').value.trim(),
                 email: document.getElementById('contact-email').value.trim(),
+                category: document.getElementById('contact-category').value.trim(),
                 relation: document.getElementById('contact-relation').value.trim(),
                 note: document.getElementById('contact-note').value.trim(),
                 addedAt: new Date().toISOString()
@@ -1647,6 +1724,7 @@
             document.getElementById('contact-name').value = ''
             document.getElementById('contact-phone').value = ''
             document.getElementById('contact-email').value = ''
+            document.getElementById('contact-category').value = ''
             document.getElementById('contact-relation').value = ''
             document.getElementById('contact-note').value = ''
             document.getElementById('add-contact-form').style.display = 'none'
@@ -1740,6 +1818,7 @@
             if (term) {
                 filtered = savedContacts.filter(c =>
                     c.name.toLowerCase().includes(term) ||
+                    (c.category && c.category.toLowerCase().includes(term)) ||
                     (c.relation && c.relation.toLowerCase().includes(term)) ||
                     (c.phone && c.phone.includes(term)) ||
                     (c.email && c.email.toLowerCase().includes(term)) ||
@@ -1747,12 +1826,7 @@
                 )
             }
 
-            const sortBy = document.getElementById('contacts-sort') ? document.getElementById('contacts-sort').value : 'name'
-            if (sortBy === 'date') {
-                filtered.sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt))
-            } else {
-                filtered.sort((a, b) => a.name.localeCompare(b.name))
-            }
+            filtered.sort((a, b) => a.name.localeCompare(b.name))
 
             const contactCountText = savedContacts.length + ' contact' + (savedContacts.length !== 1 ? 's' : '')
             count.textContent = contactCountText + ' preserved' + (filter ? ' (' + filtered.length + ' shown)' : '')
@@ -1771,8 +1845,19 @@
                 return
             }
 
-            list.innerHTML = filtered.map(c => `
-                <div style="background:white; border-radius:8px; padding:1rem; display:flex; align-items:center; gap:1rem; border:1px solid #e5e7eb;">
+            const categoryOrder = ['Family', 'Friends', 'Work Colleagues', 'Old Lovers', 'Mentors', 'Neighbours', 'Other', '']
+            const categoryEmoji = { 'Family': '👨‍👩‍👧‍👦', 'Friends': '👫', 'Work Colleagues': '💼', 'Old Lovers': '💕', 'Mentors': '🌟', 'Neighbours': '🏠', 'Other': '⭐', '': '📋' }
+
+            // Group contacts by category
+            const groups = {}
+            filtered.forEach(c => {
+                const cat = c.category || ''
+                if (!groups[cat]) groups[cat] = []
+                groups[cat].push(c)
+            })
+
+            const contactCard = c => `
+                <div style="background:white; border-radius:8px; padding:1rem; display:flex; align-items:flex-start; gap:1rem; border:1px solid #e5e7eb;">
                     <div style="width:45px; height:45px; border-radius:50%; background:#8b5cf6; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:1.1rem; flex-shrink:0;">
                         ${c.name.charAt(0).toUpperCase()}
                     </div>
@@ -1782,12 +1867,45 @@
                             ${c.relation ? '<span style="background:#ede9fe; color:#6d28d9; padding:0.1rem 0.5rem; border-radius:4px; margin-right:0.5rem; font-size:0.8rem;">' + c.relation + '</span>' : ''}
                             ${c.phone ? '📞 ' + c.phone : ''} ${c.email ? '• ✉️ ' + c.email : ''}
                         </div>
-                        ${c.note ? '<div style="color:#9ca3af; font-size:0.8rem; margin-top:0.3rem; font-style:italic;">' + c.note + '</div>' : ''}
-                        <div style="color:#d1d5db; font-size:0.75rem; margin-top:0.2rem;">Added ${new Date(c.addedAt).toLocaleDateString()}</div>
+                        ${c.note ? '<div style="color:#6b7280; font-size:0.85rem; margin-top:0.4rem; font-style:italic; line-height:1.4;">"' + c.note + '"</div>' : ''}
+                        <div style="color:#d1d5db; font-size:0.75rem; margin-top:0.3rem;">Added ${new Date(c.addedAt).toLocaleDateString()}</div>
                     </div>
-                    <button onclick="deleteContact(${c.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem; flex-shrink:0;" title="Delete">🗑️</button>
+                    <button onclick="deleteContact(${c.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; flex-shrink:0;" title="Delete">🗑️</button>
                 </div>
-            `).join('')
+            `
+
+            // Render All Contacts + grouped sections
+            let html = ''
+
+            // All contacts summary count bar
+            html += `<div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;">`
+            categoryOrder.forEach(cat => {
+                if (groups[cat] && groups[cat].length > 0) {
+                    const label = cat || 'Uncategorised'
+                    const emoji = categoryEmoji[cat] || '📋'
+                    html += `<span style="background:#ede9fe; color:#6d28d9; padding:0.25rem 0.75rem; border-radius:980px; font-size:0.8rem; font-weight:600;">${emoji} ${label} (${groups[cat].length})</span>`
+                }
+            })
+            html += `</div>`
+
+            // Render each category group
+            categoryOrder.forEach(cat => {
+                if (!groups[cat] || groups[cat].length === 0) return
+                const label = cat || 'Uncategorised'
+                const emoji = categoryEmoji[cat] || '📋'
+                html += `
+                    <div style="margin-bottom:1.5rem;">
+                        <h4 style="color:#4b5563; font-size:0.95rem; font-weight:700; margin-bottom:0.75rem; padding-bottom:0.5rem; border-bottom:2px solid #ede9fe;">
+                            ${emoji} ${label} <span style="color:#9ca3af; font-weight:400; font-size:0.85rem;">(${groups[cat].length})</span>
+                        </h4>
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            ${groups[cat].map(contactCard).join('')}
+                        </div>
+                    </div>
+                `
+            })
+
+            list.innerHTML = html
         }
 
         function searchContacts(term) {
@@ -2505,13 +2623,23 @@
 
                     <div id="add-contact-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
                         <h4 style="color:#1e3a8a; margin-bottom:1rem;">Add a Contact</h4>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
                             <input id="contact-name" placeholder="Full Name *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
                             <input id="contact-phone" placeholder="Phone Number" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
                             <input id="contact-email" placeholder="Email Address" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                            <input id="contact-relation" placeholder="Relationship" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                            <select id="contact-category" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; background:white;">
+                                <option value="">Select category...</option>
+                                <option value="Family">👨‍👩‍👧‍👦 Family</option>
+                                <option value="Friends">👫 Friends</option>
+                                <option value="Work Colleagues">💼 Work Colleagues</option>
+                                <option value="Old Lovers">💕 Old Lovers</option>
+                                <option value="Mentors">🌟 Mentors</option>
+                                <option value="Neighbours">🏠 Neighbours</option>
+                                <option value="Other">⭐ Other</option>
+                            </select>
+                            <input id="contact-relation" placeholder="Relationship (e.g. Sister, Best Friend)" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; grid-column:span 2;">
                         </div>
-                        <textarea id="contact-note" placeholder="A note about this person..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:60px; resize:vertical;"></textarea>
+                        <textarea id="contact-note" placeholder="Why are they meaningful to you? Share a memory or story..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:80px; resize:vertical;"></textarea>
                         <div style="display:flex; gap:0.5rem;">
                             <button class="action-button" onclick="saveContact()" style="background:#8b5cf6;">Save</button>
                             <button class="action-button secondary" onclick="document.getElementById('add-contact-form').style.display='none'">Cancel</button>
@@ -3053,6 +3181,38 @@
     </div>
 
     
+    <!-- Photo Caption Modal -->
+    <div id="photo-caption-modal" class="modal">
+        <div class="modal-content" style="max-width:500px;">
+            <div style="text-align:center; margin-bottom:1.5rem;">
+                <img id="caption-modal-img" src="" style="width:100%; max-height:220px; object-fit:cover; border-radius:10px; margin-bottom:1rem;">
+                <h2 style="margin-bottom:0.25rem;">📸 Add Caption</h2>
+                <p style="color:#6b7280; font-size:0.9rem;">Help your family remember this moment</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;">
+                <div>
+                    <label style="display:block; font-size:0.85rem; font-weight:600; color:#4b5563; margin-bottom:0.25rem;">📅 Date or period</label>
+                    <input id="caption-date" placeholder="e.g. Summer 1998, Christmas 2005, June 14th 1985..." 
+                        style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.85rem; font-weight:600; color:#4b5563; margin-bottom:0.25rem;">👥 Who is in this photo?</label>
+                    <input id="caption-who" placeholder="e.g. Me, Dad and Aunt Margaret at the beach..." 
+                        style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.85rem; font-weight:600; color:#4b5563; margin-bottom:0.25rem;">❤️ Why is this meaningful?</label>
+                    <textarea id="caption-why" placeholder="Tell the story behind this photo..." 
+                        style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; height:80px; resize:vertical; font-family:inherit;"></textarea>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-primary" onclick="savePhotoCaption()">Save Caption</button>
+                <button class="btn-secondary" onclick="closePhotoCaptionModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <footer>
         <div class="footer-content">
             <div class="footer-section">
@@ -3183,7 +3343,7 @@
         // Push ALL current localStorage vault data up to Supabase
         async function pushAllToSupabase() {
             if (!user) return
-            const keys = ['spotify_music_data', 'vault_contacts', 'vault_inheritors', 'vault_stories', 'vault_lifebook']
+            const keys = ['spotify_music_data', 'vault_contacts', 'vault_inheritors', 'vault_stories', 'vault_lifebook', 'vault_photo_captions']
             let pushed = 0
             for (const key of keys) {
                 const raw = localStorage.getItem(key)
@@ -3823,6 +3983,41 @@
             if (fab) fab.style.display = 'block'
         }
         // ============ END ADMIN PANEL ============
+
+        // ---- Photo Captions ----
+        let currentCaptionFilename = ''
+
+        function openPhotoCaptionModal(filename, url) {
+            currentCaptionFilename = filename
+            document.getElementById('caption-modal-img').src = url
+            const captions = JSON.parse(localStorage.getItem('vault_photo_captions') || '{}')
+            const existing = captions[filename] || {}
+            document.getElementById('caption-date').value = existing.date || ''
+            document.getElementById('caption-who').value = existing.who || ''
+            document.getElementById('caption-why').value = existing.why || ''
+            document.getElementById('photo-caption-modal').classList.add('active')
+        }
+
+        function closePhotoCaptionModal() {
+            document.getElementById('photo-caption-modal').classList.remove('active')
+            currentCaptionFilename = ''
+        }
+
+        function savePhotoCaption() {
+            if (!currentCaptionFilename) return
+            const captions = JSON.parse(localStorage.getItem('vault_photo_captions') || '{}')
+            captions[currentCaptionFilename] = {
+                date: document.getElementById('caption-date').value.trim(),
+                who: document.getElementById('caption-who').value.trim(),
+                why: document.getElementById('caption-why').value.trim(),
+                savedAt: new Date().toISOString()
+            }
+            localStorage.setItem('vault_photo_captions', JSON.stringify(captions))
+            syncVaultToSupabase('vault_photo_captions', captions)
+            closePhotoCaptionModal()
+            loadSavedPhotos()
+            showNotification('📸 Caption saved!')
+        }
 
         function showNotification(message) {
             const notification = document.getElementById('notification');
