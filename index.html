@@ -1702,6 +1702,8 @@
 
         // Contacts handling
         let savedContacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]')
+        let currentContactFilter = ''      // current search term
+        let currentContactCategory = 'All' // current active category tab
 
         function showAddContactForm() {
             const contactsBody = document.getElementById('contacts-body')
@@ -1963,6 +1965,9 @@
         }
 
         function renderContacts(filter = '', activeCategory = 'All') {
+            // Remember current state so re-renders after assign stay in same view
+            currentContactFilter = filter
+            currentContactCategory = activeCategory
             const list = document.getElementById('contacts-list')
             const count = document.getElementById('contacts-count')
             const searchBar = document.getElementById('contacts-search-bar')
@@ -2123,8 +2128,10 @@
                 if (ca) ca.textContent = '▼'
                 updateFixedCollapseButtons()
             }
-            // Filter to this category
+            // Filter to this category and remember it
             var searchVal = document.getElementById('contact-search') ? document.getElementById('contact-search').value : ''
+            currentContactCategory = cat
+            currentContactFilter = searchVal
             renderContacts(searchVal, cat)
             // Scroll contacts into view
             if (cb) setTimeout(function(){ cb.scrollIntoView({behavior:'smooth', block:'start'}) }, 100)
@@ -2136,7 +2143,8 @@
                 contact.category = category
                 localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
                 syncVaultToSupabase('vault_contacts', savedContacts)
-                renderContacts(document.getElementById('contact-search')?.value || '')
+                // Stay in the same filtered view — don't jump to All
+                renderContacts(currentContactFilter, currentContactCategory)
                 showNotification('✅ Moved to ' + category)
             }
         }
@@ -2514,7 +2522,7 @@ ${userName}`
     </nav>
 
     <!-- Notification -->
-    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v3.8</div>
+    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v3.9</div>
     <div id="notification" class="notification"></div>
 
     <!-- Home Section -->
