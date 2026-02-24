@@ -1587,15 +1587,8 @@
         let savedContacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]')
 
         function showAddContactForm() {
-            const contactsBody = document.getElementById('contacts-body')
-            const contactsArrow = document.getElementById('contacts-arrow')
-            if (contactsBody.style.display === 'none') {
-                contactsBody.style.display = 'block'
-                if (contactsArrow) contactsArrow.textContent = '▼'
-            }
-            
             const form = document.getElementById('add-contact-form')
-            if (form.style.display === 'none') {
+            if (form && form.style.display === 'none') {
                 form.style.display = 'block'
                 setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100)
             } else {
@@ -1772,23 +1765,8 @@
                 return
             }
 
-            list.innerHTML = filtered.map(c => `
-                <div style="background:white; border-radius:8px; padding:1rem; display:flex; align-items:center; gap:1rem; border:1px solid #e5e7eb;">
-                    <div style="width:45px; height:45px; border-radius:50%; background:#8b5cf6; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:1.1rem; flex-shrink:0;">
-                        ${c.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div style="flex:1; min-width:0;">
-                        <div style="font-weight:600; color:#1e3a8a;">${c.name}</div>
-                        <div style="color:#6b7280; font-size:0.85rem; margin-top:0.2rem;">
-                            ${c.relation ? '<span style="background:#ede9fe; color:#6d28d9; padding:0.1rem 0.5rem; border-radius:4px; margin-right:0.5rem; font-size:0.8rem;">' + c.relation + '</span>' : ''}
-                            ${c.phone ? '📞 ' + c.phone : ''} ${c.email ? '• ✉️ ' + c.email : ''}
-                        </div>
-                        ${c.note ? '<div style="color:#9ca3af; font-size:0.8rem; margin-top:0.3rem; font-style:italic;">' + c.note + '</div>' : ''}
-                        <div style="color:#d1d5db; font-size:0.75rem; margin-top:0.2rem;">Added ${new Date(c.addedAt).toLocaleDateString()}</div>
-                    </div>
-                    <button onclick="deleteContact(${c.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem; flex-shrink:0;" title="Delete">🗑️</button>
-                </div>
-            `).join('')
+            list.innerHTML = filtered.map(c => contactCard(c)).join('')
+            renderCategoryStrip()
         }
 
         function searchContacts(term) {
@@ -1798,6 +1776,7 @@
         function loadContacts() {
             savedContacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]')
             renderContacts()
+            renderCategoryStrip()
         }
 
         function searchVault(term) {
@@ -1884,16 +1863,17 @@
             const list = document.getElementById('inheritors-list')
             const empty = document.getElementById('inheritors-empty')
             const header = document.getElementById('inheritors-count-header')
+            if (!list) return
 
             if (savedInheritors.length === 0) {
                 list.innerHTML = ''
-                empty.style.display = 'block'
-                header.textContent = 'Who will receive your legacy'
+                if (empty) empty.style.display = 'block'
+                if (header) header.textContent = ''
                 return
             }
 
-            empty.style.display = 'none'
-            header.textContent = `${savedInheritors.length} inheritor${savedInheritors.length !== 1 ? 's' : ''} added`
+            if (empty) empty.style.display = 'none'
+            if (header) header.textContent = `${savedInheritors.length} inheritor${savedInheritors.length !== 1 ? 's' : ''} added`
 
             list.innerHTML = savedInheritors.map(inheritor => `
                 <div style="background:white; border-radius:10px; padding:1.5rem; border:1px solid #e5e7eb; text-align:center;">
@@ -1911,13 +1891,11 @@
 
         function loadInheritors() {
             savedInheritors = JSON.parse(localStorage.getItem('vault_inheritors') || '[]')
-            if (savedInheritors.length > 0) {
-                renderInheritors()
-                const body = document.getElementById('inheritors-body')
-                const arrow = document.getElementById('inheritors-arrow')
-                if (body) body.style.display = 'block'
-                if (arrow) arrow.textContent = '▼'
-            }
+            savedSecrets = JSON.parse(localStorage.getItem('vault_secrets') || '[]')
+            savedValuables = JSON.parse(localStorage.getItem('vault_valuables') || '[]')
+            renderInheritors()
+            renderSecrets()
+            renderValuables()
         }
 
         // Life Stories
@@ -2314,7 +2292,7 @@
     <section id="dashboard-section" class="dashboard">
         <div class="container">
             <!-- Compact header -->
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem; padding-top:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem; padding-top:0.5rem;">
                 <span style="font-size:1.1rem; font-weight:700; color:#1e3a8a;">We Loved Life</span>
                 <span style="color:#9ca3af; font-size:0.85rem;">· <span id="user-name">User</span></span>
             </div>
@@ -2694,32 +2672,74 @@
             <div id="vtabcontent-legacy" style="display:none; padding-top:1.5rem;">
                 <div style="display:flex; gap:0; border-bottom:1px solid #e5e7eb; margin-bottom:1.5rem; overflow-x:auto;">
                     <button onclick="switchSubTab('legacy','inheritors')" id="vstab-legacy-inheritors" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid #3b82f6; background:none; font-weight:700; font-size:0.85rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">👨‍👩‍👧‍👦 Inheritors</button>
+                    <button onclick="switchSubTab('legacy','secrets')" id="vstab-legacy-secrets" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">🔒 Secrets</button>
+                    <button onclick="switchSubTab('legacy','valuables')" id="vstab-legacy-valuables" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">💎 Valuables</button>
                 </div>
-                <div id="vstabcontent-legacy-inheritors"><div id="add-inheritor-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
-                            <h4 style="color:#1e3a8a; margin-bottom:1rem;">Add an Inheritor</h4>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
-                                <input id="inheritor-name" placeholder="Full Name *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                                <input id="inheritor-email" placeholder="Email Address *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                            </div>
-                            <select id="inheritor-relation" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem;">
-                                <option value="">Select Relationship *</option>
-                                <option value="Child">Child</option>
-                                <option value="Grandchild">Grandchild</option>
-                                <option value="Spouse">Spouse</option>
-                                <option value="Sibling">Sibling</option>
-                                <option value="Friend">Friend</option>
-                                <option value="Other">Other</option>
-                            </select>
-                            <textarea id="inheritor-note" placeholder="Special instructions or message..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:60px; resize:vertical;"></textarea>
-                            <div style="display:flex; gap:0.5rem;">
-                                <button class="action-button" onclick="saveInheritor()" style="background:#ec4899;">Save</button>
-                                <button class="action-button secondary" onclick="document.getElementById('add-inheritor-form').style.display='none'">Cancel</button>
-                            </div>
+                <div id="vstabcontent-legacy-inheritors">
+                    <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+                        <button onclick="showAddInheritorForm()" style="background:#ec4899; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Inheritor</button>
+                    </div>
+                    <div id="add-inheritor-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
+                        <h4 style="color:#1e3a8a; margin-bottom:1rem;">Add an Inheritor</h4>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
+                            <input id="inheritor-name" placeholder="Full Name *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                            <input id="inheritor-email" placeholder="Email Address *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
                         </div>
-
-                        <div id="inheritors-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1rem;"></div>
-                        <p id="inheritors-empty" style="color:#9ca3af; text-align:center; padding:2rem;">No inheritors added yet. Add someone who will receive your digital legacy.</p></div>
+                        <select id="inheritor-relation" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem;">
+                            <option value="">Select Relationship *</option>
+                            <option value="Child">Child</option>
+                            <option value="Grandchild">Grandchild</option>
+                            <option value="Spouse">Spouse</option>
+                            <option value="Sibling">Sibling</option>
+                            <option value="Friend">Friend</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <textarea id="inheritor-note" placeholder="Special instructions or message..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:60px; resize:vertical; box-sizing:border-box;"></textarea>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button onclick="saveInheritor()" style="background:#ec4899; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-weight:600;">Save</button>
+                            <button onclick="document.getElementById('add-inheritor-form').style.display='none'" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.5rem 1rem; border-radius:6px; cursor:pointer;">Cancel</button>
+                        </div>
+                    </div>
+                    <div id="inheritors-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:1rem;"></div>
+                    <p id="inheritors-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No inheritors added yet. Add someone who will receive your digital legacy.</p>
+                    <p id="inheritors-count-header" style="display:none;"></p>
+                </div>
+                <div id="vstabcontent-legacy-secrets" style="display:none;">
+                    <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+                        <button onclick="showAddSecret()" style="background:#374151; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Secret</button>
+                    </div>
+                    <div id="add-secret-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
+                        <h4 style="color:#374151; margin-bottom:1rem;">Add a Secret</h4>
+                        <input id="secret-title" placeholder="Title (e.g. Safe combination, Private message)" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; box-sizing:border-box;">
+                        <textarea id="secret-content" placeholder="The secret content..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:100px; resize:vertical; box-sizing:border-box;"></textarea>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button onclick="saveSecret()" style="background:#374151; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-weight:600;">Save</button>
+                            <button onclick="document.getElementById('add-secret-form').style.display='none'" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.5rem 1rem; border-radius:6px; cursor:pointer;">Cancel</button>
+                        </div>
+                    </div>
+                    <div id="secrets-list"></div>
+                    <p id="secrets-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No secrets yet. Store private messages, combination codes, hidden notes...</p>
+                </div>
+                <div id="vstabcontent-legacy-valuables" style="display:none;">
+                    <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+                        <button onclick="showAddValuable()" style="background:#d97706; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Valuable</button>
+                    </div>
+                    <div id="add-valuable-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
+                        <h4 style="color:#d97706; margin-bottom:1rem;">Add a Valuable</h4>
+                        <input id="valuable-title" placeholder="Item name (e.g. Gold watch, Diamond ring)" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; box-sizing:border-box;">
+                        <textarea id="valuable-detail" placeholder="Description, location, sentimental value..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:80px; resize:vertical; box-sizing:border-box;"></textarea>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button onclick="saveValuable()" style="background:#d97706; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-weight:600;">Save</button>
+                            <button onclick="document.getElementById('add-valuable-form').style.display='none'" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.5rem 1rem; border-radius:6px; cursor:pointer;">Cancel</button>
+                        </div>
+                    </div>
+                    <div id="valuables-list"></div>
+                    <p id="valuables-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No valuables yet. Record jewellery, artwork, heirlooms, sentimental items...</p>
+                </div>
             </div>
+
+        </div>
+    </section>            </div>
 
         </div>
     </section>
@@ -3784,7 +3804,172 @@
                 btn.style.fontWeight = active ? '700' : '500'
             })
         }
+
+        // ===== CONTACT CATEGORIES =====
+        const categoryEmoji = { 'Family':'👨‍👩‍👧‍👦','Friends':'👫','Business':'💼','Romantic':'💕','Disliked':'😖','Others':'⭐','':'📋','All':'👥' }
+
+        function renderCategoryStrip() {
+            const strip = document.getElementById('contacts-cat-strip')
+            if (!strip) return
+            // Build category counts
+            const counts = { 'All': savedContacts.length }
+            savedContacts.forEach(c => {
+                const cat = c.category || ''
+                if (!counts[cat]) counts[cat] = 0
+                counts[cat]++
+            })
+            // All standard + any custom cats found in data
+            const stdCats = ['Family','Friends','Business','Romantic','Disliked','Others']
+            const customCats = [...new Set(savedContacts.map(c => c.category).filter(c => c && !stdCats.includes(c)))]
+            const allCats = ['All', ...stdCats, ...customCats]
+            
+            const activeCat = strip.dataset.active || 'All'
+            strip.innerHTML = allCats.filter(cat => cat === 'All' || counts[cat]).map(cat => {
+                const n = counts[cat] || 0
+                const isActive = cat === activeCat
+                return `<button onclick="filterContactsByCategory('${cat}')" 
+                    style="padding:0.3rem 0.75rem; border-radius:980px; border:1px solid ${isActive ? '#3b82f6' : '#e5e7eb'}; background:${isActive ? '#3b82f6' : 'white'}; color:${isActive ? 'white' : '#374151'}; font-size:0.8rem; cursor:pointer; white-space:nowrap; font-weight:${isActive ? '600' : '400'};">
+                    ${categoryEmoji[cat] || '📋'} ${cat}${cat !== 'All' ? ' ('+n+')' : ' ('+savedContacts.length+')'}
+                </button>`
+            }).join('')
+        }
+
+        function filterContactsByCategory(cat) {
+            const strip = document.getElementById('contacts-cat-strip')
+            if (strip) strip.dataset.active = cat
+            renderCategoryStrip()
+            if (cat === 'All') {
+                renderContacts()
+            } else {
+                const list = document.getElementById('contacts-list')
+                if (!list) return
+                const filtered = savedContacts.filter(c => (c.category || '') === cat || (!c.category && cat === 'Others'))
+                const sorted = [...filtered].sort((a,b) => a.name.localeCompare(b.name))
+                if (sorted.length === 0) {
+                    list.innerHTML = '<p style="color:#9ca3af; text-align:center; padding:1.5rem;">No contacts in this category.</p>'
+                    return
+                }
+                list.innerHTML = sorted.map(c => contactCard(c)).join('')
+            }
+        }
+
+        function contactCard(c) {
+            const stdCats = ['Family','Friends','Business','Romantic','Disliked','Others']
+            const customCats = [...new Set(savedContacts.map(x=>x.category).filter(x=>x && !stdCats.includes(x)))]
+            const allCats = [...stdCats, ...customCats]
+            return `<div style="background:white; border-radius:8px; padding:1rem; display:flex; align-items:flex-start; gap:1rem; border:1px solid #e5e7eb; margin-bottom:0.5rem;">
+                <div style="width:45px; height:45px; border-radius:50%; background:#8b5cf6; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:1.1rem; flex-shrink:0;">
+                    ${c.name.charAt(0).toUpperCase()}
+                </div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:600; color:#1e3a8a;">${c.name}</div>
+                    <div style="color:#6b7280; font-size:0.85rem; margin-top:0.2rem;">
+                        ${c.category ? '<span style="background:#ede9fe; color:#6d28d9; padding:0.1rem 0.5rem; border-radius:4px; margin-right:0.3rem; font-size:0.8rem;">'+(categoryEmoji[c.category]||'📋')+' '+c.category+'</span>' : ''}
+                        ${c.phone ? '📞 '+c.phone : ''} ${c.email ? '• ✉️ '+c.email : ''}
+                    </div>
+                    ${c.note ? '<div style="color:#9ca3af; font-size:0.8rem; margin-top:0.3rem; font-style:italic;">"'+c.note+'"</div>' : ''}
+                    <div style="margin-top:0.4rem; display:flex; align-items:center; gap:0.3rem; flex-wrap:wrap;">
+                        <span style="color:#9ca3af; font-size:0.75rem;">Move to:</span>
+                        ${allCats.filter(cat => cat !== (c.category||'')).map(cat =>
+                            `<button onclick="assignContactCategory(${c.id},'${cat}')" style="padding:0.1rem 0.4rem; border:1px solid #e5e7eb; border-radius:4px; font-size:0.72rem; background:#f9fafb; cursor:pointer; color:#374151;">${categoryEmoji[cat]||'📋'} ${cat}</button>`
+                        ).join('')}
+                        <button onclick="promptCustomCategory(${c.id})" style="padding:0.1rem 0.4rem; border:1px dashed #8b5cf6; border-radius:4px; font-size:0.72rem; background:#faf5ff; cursor:pointer; color:#7c3aed;">✏️ New</button>
+                    </div>
+                    <div style="color:#d1d5db; font-size:0.72rem; margin-top:0.25rem;">Added ${new Date(c.addedAt).toLocaleDateString()}</div>
+                </div>
+                <button onclick="deleteContact(${c.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; flex-shrink:0;" title="Delete">🗑️</button>
+            </div>`
+        }
+
+        function assignContactCategory(id, category) {
+            const contact = savedContacts.find(c => c.id == id)
+            if (contact) {
+                contact.category = category
+                localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
+                syncVaultToSupabase('vault_contacts', savedContacts)
+                renderContacts()
+                renderCategoryStrip()
+                showNotification('✅ Moved to ' + category)
+            }
+        }
+
+        function promptCustomCategory(id) {
+            const val = prompt('Enter a custom category name:')
+            if (val && val.trim()) {
+                assignContactCategory(id, val.trim())
+            }
+        }
+
+        // ===== SECRETS & VALUABLES =====
+        let savedSecrets = []
+        let savedValuables = []
+
+        function showAddSecret() {
+            const f = document.getElementById('add-secret-form')
+            if (f) f.style.display = 'block'
+        }
+        function saveSecret() {
+            const title = document.getElementById('secret-title').value.trim()
+            const content = document.getElementById('secret-content').value.trim()
+            if (!title) { showNotification('Please enter a title'); return }
+            savedSecrets.push({ id: Date.now(), title, content, addedAt: new Date().toISOString() })
+            localStorage.setItem('vault_secrets', JSON.stringify(savedSecrets))
+            renderSecrets()
+            document.getElementById('add-secret-form').style.display = 'none'
+            document.getElementById('secret-title').value = ''
+            document.getElementById('secret-content').value = ''
+            showNotification('🔒 Secret saved')
+        }
+        function renderSecrets() {
+            const list = document.getElementById('secrets-list')
+            const empty = document.getElementById('secrets-empty')
+            if (!list) return
+            if (savedSecrets.length === 0) { if(empty) empty.style.display='block'; list.innerHTML=''; return }
+            if(empty) empty.style.display='none'
+            list.innerHTML = savedSecrets.map(s => `<div style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:1rem;margin-bottom:0.75rem;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                    <strong style="color:#1e3a8a;">🔒 ${s.title}</strong>
+                    <button onclick="deleteSecret(${s.id})" style="background:none;border:none;color:#9ca3af;cursor:pointer;">🗑️</button>
+                </div>
+                <pre style="margin:0.5rem 0 0;color:#374151;font-size:0.85rem;white-space:pre-wrap;font-family:inherit;">${s.content}</pre>
+                <div style="color:#9ca3af;font-size:0.75rem;margin-top:0.5rem;">${new Date(s.addedAt).toLocaleDateString()}</div>
+            </div>`).join('')
+        }
+        function deleteSecret(id) { savedSecrets = savedSecrets.filter(s=>s.id!==id); localStorage.setItem('vault_secrets',JSON.stringify(savedSecrets)); renderSecrets(); showNotification('Deleted') }
+
+        function showAddValuable() {
+            const f = document.getElementById('add-valuable-form')
+            if (f) f.style.display = 'block'
+        }
+        function saveValuable() {
+            const title = document.getElementById('valuable-title').value.trim()
+            const detail = document.getElementById('valuable-detail').value.trim()
+            if (!title) { showNotification('Please enter a title'); return }
+            savedValuables.push({ id: Date.now(), title, detail, addedAt: new Date().toISOString() })
+            localStorage.setItem('vault_valuables', JSON.stringify(savedValuables))
+            renderValuables()
+            document.getElementById('add-valuable-form').style.display = 'none'
+            document.getElementById('valuable-title').value = ''
+            document.getElementById('valuable-detail').value = ''
+            showNotification('💎 Valuable saved')
+        }
+        function renderValuables() {
+            const list = document.getElementById('valuables-list')
+            const empty = document.getElementById('valuables-empty')
+            if (!list) return
+            if (savedValuables.length === 0) { if(empty) empty.style.display='block'; list.innerHTML=''; return }
+            if(empty) empty.style.display='none'
+            list.innerHTML = savedValuables.map(v => `<div style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:1rem;margin-bottom:0.75rem;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                    <strong style="color:#d97706;">💎 ${v.title}</strong>
+                    <button onclick="deleteValuable(${v.id})" style="background:none;border:none;color:#9ca3af;cursor:pointer;">🗑️</button>
+                </div>
+                ${v.detail ? '<p style="margin:0.5rem 0 0;color:#374151;font-size:0.85rem;">'+v.detail+'</p>' : ''}
+                <div style="color:#9ca3af;font-size:0.75rem;margin-top:0.5rem;">${new Date(v.addedAt).toLocaleDateString()}</div>
+            </div>`).join('')
+        }
+        function deleteValuable(id) { savedValuables = savedValuables.filter(v=>v.id!==id); localStorage.setItem('vault_valuables',JSON.stringify(savedValuables)); renderValuables(); showNotification('Deleted') }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.9</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.11</div>
 </body>
 </html>
