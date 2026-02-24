@@ -1364,9 +1364,15 @@
                                     ${song.meaning ? `<div style="color:#0ea5e9; font-size:0.8rem; margin-top:0.2rem;">❤️ ${song.meaning}</div>` : ''}
                                     ${!song.why && !song.period && !song.meaning ? `<div style="color:#d1d5db; font-size:0.75rem; margin-top:0.2rem; font-style:italic;">No memory added yet — click ✏️ to add one</div>` : ''}
                                 </div>
-                                <div style="display:flex; gap:0.5rem; flex-shrink:0; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-                                    ${song.previewUrl ? `<button onclick="playPreview('${song.previewUrl}', this)" class="preview-btn" style="background:#1db954; color:white; border:none; padding:0.35rem 0.6rem; border-radius:6px; font-size:0.8rem; cursor:pointer;">▶ Preview</button>` : ''}
-                                    ${song.trackUrl ? `<a href="${song.trackUrl}" target="_blank" style="background:#fc3c44; color:white; border:none; padding:0.35rem 0.6rem; border-radius:6px; font-size:0.8rem; text-decoration:none;">🎵 Play</a>` : ''}
+                                <div style="display:flex; gap:0.4rem; flex-shrink:0; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+                                    <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(song.artist + ' ' + song.name)}" target="_blank" title="Find on YouTube"
+                                        style="background:#ff0000; color:white; padding:0.35rem 0.6rem; border-radius:6px; font-size:0.8rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.25rem;">
+                                        ▶ YouTube
+                                    </a>
+                                    <a href="https://www.google.com/search?q=${encodeURIComponent(song.artist + ' ' + song.name + ' song')}" target="_blank" title="Google this song"
+                                        style="background:#4285F4; color:white; padding:0.35rem 0.6rem; border-radius:6px; font-size:0.8rem; text-decoration:none;">
+                                        🔍
+                                    </a>
                                     <button onclick="openSongMemory('${song.id}')" style="background:#ede9fe; border:none; color:#7c3aed; cursor:pointer; padding:0.35rem 0.6rem; border-radius:6px; font-size:0.85rem;" title="Add memory">✏️</button>
                                     <button onclick="removeSong('${song.id}')" style="background:#fee2e2; border:none; color:#ef4444; cursor:pointer; padding:0.35rem 0.6rem; border-radius:6px; font-size:0.85rem;" title="Remove">🗑️</button>
                                 </div>
@@ -1729,16 +1735,30 @@
             }, 500)
         }
 
+        function handleCategoryChange(sel) {
+            const customInput = document.getElementById('contact-category-custom')
+            if (sel.value === '__custom__') {
+                customInput.style.display = 'block'
+                customInput.focus()
+            } else {
+                customInput.style.display = 'none'
+            }
+        }
+
         function saveContact() {
             const name = document.getElementById('contact-name').value.trim()
             if (!name) { showNotification('Please enter a name!'); return }
+
+            const catSel = document.getElementById('contact-category').value
+            const catCustom = document.getElementById('contact-category-custom').value.trim()
+            const category = catSel === '__custom__' ? catCustom : catSel
 
             const contact = {
                 id: Date.now(),
                 name: name,
                 phone: document.getElementById('contact-phone').value.trim(),
                 email: document.getElementById('contact-email').value.trim(),
-                category: document.getElementById('contact-category').value.trim(),
+                category: category,
                 relation: document.getElementById('contact-relation').value.trim(),
                 note: document.getElementById('contact-note').value.trim(),
                 addedAt: new Date().toISOString()
@@ -1755,6 +1775,8 @@
             document.getElementById('contact-phone').value = ''
             document.getElementById('contact-email').value = ''
             document.getElementById('contact-category').value = ''
+            document.getElementById('contact-category-custom').value = ''
+            document.getElementById('contact-category-custom').style.display = 'none'
             document.getElementById('contact-relation').value = ''
             document.getElementById('contact-note').value = ''
             document.getElementById('add-contact-form').style.display = 'none'
@@ -1883,9 +1905,11 @@
                 if (ca) ca.textContent = '▼'
             }
 
-            // Build category tabs
+            // Build category tabs - includes custom categories
+            const standardCats = ['Family', 'Friends', 'Business', 'Romantic', 'Disliked', 'Others']
+            const customCats = Object.keys(catCounts).filter(c => c && !standardCats.includes(c))
+            const tabList = ['All', ...standardCats, ...customCats]
             let tabsHtml = '<div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:1rem;">'
-            const tabList = ['All', 'Family', 'Friends', 'Business', 'Romantic', 'Disliked', 'Others']
             tabList.forEach(cat => {
                 const n = cat === 'All' ? savedContacts.length : (catCounts[cat] || 0)
                 if (n === 0 && cat !== 'All') return
@@ -2048,6 +2072,18 @@
             renderInheritors()
             refreshDashboardStats()
             showNotification(`👨‍👩‍👧‍👦 ${name} added as inheritor!`)
+
+            // Offer to notify the inheritor by email
+            setTimeout(() => {
+                if (confirm(`Would you like to send ${name} an email to let them know they've been added as a vault inheritor?\n\nThis will open your email app with a pre-written message.`)) {
+                    const subject = encodeURIComponent('You have been named as my We Loved Life vault inheritor')
+                    const userName = user ? user.name || user.email : 'Someone you know'
+                    const body = encodeURIComponent(
+                        `Hi ${name},\n\n${userName} has added you as an inheritor to their We Loved Life digital vault.\n\nWe Loved Life is a personal legacy vault that preserves memories, music, photos, life stories, and more for future generations.\n\nWhen the time comes, you will be given login access to their vault so their memories are never lost.\n\nNo action is needed from you right now — this is simply to let you know you've been chosen.\n\nWith love,\n${userName}`
+                    )
+                    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`
+                }
+            }, 500)
         }
 
         function deleteInheritor(id) {
@@ -2678,7 +2714,7 @@
                             <input id="contact-name" placeholder="Full Name *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
                             <input id="contact-phone" placeholder="Phone Number" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
                             <input id="contact-email" placeholder="Email Address" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                            <select id="contact-category" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; background:white;">
+                            <select id="contact-category" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; background:white;" onchange="handleCategoryChange(this)">
                                 <option value="">Select category...</option>
                                 <option value="Family">👨‍👩‍👧‍👦 Family</option>
                                 <option value="Friends">👫 Friends</option>
@@ -2686,7 +2722,10 @@
                                 <option value="Romantic">💕 Romantic</option>
                                 <option value="Disliked">😬 Disliked</option>
                                 <option value="Others">⭐ Others</option>
+                                <option value="__custom__">✏️ Create new category...</option>
                             </select>
+                            <input id="contact-category-custom" placeholder="Type your custom category..." 
+                                style="display:none; padding:0.5rem; border:1px solid #8b5cf6; border-radius:6px; font-size:0.9rem; margin-top:0.4rem; width:100%;">
                             <input id="contact-relation" placeholder="Relationship (e.g. Sister, Best Friend)" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; grid-column:span 2;">
                         </div>
                         <textarea id="contact-note" placeholder="Why are they meaningful to you? Share a memory or story..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:80px; resize:vertical;"></textarea>
@@ -2907,6 +2946,87 @@
                             <button class="action-button" onclick="viewAllChapters()" style="background:#8b5cf6;">
                                 📚 View All Chapters
                             </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Secrets Card -->
+                <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #dc2626; margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem; cursor:pointer; user-select:none;"
+                         onclick="toggleSection('secrets-body','secrets-arrow')">
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <span id="secrets-arrow" style="color:#dc2626; font-size:1rem;">▶</span>
+                            <div>
+                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">🔒 My Secrets</h4>
+                                <p style="color:#6b7280; font-size:0.9rem;"><span id="secrets-count-header">Only to be opened after my death</span></p>
+                            </div>
+                        </div>
+                        <button class="action-button" onclick="event.stopPropagation(); toggleSection('secrets-body','secrets-arrow')" style="background:#dc2626;">
+                            + Add Secret
+                        </button>
+                    </div>
+                    <div id="secrets-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                        <!-- Solemn notice -->
+                        <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:1.25rem; margin-bottom:1.5rem; text-align:center;">
+                            <div style="font-size:2rem; margin-bottom:0.5rem;">🔒</div>
+                            <p style="color:#dc2626; font-weight:700; font-size:1rem; margin-bottom:0.5rem;">Only open after my death</p>
+                            <p style="color:#7f1d1d; font-size:0.9rem; font-style:italic;" id="secrets-wish-text">Please respect my wish — <strong id="secrets-user-name"></strong></p>
+                        </div>
+                        <div id="secrets-list" style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;"></div>
+                        <!-- Add secret form -->
+                        <div style="background:white; border-radius:8px; padding:1rem; border:1px solid #fecaca;">
+                            <h4 style="color:#dc2626; margin-bottom:1rem; font-size:1rem;">Add a Secret</h4>
+                            <input id="secret-title" placeholder="Title (e.g. The truth about..., A confession...)"
+                                style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem;">
+                            <textarea id="secret-content" placeholder="Write your secret here... This will only be seen by your inheritors after you are gone."
+                                style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; height:120px; resize:vertical; font-family:inherit; margin-bottom:0.75rem;"></textarea>
+                            <button class="action-button" onclick="saveSecret()" style="background:#dc2626;">Save Secret</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Valuables Card -->
+                <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #d97706; margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem; cursor:pointer; user-select:none;"
+                         onclick="toggleSection('valuables-body','valuables-arrow')">
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <span id="valuables-arrow" style="color:#d97706; font-size:1rem;">▶</span>
+                            <div>
+                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">💎 My Valuables</h4>
+                                <p style="color:#6b7280; font-size:0.9rem;"><span id="valuables-count-header">Record what you own, where to find it, and what it's worth</span></p>
+                            </div>
+                        </div>
+                        <button class="action-button" onclick="event.stopPropagation(); toggleSection('valuables-body','valuables-arrow')" style="background:#d97706;">
+                            + Add Valuable
+                        </button>
+                    </div>
+                    <div id="valuables-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                        <div id="valuables-list" style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;"></div>
+                        <!-- Add valuable form -->
+                        <div style="background:white; border-radius:8px; padding:1rem; border:1px solid #fde68a;">
+                            <h4 style="color:#92400e; margin-bottom:1rem; font-size:1rem;">Add a Valuable</h4>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
+                                <input id="valuable-name" placeholder="What is it? (e.g. Gold watch, Oil painting)"
+                                    style="padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                                <select id="valuable-category" style="padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; background:white;">
+                                    <option value="">Category...</option>
+                                    <option value="Jewellery">💍 Jewellery</option>
+                                    <option value="Art">🎨 Art & Collectibles</option>
+                                    <option value="Property">🏠 Property</option>
+                                    <option value="Investments">📈 Investments</option>
+                                    <option value="Vehicles">🚗 Vehicles</option>
+                                    <option value="Cash">💷 Cash & Accounts</option>
+                                    <option value="Sentimental">❤️ Sentimental</option>
+                                    <option value="Other">📦 Other</option>
+                                </select>
+                                <input id="valuable-value" placeholder="Estimated value (e.g. £2,500)"
+                                    style="padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                                <input id="valuable-location" placeholder="Where to find it (e.g. Top drawer, safe)"
+                                    style="padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                            </div>
+                            <textarea id="valuable-notes" placeholder="Any additional details — provenance, sentimental meaning, who should inherit it..."
+                                style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; height:80px; resize:vertical; font-family:inherit; margin-bottom:0.75rem;"></textarea>
+                            <button class="action-button" onclick="saveValuable()" style="background:#d97706;">Save Valuable</button>
                         </div>
                     </div>
                 </div>
@@ -3233,14 +3353,14 @@
 
     
     <!-- Photo Lightbox -->
-    <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; display:none; align-items:center; justify-content:center; padding:1rem;" onclick="closePhotoLightbox()">
+    <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; align-items:center; justify-content:center; padding:1rem;" onclick="closePhotoLightbox()">
         <div style="max-width:900px; width:100%; position:relative;" onclick="event.stopPropagation()">
             <button onclick="closePhotoLightbox()" style="position:absolute; top:-2.5rem; right:0; background:none; border:none; color:white; font-size:1.8rem; cursor:pointer; line-height:1;">✕</button>
             <img id="lightbox-img" src="" style="width:100%; max-height:75vh; object-fit:contain; border-radius:8px; display:block;">
             <div id="lightbox-caption" style="color:white; padding:1rem 0; min-height:60px;"></div>
             <div style="display:flex; gap:0.75rem; justify-content:center;">
                 <button id="lightbox-caption-btn" onclick="lightboxAddCaption()" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; padding:0.5rem 1rem; border-radius:6px; cursor:pointer;">✏️ Add Caption</button>
-                <a id="lightbox-download-btn" href="" download="" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; text-decoration:none;">⬇️ Download</a>
+                <button id="lightbox-download-btn" onclick="downloadCurrentPhoto()" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; padding:0.5rem 1rem; border-radius:6px; cursor:pointer;">⬇️ Download</button>
             </div>
         </div>
     </div>
@@ -3406,7 +3526,7 @@
 
         async function pushAllToSupabase() {
             if (!user) return
-            const keys = ['spotify_music_data', 'vault_contacts', 'vault_inheritors', 'vault_stories', 'vault_lifebook', 'vault_photo_captions']
+            const keys = ['spotify_music_data', 'vault_contacts', 'vault_inheritors', 'vault_stories', 'vault_lifebook', 'vault_photo_captions', 'vault_secrets', 'vault_valuables']
             let pushed = 0
             for (const key of keys) {
                 const raw = localStorage.getItem(key)
@@ -3719,6 +3839,8 @@
                 loadLifebook()
                 loadSavedMusic()
                 loadInheritors()
+                loadSecrets()
+                loadValuables()
             }, 400);
         }
 
@@ -4067,12 +4189,10 @@
             lightboxCurrentUrl = url
             const lb = document.getElementById('photo-lightbox')
             document.getElementById('lightbox-img').src = url
-            const dl = document.getElementById('lightbox-download-btn')
-            dl.href = url
-            dl.download = filename
 
             // Show caption info
-            const cap = typeof captionObj === 'string' ? JSON.parse(captionObj.replace(/&quot;/g,'"')) : captionObj
+            let cap = {}
+            try { cap = typeof captionObj === 'string' ? JSON.parse(captionObj.replace(/&quot;/g,'"')) : (captionObj || {}) } catch(e) {}
             const captionEl = document.getElementById('lightbox-caption')
             const captionBtn = document.getElementById('lightbox-caption-btn')
             let capHtml = ''
@@ -4083,7 +4203,25 @@
             captionBtn.textContent = capHtml ? '✏️ Edit Caption' : '✏️ Add Caption'
 
             lb.style.display = 'flex'
+            lb.style.alignItems = 'center'
+            lb.style.justifyContent = 'center'
             document.body.style.overflow = 'hidden'
+        }
+
+        async function downloadCurrentPhoto() {
+            if (!lightboxCurrentUrl) return
+            try {
+                const response = await fetch(lightboxCurrentUrl)
+                const blob = await response.blob()
+                const a = document.createElement('a')
+                a.href = URL.createObjectURL(blob)
+                a.download = lightboxCurrentFile || 'photo.jpg'
+                a.click()
+                URL.revokeObjectURL(a.href)
+            } catch(e) {
+                // Fallback: open in new tab
+                window.open(lightboxCurrentUrl, '_blank')
+            }
         }
 
         function closePhotoLightbox() {
@@ -4129,6 +4267,131 @@
             closePhotoCaptionModal()
             loadSavedPhotos()
             showNotification('📸 Caption saved!')
+        }
+
+        // ---- My Secrets ----
+        let savedSecrets = JSON.parse(localStorage.getItem('vault_secrets') || '[]')
+
+        function loadSecrets() {
+            savedSecrets = JSON.parse(localStorage.getItem('vault_secrets') || '[]')
+            renderSecrets()
+        }
+
+        function saveSecret() {
+            const title = document.getElementById('secret-title').value.trim()
+            const content = document.getElementById('secret-content').value.trim()
+            if (!title || !content) { showNotification('Please fill in both title and content'); return }
+            savedSecrets.push({ id: Date.now(), title, content, addedAt: new Date().toISOString() })
+            localStorage.setItem('vault_secrets', JSON.stringify(savedSecrets))
+            syncVaultToSupabase('vault_secrets', savedSecrets)
+            document.getElementById('secret-title').value = ''
+            document.getElementById('secret-content').value = ''
+            renderSecrets()
+            showNotification('🔒 Secret saved')
+        }
+
+        function deleteSecret(id) {
+            if (!confirm('Delete this secret permanently?')) return
+            savedSecrets = savedSecrets.filter(s => s.id !== id)
+            localStorage.setItem('vault_secrets', JSON.stringify(savedSecrets))
+            syncVaultToSupabase('vault_secrets', savedSecrets)
+            renderSecrets()
+        }
+
+        function renderSecrets() {
+            const list = document.getElementById('secrets-list')
+            if (!list) return
+            // Set user name in solemn notice
+            const nameEl = document.getElementById('secrets-user-name')
+            if (nameEl && user) nameEl.textContent = user.name || user.email
+            if (savedSecrets.length === 0) {
+                list.innerHTML = '<p style="color:#9ca3af; text-align:center; padding:1rem; font-style:italic;">No secrets added yet.</p>'
+                document.getElementById('secrets-count-header').textContent = 'Only to be opened after my death'
+                return
+            }
+            document.getElementById('secrets-count-header').textContent = savedSecrets.length + ' secret' + (savedSecrets.length !== 1 ? 's' : '') + ' — only open after my death'
+            list.innerHTML = savedSecrets.map(s => `
+                <div style="background:white; border-radius:8px; padding:1rem; border:1px solid #fecaca; position:relative;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div style="flex:1;">
+                            <div style="font-weight:700; color:#7f1d1d; margin-bottom:0.5rem;">🔒 ${s.title}</div>
+                            <div style="color:#374151; font-size:0.9rem; line-height:1.6; white-space:pre-wrap;">${s.content}</div>
+                            <div style="color:#d1d5db; font-size:0.75rem; margin-top:0.5rem;">Added ${new Date(s.addedAt).toLocaleDateString()}</div>
+                        </div>
+                        <button onclick="deleteSecret(${s.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; flex-shrink:0; margin-left:0.5rem;">🗑️</button>
+                    </div>
+                </div>
+            `).join('')
+        }
+
+        // ---- My Valuables ----
+        let savedValuables = JSON.parse(localStorage.getItem('vault_valuables') || '[]')
+
+        function loadValuables() {
+            savedValuables = JSON.parse(localStorage.getItem('vault_valuables') || '[]')
+            renderValuables()
+        }
+
+        function saveValuable() {
+            const name = document.getElementById('valuable-name').value.trim()
+            if (!name) { showNotification('Please enter what the valuable is'); return }
+            savedValuables.push({
+                id: Date.now(),
+                name,
+                category: document.getElementById('valuable-category').value,
+                value: document.getElementById('valuable-value').value.trim(),
+                location: document.getElementById('valuable-location').value.trim(),
+                notes: document.getElementById('valuable-notes').value.trim(),
+                addedAt: new Date().toISOString()
+            })
+            localStorage.setItem('vault_valuables', JSON.stringify(savedValuables))
+            syncVaultToSupabase('vault_valuables', savedValuables)
+            document.getElementById('valuable-name').value = ''
+            document.getElementById('valuable-category').value = ''
+            document.getElementById('valuable-value').value = ''
+            document.getElementById('valuable-location').value = ''
+            document.getElementById('valuable-notes').value = ''
+            renderValuables()
+            showNotification('💎 Valuable saved')
+        }
+
+        function deleteValuable(id) {
+            if (!confirm('Remove this valuable?')) return
+            savedValuables = savedValuables.filter(v => v.id !== id)
+            localStorage.setItem('vault_valuables', JSON.stringify(savedValuables))
+            syncVaultToSupabase('vault_valuables', savedValuables)
+            renderValuables()
+        }
+
+        function renderValuables() {
+            const list = document.getElementById('valuables-list')
+            if (!list) return
+            if (savedValuables.length === 0) {
+                list.innerHTML = '<p style="color:#9ca3af; text-align:center; padding:1rem; font-style:italic;">No valuables added yet.</p>'
+                document.getElementById('valuables-count-header').textContent = 'Record what you own, where to find it, and what it\'s worth'
+                return
+            }
+            const total = savedValuables.length
+            document.getElementById('valuables-count-header').textContent = total + ' item' + (total !== 1 ? 's' : '') + ' recorded'
+            const catEmoji = { 'Jewellery':'💍','Art':'🎨','Property':'🏠','Investments':'📈','Vehicles':'🚗','Cash':'💷','Sentimental':'❤️','Other':'📦','':"📦" }
+            list.innerHTML = savedValuables.map(v => `
+                <div style="background:white; border-radius:8px; padding:1rem; border:1px solid #fde68a;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div style="flex:1;">
+                            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; flex-wrap:wrap;">
+                                <span style="font-size:1.2rem;">${catEmoji[v.category] || '📦'}</span>
+                                <span style="font-weight:700; color:#92400e; font-size:1rem;">${v.name}</span>
+                                ${v.category ? `<span style="background:#fef3c7; color:#92400e; padding:0.15rem 0.5rem; border-radius:4px; font-size:0.78rem;">${v.category}</span>` : ''}
+                                ${v.value ? `<span style="background:#ecfdf5; color:#065f46; padding:0.15rem 0.5rem; border-radius:4px; font-size:0.78rem; font-weight:600;">${v.value}</span>` : ''}
+                            </div>
+                            ${v.location ? `<div style="color:#6b7280; font-size:0.85rem; margin-bottom:0.3rem;">📍 <strong>Location:</strong> ${v.location}</div>` : ''}
+                            ${v.notes ? `<div style="color:#6b7280; font-size:0.85rem; font-style:italic; line-height:1.5;">${v.notes}</div>` : ''}
+                            <div style="color:#d1d5db; font-size:0.75rem; margin-top:0.4rem;">Added ${new Date(v.addedAt).toLocaleDateString()}</div>
+                        </div>
+                        <button onclick="deleteValuable(${v.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; flex-shrink:0; margin-left:0.5rem;">🗑️</button>
+                    </div>
+                </div>
+            `).join('')
         }
 
         function showNotification(message) {
