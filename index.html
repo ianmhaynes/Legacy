@@ -1714,6 +1714,7 @@
             if (contactsBody.style.display === 'none') {
                 contactsBody.style.display = 'block'
                 if (contactsArrow) contactsArrow.textContent = '▼'
+                updateFixedCollapseButtons()
             }
             
             const form = document.getElementById('add-contact-form')
@@ -1731,6 +1732,7 @@
             if (contactsBody.style.display === 'none') {
                 contactsBody.style.display = 'block'
                 if (contactsArrow) contactsArrow.textContent = '▼'
+                updateFixedCollapseButtons()
             }
             
             const instructions = document.getElementById('export-instructions')
@@ -4425,6 +4427,59 @@ ${userName}`
         function closePhotoLightbox() {
             document.getElementById('photo-lightbox').classList.remove('lb-open')
             document.body.style.overflow = ''
+        }
+
+        function togglePrinterSearch() {
+            const panel = document.getElementById('printer-search-panel')
+            if (!panel) return
+            const isOpen = panel.style.display !== 'none'
+            panel.style.display = isOpen ? 'none' : 'block'
+            if (!isOpen) {
+                setTimeout(() => {
+                    const inp = document.getElementById('printer-location')
+                    if (inp) inp.focus()
+                }, 50)
+            }
+        }
+
+        function useMyLocation() {
+            if (!navigator.geolocation) { showNotification('Location not available on this device'); return }
+            const inp = document.getElementById('printer-location')
+            inp.placeholder = 'Detecting location...'
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    fetch('https://nominatim.openstreetmap.org/reverse?lat=' + pos.coords.latitude + '&lon=' + pos.coords.longitude + '&format=json')
+                        .then(r => r.json())
+                        .then(d => {
+                            const town = (d.address||{}).town || (d.address||{}).city || (d.address||{}).village || ''
+                            const pc   = (d.address||{}).postcode || ''
+                            inp.value = [town, pc].filter(Boolean).join(' ')
+                            inp.placeholder = 'Your location...'
+                            searchPrinters()
+                        })
+                        .catch(() => { inp.placeholder = 'Enter location manually...'; showNotification('Could not auto-detect location') })
+                },
+                () => { inp.placeholder = 'Enter your location...'; showNotification('Location permission denied') }
+            )
+        }
+
+        function searchPrinters() {
+            const loc = (document.getElementById('printer-location') || {}).value || ''
+            if (!loc.trim()) { showNotification('Please enter your location first'); return }
+            const el = document.getElementById('printer-results')
+            if (!el) return
+            const enc = encodeURIComponent(loc.trim())
+            const locName = loc.trim()
+            el.innerHTML = '<div style="background:rgba(255,255,255,0.08); border-radius:8px; padding:1rem;">' +
+                '<p style="color:#d1d5db; font-size:0.82rem; margin-bottom:0.75rem;">Options near <strong style="color:white;">' + locName + '</strong>:</p>' +
+                '<div style="display:flex; flex-direction:column; gap:0.5rem;">' +
+                '<a href="https://www.google.com/maps/search/photo+printing+near+' + enc + '" target="_blank" style="background:#4285F4; color:white; padding:0.55rem 1rem; border-radius:6px; text-decoration:none; font-size:0.88rem; display:block;">📍 Local photo printers near ' + locName + ' — Google Maps</a>' +
+                '<a href="https://www.google.com/search?q=online+photo+printing+delivery+near+' + enc + '" target="_blank" style="background:#34a853; color:white; padding:0.55rem 1rem; border-radius:6px; text-decoration:none; font-size:0.88rem; display:block;">🔍 Online printing &amp; delivery near ' + locName + '</a>' +
+                '<a href="https://www.photobox.co.uk/shop/prints" target="_blank" style="background:#c0392b; color:white; padding:0.55rem 1rem; border-radius:6px; text-decoration:none; font-size:0.88rem; display:block;">🖼️ Photobox — UK nationwide photo printing</a>' +
+                '<a href="https://www.snapfish.co.uk/photo-gifts/photo-prints" target="_blank" style="background:#e67e22; color:white; padding:0.55rem 1rem; border-radius:6px; text-decoration:none; font-size:0.88rem; display:block;">📷 Snapfish — Prints delivered to your door</a>' +
+                '</div>' +
+                '<p style="color:#9ca3af; font-size:0.76rem; margin-top:0.75rem; font-style:italic;">💡 Download the photo first, then upload to your chosen printer</p>' +
+                '</div>'
         }
 
         function lightboxAddCaption() {
