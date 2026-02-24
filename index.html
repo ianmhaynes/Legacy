@@ -2172,6 +2172,131 @@
             }
         }
 
+        // ===== VAULT TAB SWITCHING =====
+        var currentVaultTab = 'memories'
+
+        function switchVaultTab(tab) {
+            currentVaultTab = tab
+            var tabs = ['memories','contacts','essentials','legacy']
+            tabs.forEach(function(t) {
+                var content = document.getElementById('vtabcontent-' + t)
+                var btn = document.getElementById('vtab-' + t)
+                if (content) content.style.display = t === tab ? 'block' : 'none'
+                if (btn) {
+                    btn.style.borderBottomColor = t === tab ? '#3b82f6' : 'transparent'
+                    btn.style.color = t === tab ? '#1e3a8a' : '#6b7280'
+                    btn.style.fontWeight = t === tab ? '700' : '600'
+                }
+            })
+            // Hide fixed collapse buttons when leaving contacts tab
+            if (tab !== 'contacts') {
+                var fcC = document.getElementById('fixed-collapse-contacts')
+                if (fcC) fcC.style.display = 'none'
+            }
+            if (tab !== 'memories') {
+                var fcP = document.getElementById('fixed-collapse-photos')
+                if (fcP) fcP.style.display = 'none'
+            }
+            window.scrollTo({top: 0, behavior: 'smooth'})
+        }
+
+        // ===== ESSENTIALS =====
+        var savedEssentials = JSON.parse(localStorage.getItem('vault_essentials') || '[]')
+
+        function showAddEssential(category) {
+            var colours = {finance:'#f59e0b', access:'#10b981', digital:'#6366f1', docs:'#ef4444', wishes:'#8b5cf6'}
+            var labels = {finance:'Financial & Legal', access:'Physical Access', digital:'Digital Access', docs:'Important Documents', wishes:'Final Wishes'}
+            var form = document.getElementById('add-essential-form')
+            document.getElementById('essential-category').value = category
+            document.getElementById('add-essential-title').textContent = '+ Add: ' + (labels[category] || category)
+            document.getElementById('add-essential-title').style.color = colours[category] || '#1e3a8a'
+            document.getElementById('essential-heading').value = ''
+            document.getElementById('essential-detail').value = ''
+            document.getElementById('essential-image').value = ''
+            form.style.display = 'block'
+            // Open the category section
+            var body = document.getElementById('essentials-' + category + '-body')
+            if (body) body.style.display = 'block'
+            var arrow = document.getElementById('essentials-' + category + '-arrow')
+            if (arrow) arrow.textContent = '▼'
+            setTimeout(function(){ form.scrollIntoView({behavior:'smooth', block:'nearest'}) }, 100)
+        }
+
+        function saveEssential() {
+            var heading = document.getElementById('essential-heading').value.trim()
+            var detail = document.getElementById('essential-detail').value.trim()
+            var category = document.getElementById('essential-category').value
+            if (!heading) { showNotification('Please add a heading'); return }
+            var imgFile = document.getElementById('essential-image').files[0]
+            if (imgFile) {
+                var reader = new FileReader()
+                reader.onload = function(e) {
+                    doSaveEssential(heading, detail, category, e.target.result)
+                }
+                reader.readAsDataURL(imgFile)
+            } else {
+                doSaveEssential(heading, detail, category, null)
+            }
+        }
+
+        function doSaveEssential(heading, detail, category, imageData) {
+            var entry = {
+                id: Date.now(),
+                heading: heading,
+                detail: detail,
+                category: category,
+                image: imageData,
+                addedAt: new Date().toISOString()
+            }
+            savedEssentials.push(entry)
+            localStorage.setItem('vault_essentials', JSON.stringify(savedEssentials))
+            syncVaultToSupabase('vault_essentials', savedEssentials)
+            document.getElementById('add-essential-form').style.display = 'none'
+            renderEssentials()
+            showNotification('✅ Saved to ' + category)
+        }
+
+        function deleteEssential(id) {
+            if (!confirm('Delete this entry?')) return
+            savedEssentials = savedEssentials.filter(function(e) { return e.id !== id })
+            localStorage.setItem('vault_essentials', JSON.stringify(savedEssentials))
+            syncVaultToSupabase('vault_essentials', savedEssentials)
+            renderEssentials()
+        }
+
+        function renderEssentials() {
+            var categories = ['finance','access','digital','docs','wishes']
+            categories.forEach(function(cat) {
+                var items = savedEssentials.filter(function(e) { return e.category === cat })
+                var list = document.getElementById('essentials-' + cat + '-list')
+                var empty = document.getElementById('essentials-' + cat + '-empty')
+                if (!list) return
+                if (items.length === 0) {
+                    list.innerHTML = ''
+                    if (empty) empty.style.display = 'block'
+                    return
+                }
+                if (empty) empty.style.display = 'none'
+                list.innerHTML = items.map(function(e) {
+                    return '<div style="background:white; border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin-bottom:0.75rem;">' +
+                        '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;">' +
+                        '<div style="flex:1;">' +
+                        '<div style="font-weight:700; color:#1e3a8a; margin-bottom:0.25rem;">' + e.heading + '</div>' +
+                        (e.detail ? '<div style="color:#4b5563; font-size:0.9rem; white-space:pre-wrap; line-height:1.5;">' + e.detail + '</div>' : '') +
+                        (e.image ? '<div style="margin-top:0.75rem;"><img src="' + e.image + '" style="max-width:200px; max-height:150px; border-radius:6px; border:1px solid #e5e7eb; cursor:pointer;" onclick="window.open(this.src)"></div>' : '') +
+                        '<div style="color:#d1d5db; font-size:0.75rem; margin-top:0.4rem;">Added ' + new Date(e.addedAt).toLocaleDateString() + '</div>' +
+                        '</div>' +
+                        '<button onclick="deleteEssential(' + e.id + ')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; flex-shrink:0;" title="Delete">🗑️</button>' +
+                        '</div></div>'
+                }).join('')
+            })
+        }
+
+        function loadEssentials() {
+            savedEssentials = JSON.parse(localStorage.getItem('vault_essentials') || '[]')
+            renderEssentials()
+        }
+
         function updateFixedCollapseButtons() {
             var pb = document.getElementById('photos-body')
             var cb = document.getElementById('contacts-body')
@@ -2522,7 +2647,7 @@ ${userName}`
     </nav>
 
     <!-- Notification -->
-    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v3.9</div>
+    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.0</div>
     <div id="notification" class="notification"></div>
 
     <!-- Home Section -->
@@ -2732,25 +2857,41 @@ ${userName}`
                 </div>
             </div>
 
-            <!-- Welcome Message -->
-            <div class="vault-section" style="text-align: center; padding: 3rem;">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">🏛️</div>
-                <h3 style="font-size: 2rem; margin-bottom: 1rem;">Your Vault is Ready!</h3>
-                <p style="color: #6b7280; font-size: 1.2rem; max-width: 600px; margin: 0 auto 1.5rem;">
-                    Start connecting your services to preserve your digital legacy for future generations.
-                </p>
-                <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap; align-items:center;">
-                    <div id="sync-status" style="display:inline-flex; align-items:center; gap:0.4rem; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:980px; padding:0.4rem 1rem; font-size:0.85rem; color:#16a34a;">
-                        <span id="sync-dot" style="width:8px; height:8px; border-radius:50%; background:#16a34a; display:inline-block;"></span>
-                        <span id="sync-label">Ready</span>
-                    </div>
-                    <button onclick="manualSync()" style="background:#3730a3; color:white; border:none; border-radius:980px; padding:0.4rem 1rem; font-size:0.85rem; cursor:pointer;">
-                        ☁️ Sync Now
-                    </button>
+            <!-- Sync status + search row -->
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap; margin-bottom:1.5rem;">
+                <div id="sync-status" style="display:inline-flex; align-items:center; gap:0.4rem; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:980px; padding:0.4rem 1rem; font-size:0.85rem; color:#16a34a;">
+                    <span id="sync-dot" style="width:8px; height:8px; border-radius:50%; background:#16a34a; display:inline-block;"></span>
+                    <span id="sync-label">Ready</span>
                 </div>
+                <button onclick="manualSync()" style="background:#3730a3; color:white; border:none; border-radius:980px; padding:0.4rem 1rem; font-size:0.85rem; cursor:pointer;">☁️ Sync Now</button>
+                <input id="vault-search" placeholder="🔍 Search vault..." 
+                    style="flex:1; min-width:200px; padding:0.5rem 1rem; border:2px solid #e5e7eb; border-radius:980px; font-size:0.9rem;"
+                    oninput="searchVault(this.value)">
             </div>
 
-            <!-- Spotify Connection -->
+            <!-- ===== MAIN NAV TABS ===== -->
+            <div id="vault-tabs" style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; margin-bottom:1.5rem; overflow-x:auto;">
+                <button onclick="switchVaultTab('memories')" id="vtab-memories"
+                    style="padding:0.75rem 1.25rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.95rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                    📸 Memories
+                </button>
+                <button onclick="switchVaultTab('contacts')" id="vtab-contacts"
+                    style="padding:0.75rem 1.25rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.95rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                    👥 Contacts
+                </button>
+                <button onclick="switchVaultTab('essentials')" id="vtab-essentials"
+                    style="padding:0.75rem 1.25rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.95rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                    🗝️ Essentials
+                </button>
+                <button onclick="switchVaultTab('legacy')" id="vtab-legacy"
+                    style="padding:0.75rem 1.25rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.95rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                    🏛️ Legacy
+                </button>
+            </div>
+
+            <!-- ===== TAB: MEMORIES ===== -->
+            <div id="vtabcontent-memories">
+                <!-- Spotify Connection -->
             <div class="vault-section">
                 <h3 style="margin-bottom: 1rem;">🎵 Connect Your Services</h3>
                 
@@ -2840,136 +2981,6 @@ ${userName}`
                     </div>
                     <div style="text-align:center; padding-top:1rem; border-top:1px solid #e5e7eb; margin-top:1rem;">
                         <button onclick="toggleSection('photos-body','photos-arrow')" style="background:#3b82f6; color:white; border:none; padding:0.5rem 1.5rem; border-radius:6px; font-size:0.85rem; font-weight:600; cursor:pointer;">▲ Collapse Photos</button>
-                    </div>
-                </div>
-
-                <!-- Contacts Card -->
-                <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #8b5cf6; margin-bottom:1rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem; cursor:pointer;"
-                         onclick="toggleSection('contacts-body', 'contacts-arrow')">
-                        <div style="display:flex; align-items:center; gap:1rem;">
-                            <span id="contacts-arrow" style="color:#8b5cf6; font-size:1.2rem; transition:transform 0.2s;">▶</span>
-                            <div>
-                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">👥 Contacts & People</h4>
-                                <p style="color:#6b7280; font-size:0.9rem;"><span id="contacts-count-header">0 contacts</span> preserved</p>
-                            </div>
-                        </div>
-                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;" onclick="event.stopPropagation()">
-                            <button class="action-button" onclick="showImportInstructions()" style="background:#8b5cf6;">
-                                📁 Import
-                            </button>
-                            <button class="action-button" onclick="showAddContactForm()" style="background:#6d28d9;">
-                                ➕ Add
-                            </button>
-                        </div>
-                    </div>
-                    <!-- Category quick-filter strip - always visible -->
-                    <div id="contacts-cat-strip" style="padding:0.5rem 1.5rem 0.75rem; display:flex; flex-wrap:wrap; gap:0.4rem; border-top:1px solid #ede9fe;"></div>
-
-                    <div id="contacts-body" style="padding:0 1.5rem 1.5rem; display:none;">
-
-                    <div style="text-align:right; margin-bottom:0.75rem;">
-                        <button onclick="toggleSection('contacts-body','contacts-arrow')" style="background:#8b5cf6; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; font-size:0.85rem; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(139,92,246,0.4);">▲ Collapse Contacts</button>
-                    </div>
-
-                    <!-- Export Instructions -->
-                    <div id="export-instructions" style="background:#eff6ff; border:1px solid #3b82f6; border-radius:8px; padding:1.25rem; margin-bottom:1.5rem;">
-                        <h5 style="color:#1e40af; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
-                            <span style="font-size:1.3rem;">📱</span> How to Export Contacts from Your Phone
-                        </h5>
-                        
-                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.5rem;">
-                            <div style="background:white; padding:1rem; border-radius:6px;">
-                                <h6 style="color:#1e3a8a; margin-bottom:0.75rem; font-size:1.05rem;">📱 iPhone (iOS)</h6>
-                                <ol style="color:#4b5563; font-size:0.9rem; line-height:1.7; padding-left:1.25rem; margin:0;">
-                                    <li style="margin-bottom:0.5rem;"><strong>Open iCloud.com</strong> on your computer</li>
-                                    <li style="margin-bottom:0.5rem;">Sign in with your Apple ID</li>
-                                    <li style="margin-bottom:0.5rem;">Click <strong>Contacts</strong></li>
-                                    <li style="margin-bottom:0.5rem;">Click the <strong>gear icon</strong> (⚙️) → <strong>Select All</strong></li>
-                                    <li style="margin-bottom:0.5rem;">Click the gear again → <strong>Export vCard</strong></li>
-                                    <li>Upload the .vcf file here</li>
-                                </ol>
-                            </div>
-                            
-                            <div style="background:white; padding:1rem; border-radius:6px;">
-                                <h6 style="color:#1e3a8a; margin-bottom:0.75rem; font-size:1.05rem;">🤖 Android</h6>
-                                <ol style="color:#4b5563; font-size:0.9rem; line-height:1.7; padding-left:1.25rem; margin:0;">
-                                    <li style="margin-bottom:0.5rem;"><strong>Open Contacts app</strong></li>
-                                    <li style="margin-bottom:0.5rem;">Tap the <strong>3-dot menu</strong> (⋮)</li>
-                                    <li style="margin-bottom:0.5rem;">Select <strong>Settings</strong> → <strong>Export</strong></li>
-                                    <li style="margin-bottom:0.5rem;">Choose <strong>Export to .vcf file</strong></li>
-                                    <li style="margin-bottom:0.5rem;">Save to your device</li>
-                                    <li>Upload the .vcf file here</li>
-                                </ol>
-                            </div>
-                        </div>
-                        
-                        <button class="action-button secondary" onclick="document.getElementById('export-instructions').style.display='none'" 
-                            style="margin-top:1rem; font-size:0.85rem; padding:0.5rem 1rem;">
-                            Got it, hide this
-                        </button>
-                    </div>
-
-                    <input type="file" id="vcf-upload-input" accept=".vcf,.csv" style="display:none;" onchange="handleContactsUpload(this)">
-
-                    <div id="add-contact-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
-                        <h4 style="color:#1e3a8a; margin-bottom:1rem;">Add a Contact</h4>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
-                            <input id="contact-name" placeholder="Full Name *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                            <input id="contact-phone" placeholder="Phone Number" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                            <input id="contact-email" placeholder="Email Address" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                            <input id="contact-relation" placeholder="Relationship (e.g. Sister, Best Friend)" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                        </div>
-
-                        <!-- CATEGORY SELECTOR -->
-                        <div style="margin-bottom:0.75rem;">
-                            <label style="display:block; font-size:0.85rem; font-weight:600; color:#374151; margin-bottom:0.5rem;">Category</label>
-                            <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
-                                <button type="button" onclick="selCat(this,'Family')"    data-cat="Family"   style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">👨‍👩‍👧‍👦 Family</button>
-                                <button type="button" onclick="selCat(this,'Friends')"   data-cat="Friends"  style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">👫 Friends</button>
-                                <button type="button" onclick="selCat(this,'Business')"  data-cat="Business" style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">💼 Business</button>
-                                <button type="button" onclick="selCat(this,'Romantic')"  data-cat="Romantic" style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">💕 Romantic</button>
-                                <button type="button" onclick="selCat(this,'Disliked')"  data-cat="Disliked" style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">😬 Disliked</button>
-                                <button type="button" onclick="selCat(this,'Others')"    data-cat="Others"   style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">⭐ Others</button>
-                                <button type="button" id="btn-custom-cat" onclick="toggleCustomCat()" style="padding:0.4rem 0.9rem;border:2px dashed #8b5cf6;border-radius:50px;font-size:0.82rem;background:#faf5ff;cursor:pointer;color:#7c3aed;">✏️ Custom...</button>
-                            </div>
-                            <div id="custom-cat-box" style="display:none;margin-top:0.6rem;padding:0.75rem;background:#f5f3ff;border:2px solid #7c3aed;border-radius:8px;">
-                                <p style="margin:0 0 0.5rem;font-size:0.85rem;color:#5b21b6;font-weight:700;">✏️ Name your custom category:</p>
-                                <input id="custom-cat-input" type="text" placeholder="e.g. Watch Contacts, Golf Club, School..."
-                                    style="width:100%;box-sizing:border-box;padding:0.5rem 0.7rem;border:2px solid #7c3aed;border-radius:6px;font-size:0.95rem;margin-bottom:0.5rem;display:block;"
-                                    onkeydown="if(event.key==='Enter'){event.preventDefault();applyCustomCat()}">
-                                <div style="display:flex;gap:0.4rem;">
-                                    <button type="button" onclick="applyCustomCat()" style="flex:1;background:#7c3aed;color:white;border:none;padding:0.5rem;border-radius:6px;font-size:0.95rem;font-weight:bold;cursor:pointer;">✓ Use this category</button>
-                                    <button type="button" onclick="closeCustomCat()" style="background:#f3f4f6;color:#6b7280;border:1px solid #ddd;padding:0.5rem 0.7rem;border-radius:6px;font-size:0.95rem;cursor:pointer;">✕</button>
-                                </div>
-                            </div>
-                            <input type="hidden" id="contact-category" value="">
-                        </div>
-                        <textarea id="contact-note" placeholder="Why are they meaningful to you? Share a memory or story..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:80px; resize:vertical;"></textarea>
-                        <div style="display:flex; gap:0.5rem;">
-                            <button class="action-button" onclick="saveContact()" style="background:#8b5cf6;">Save</button>
-                            <button class="action-button secondary" onclick="document.getElementById('add-contact-form').style.display='none'">Cancel</button>
-                        </div>
-                    </div>
-
-                    <div id="contacts-search-bar" style="display:none; margin-bottom:1rem;">
-                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-                            <input id="contact-search" placeholder="🔍 Search contacts..." 
-                                style="flex:1; min-width:200px; padding:0.75rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.9rem;"
-                                oninput="searchContacts(this.value)">
-                            <select id="contacts-sort" onchange="renderContacts(document.getElementById('contact-search').value)"
-                                style="padding:0.75rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.9rem; background:white; cursor:pointer;">
-                                <option value="name">Sort A-Z</option>
-                                <option value="date">Sort by Date</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div id="contacts-list" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
-                    <p id="contacts-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;"></p>
-                    </div>
-                    <div style="text-align:center; padding-top:1rem; border-top:1px solid #e5e7eb; margin-top:1rem;">
-                        <button onclick="toggleSection('contacts-body','contacts-arrow')" style="background:#8b5cf6; color:white; border:none; padding:0.5rem 1.5rem; border-radius:6px; font-size:0.85rem; font-weight:600; cursor:pointer;">▲ Collapse Contacts</button>
                     </div>
                 </div>
 
@@ -3169,7 +3180,254 @@ ${userName}`
                         </div>
                     </div>
                 </div>
+            </div>
 
+            <!-- ===== TAB: CONTACTS ===== -->
+            <div id="vtabcontent-contacts" style="display:none;">
+                <!-- Contacts Card -->
+                <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #8b5cf6; margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem; cursor:pointer;"
+                         onclick="toggleSection('contacts-body', 'contacts-arrow')">
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <span id="contacts-arrow" style="color:#8b5cf6; font-size:1.2rem; transition:transform 0.2s;">▶</span>
+                            <div>
+                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">👥 Contacts & People</h4>
+                                <p style="color:#6b7280; font-size:0.9rem;"><span id="contacts-count-header">0 contacts</span> preserved</p>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;" onclick="event.stopPropagation()">
+                            <button class="action-button" onclick="showImportInstructions()" style="background:#8b5cf6;">
+                                📁 Import
+                            </button>
+                            <button class="action-button" onclick="showAddContactForm()" style="background:#6d28d9;">
+                                ➕ Add
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Category quick-filter strip - always visible -->
+                    <div id="contacts-cat-strip" style="padding:0.5rem 1.5rem 0.75rem; display:flex; flex-wrap:wrap; gap:0.4rem; border-top:1px solid #ede9fe;"></div>
+
+                    <div id="contacts-body" style="padding:0 1.5rem 1.5rem; display:none;">
+
+                    <div style="text-align:right; margin-bottom:0.75rem;">
+                        <button onclick="toggleSection('contacts-body','contacts-arrow')" style="background:#8b5cf6; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; font-size:0.85rem; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(139,92,246,0.4);">▲ Collapse Contacts</button>
+                    </div>
+
+                    <!-- Export Instructions -->
+                    <div id="export-instructions" style="background:#eff6ff; border:1px solid #3b82f6; border-radius:8px; padding:1.25rem; margin-bottom:1.5rem;">
+                        <h5 style="color:#1e40af; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                            <span style="font-size:1.3rem;">📱</span> How to Export Contacts from Your Phone
+                        </h5>
+                        
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.5rem;">
+                            <div style="background:white; padding:1rem; border-radius:6px;">
+                                <h6 style="color:#1e3a8a; margin-bottom:0.75rem; font-size:1.05rem;">📱 iPhone (iOS)</h6>
+                                <ol style="color:#4b5563; font-size:0.9rem; line-height:1.7; padding-left:1.25rem; margin:0;">
+                                    <li style="margin-bottom:0.5rem;"><strong>Open iCloud.com</strong> on your computer</li>
+                                    <li style="margin-bottom:0.5rem;">Sign in with your Apple ID</li>
+                                    <li style="margin-bottom:0.5rem;">Click <strong>Contacts</strong></li>
+                                    <li style="margin-bottom:0.5rem;">Click the <strong>gear icon</strong> (⚙️) → <strong>Select All</strong></li>
+                                    <li style="margin-bottom:0.5rem;">Click the gear again → <strong>Export vCard</strong></li>
+                                    <li>Upload the .vcf file here</li>
+                                </ol>
+                            </div>
+                            
+                            <div style="background:white; padding:1rem; border-radius:6px;">
+                                <h6 style="color:#1e3a8a; margin-bottom:0.75rem; font-size:1.05rem;">🤖 Android</h6>
+                                <ol style="color:#4b5563; font-size:0.9rem; line-height:1.7; padding-left:1.25rem; margin:0;">
+                                    <li style="margin-bottom:0.5rem;"><strong>Open Contacts app</strong></li>
+                                    <li style="margin-bottom:0.5rem;">Tap the <strong>3-dot menu</strong> (⋮)</li>
+                                    <li style="margin-bottom:0.5rem;">Select <strong>Settings</strong> → <strong>Export</strong></li>
+                                    <li style="margin-bottom:0.5rem;">Choose <strong>Export to .vcf file</strong></li>
+                                    <li style="margin-bottom:0.5rem;">Save to your device</li>
+                                    <li>Upload the .vcf file here</li>
+                                </ol>
+                            </div>
+                        </div>
+                        
+                        <button class="action-button secondary" onclick="document.getElementById('export-instructions').style.display='none'" 
+                            style="margin-top:1rem; font-size:0.85rem; padding:0.5rem 1rem;">
+                            Got it, hide this
+                        </button>
+                    </div>
+
+                    <input type="file" id="vcf-upload-input" accept=".vcf,.csv" style="display:none;" onchange="handleContactsUpload(this)">
+
+                    <div id="add-contact-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
+                        <h4 style="color:#1e3a8a; margin-bottom:1rem;">Add a Contact</h4>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
+                            <input id="contact-name" placeholder="Full Name *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                            <input id="contact-phone" placeholder="Phone Number" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                            <input id="contact-email" placeholder="Email Address" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                            <input id="contact-relation" placeholder="Relationship (e.g. Sister, Best Friend)" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                        </div>
+
+                        <!-- CATEGORY SELECTOR -->
+                        <div style="margin-bottom:0.75rem;">
+                            <label style="display:block; font-size:0.85rem; font-weight:600; color:#374151; margin-bottom:0.5rem;">Category</label>
+                            <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+                                <button type="button" onclick="selCat(this,'Family')"    data-cat="Family"   style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">👨‍👩‍👧‍👦 Family</button>
+                                <button type="button" onclick="selCat(this,'Friends')"   data-cat="Friends"  style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">👫 Friends</button>
+                                <button type="button" onclick="selCat(this,'Business')"  data-cat="Business" style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">💼 Business</button>
+                                <button type="button" onclick="selCat(this,'Romantic')"  data-cat="Romantic" style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">💕 Romantic</button>
+                                <button type="button" onclick="selCat(this,'Disliked')"  data-cat="Disliked" style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">😬 Disliked</button>
+                                <button type="button" onclick="selCat(this,'Others')"    data-cat="Others"   style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">⭐ Others</button>
+                                <button type="button" id="btn-custom-cat" onclick="toggleCustomCat()" style="padding:0.4rem 0.9rem;border:2px dashed #8b5cf6;border-radius:50px;font-size:0.82rem;background:#faf5ff;cursor:pointer;color:#7c3aed;">✏️ Custom...</button>
+                            </div>
+                            <div id="custom-cat-box" style="display:none;margin-top:0.6rem;padding:0.75rem;background:#f5f3ff;border:2px solid #7c3aed;border-radius:8px;">
+                                <p style="margin:0 0 0.5rem;font-size:0.85rem;color:#5b21b6;font-weight:700;">✏️ Name your custom category:</p>
+                                <input id="custom-cat-input" type="text" placeholder="e.g. Watch Contacts, Golf Club, School..."
+                                    style="width:100%;box-sizing:border-box;padding:0.5rem 0.7rem;border:2px solid #7c3aed;border-radius:6px;font-size:0.95rem;margin-bottom:0.5rem;display:block;"
+                                    onkeydown="if(event.key==='Enter'){event.preventDefault();applyCustomCat()}">
+                                <div style="display:flex;gap:0.4rem;">
+                                    <button type="button" onclick="applyCustomCat()" style="flex:1;background:#7c3aed;color:white;border:none;padding:0.5rem;border-radius:6px;font-size:0.95rem;font-weight:bold;cursor:pointer;">✓ Use this category</button>
+                                    <button type="button" onclick="closeCustomCat()" style="background:#f3f4f6;color:#6b7280;border:1px solid #ddd;padding:0.5rem 0.7rem;border-radius:6px;font-size:0.95rem;cursor:pointer;">✕</button>
+                                </div>
+                            </div>
+                            <input type="hidden" id="contact-category" value="">
+                        </div>
+                        <textarea id="contact-note" placeholder="Why are they meaningful to you? Share a memory or story..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:80px; resize:vertical;"></textarea>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button class="action-button" onclick="saveContact()" style="background:#8b5cf6;">Save</button>
+                            <button class="action-button secondary" onclick="document.getElementById('add-contact-form').style.display='none'">Cancel</button>
+                        </div>
+                    </div>
+
+                    <div id="contacts-search-bar" style="display:none; margin-bottom:1rem;">
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                            <input id="contact-search" placeholder="🔍 Search contacts..." 
+                                style="flex:1; min-width:200px; padding:0.75rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.9rem;"
+                                oninput="searchContacts(this.value)">
+                            <select id="contacts-sort" onchange="renderContacts(document.getElementById('contact-search').value)"
+                                style="padding:0.75rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.9rem; background:white; cursor:pointer;">
+                                <option value="name">Sort A-Z</option>
+                                <option value="date">Sort by Date</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="contacts-list" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+                    <p id="contacts-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;"></p>
+                    </div>
+                    <div style="text-align:center; padding-top:1rem; border-top:1px solid #e5e7eb; margin-top:1rem;">
+                        <button onclick="toggleSection('contacts-body','contacts-arrow')" style="background:#8b5cf6; color:white; border:none; padding:0.5rem 1.5rem; border-radius:6px; font-size:0.85rem; font-weight:600; cursor:pointer;">▲ Collapse Contacts</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== TAB: ESSENTIALS ===== -->
+            <div id="vtabcontent-essentials" style="display:none;">
+                <!-- Financial & Legal -->
+                <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #f59e0b; margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:1.5rem; cursor:pointer;" onclick="toggleSection('essentials-finance-body','essentials-finance-arrow')">
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <span id="essentials-finance-arrow" style="color:#f59e0b;">▶</span>
+                            <div>
+                                <h4 style="color:#1e3a8a; font-size:1.2rem; margin-bottom:0.2rem;">💰 Financial & Legal</h4>
+                                <p style="color:#6b7280; font-size:0.85rem;">Banks, will, insurance, investments</p>
+                            </div>
+                        </div>
+                        <button onclick="event.stopPropagation(); showAddEssential('finance')" style="background:#f59e0b; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add</button>
+                    </div>
+                    <div id="essentials-finance-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                        <div id="essentials-finance-list"></div>
+                        <p id="essentials-finance-empty" style="color:#9ca3af; font-size:0.9rem; font-style:italic;">No entries yet. Add your bank accounts, will location, insurance policies...</p>
+                    </div>
+                </div>
+
+                <!-- Physical Access -->
+                <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #10b981; margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:1.5rem; cursor:pointer;" onclick="toggleSection('essentials-access-body','essentials-access-arrow')">
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <span id="essentials-access-arrow" style="color:#10b981;">▶</span>
+                            <div>
+                                <h4 style="color:#1e3a8a; font-size:1.2rem; margin-bottom:0.2rem;">🔑 Physical Access</h4>
+                                <p style="color:#6b7280; font-size:0.85rem;">Keys, safes, storage, property</p>
+                            </div>
+                        </div>
+                        <button onclick="event.stopPropagation(); showAddEssential('access')" style="background:#10b981; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add</button>
+                    </div>
+                    <div id="essentials-access-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                        <div id="essentials-access-list"></div>
+                        <p id="essentials-access-empty" style="color:#9ca3af; font-size:0.9rem; font-style:italic;">No entries yet. Add safe combinations, storage unit details, spare key locations...</p>
+                    </div>
+                </div>
+
+                <!-- Digital Access -->
+                <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #6366f1; margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:1.5rem; cursor:pointer;" onclick="toggleSection('essentials-digital-body','essentials-digital-arrow')">
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <span id="essentials-digital-arrow" style="color:#6366f1;">▶</span>
+                            <div>
+                                <h4 style="color:#1e3a8a; font-size:1.2rem; margin-bottom:0.2rem;">💻 Digital Access</h4>
+                                <p style="color:#6b7280; font-size:0.85rem;">Password manager, email, accounts</p>
+                            </div>
+                        </div>
+                        <button onclick="event.stopPropagation(); showAddEssential('digital')" style="background:#6366f1; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add</button>
+                    </div>
+                    <div id="essentials-digital-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                        <div id="essentials-digital-list"></div>
+                        <p id="essentials-digital-empty" style="color:#9ca3af; font-size:0.9rem; font-style:italic;">No entries yet. Add password manager details, important email accounts, crypto wallets...</p>
+                    </div>
+                </div>
+
+                <!-- Important Documents -->
+                <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #ef4444; margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:1.5rem; cursor:pointer;" onclick="toggleSection('essentials-docs-body','essentials-docs-arrow')">
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <span id="essentials-docs-arrow" style="color:#ef4444;">▶</span>
+                            <div>
+                                <h4 style="color:#1e3a8a; font-size:1.2rem; margin-bottom:0.2rem;">📄 Important Documents</h4>
+                                <p style="color:#6b7280; font-size:0.85rem;">Passport, will, certificates, NHS</p>
+                            </div>
+                        </div>
+                        <button onclick="event.stopPropagation(); showAddEssential('docs')" style="background:#ef4444; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add</button>
+                    </div>
+                    <div id="essentials-docs-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                        <div id="essentials-docs-list"></div>
+                        <p id="essentials-docs-empty" style="color:#9ca3af; font-size:0.9rem; font-style:italic;">No entries yet. Add passport location, NHS number, birth certificate, NI number...</p>
+                    </div>
+                </div>
+
+                <!-- Final Wishes -->
+                <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #8b5cf6; margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:1.5rem; cursor:pointer;" onclick="toggleSection('essentials-wishes-body','essentials-wishes-arrow')">
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <span id="essentials-wishes-arrow" style="color:#8b5cf6;">▶</span>
+                            <div>
+                                <h4 style="color:#1e3a8a; font-size:1.2rem; margin-bottom:0.2rem;">🕊️ Final Wishes</h4>
+                                <p style="color:#6b7280; font-size:0.85rem;">Funeral, digital legacy, messages</p>
+                            </div>
+                        </div>
+                        <button onclick="event.stopPropagation(); showAddEssential('wishes')" style="background:#8b5cf6; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add</button>
+                    </div>
+                    <div id="essentials-wishes-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                        <div id="essentials-wishes-list"></div>
+                        <p id="essentials-wishes-empty" style="color:#9ca3af; font-size:0.9rem; font-style:italic;">No entries yet. Add funeral wishes, who to contact first, digital account instructions...</p>
+                    </div>
+                </div>
+
+                <!-- Add Essential Modal -->
+                <div id="add-essential-form" style="display:none; background:white; border:2px solid #e5e7eb; border-radius:10px; padding:1.5rem; margin-top:1rem;">
+                    <h4 id="add-essential-title" style="color:#1e3a8a; margin-bottom:1rem;">Add Entry</h4>
+                    <input id="essential-heading" placeholder="Heading (e.g. Barclays Current Account, Home Safe)" 
+                        style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; box-sizing:border-box;">
+                    <textarea id="essential-detail" placeholder="Details — location, numbers, instructions, contact names..." 
+                        style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:100px; resize:vertical; box-sizing:border-box;"></textarea>
+                    <div style="margin-bottom:0.75rem;">
+                        <label style="font-size:0.85rem; color:#374151; font-weight:600; display:block; margin-bottom:0.4rem;">Attach image (optional — e.g. photo of key, document)</label>
+                        <input type="file" id="essential-image" accept="image/*" style="font-size:0.85rem;">
+                    </div>
+                    <input type="hidden" id="essential-category">
+                    <div style="display:flex; gap:0.5rem;">
+                        <button onclick="saveEssential()" style="background:#1e3a8a; color:white; border:none; padding:0.6rem 1.25rem; border-radius:6px; font-weight:600; cursor:pointer;">Save</button>
+                        <button onclick="document.getElementById('add-essential-form').style.display='none'" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.6rem 1rem; border-radius:6px; cursor:pointer;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== TAB: LEGACY ===== -->
+            <div id="vtabcontent-legacy" style="display:none;">
                 <!-- My Secrets Card -->
                 <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #dc2626; margin-bottom:1rem;">
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem; cursor:pointer; user-select:none;"
@@ -3310,14 +3568,14 @@ ${userName}`
                 </div>
             </div>
 
-            <!-- Founder Badge -->
-            <div class="vault-section" style="text-align: center; background: linear-gradient(135deg, #1e3a8a, #3730a3); color: white; border-radius: 15px;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">🥇</div>
-                <h3 style="color: white; font-size: 1.8rem; margin-bottom: 1rem;">You're a Founding Member!</h3>
-                <p style="opacity: 0.9; font-size: 1.1rem; max-width: 500px; margin: 0 auto;">
-                    Your legacy preserved for 100 years.
-                </p>
+                <!-- Founder Badge -->
+                <div class="vault-section" style="text-align:center; background:linear-gradient(135deg,#1e3a8a,#3730a3); color:white; border-radius:15px;">
+                    <div style="font-size:3rem; margin-bottom:1rem;">🥇</div>
+                    <h3 style="color:white; font-size:1.8rem; margin-bottom:1rem;">You're a Founding Member!</h3>
+                    <p style="opacity:0.9; font-size:1.1rem; max-width:500px; margin:0 auto;">Your legacy preserved for 100 years.</p>
+                </div>
             </div>
+
         </div>
     </section>
 
@@ -4085,6 +4343,7 @@ ${userName}`
             
             setTimeout(() => {
                 loadContacts()
+            loadEssentials()
                 loadSavedPhotos()
                 loadStories()
                 loadLifebook()
