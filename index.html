@@ -1691,12 +1691,7 @@
                 const photosHeader = document.getElementById('photos-count-header')
                 if (photosHeader) photosHeader.textContent = countText
 
-                if (data.length > 0) {
-                    const pb = document.getElementById('photos-body')
-                    const pa = document.getElementById('photos-arrow')
-                    if (pb) pb.style.display = 'block'
-                    if (pa) pa.textContent = '▼'
-                }
+                // Section stays closed - user opens it
 
                 console.log('Loaded', data.length, 'photos')
 
@@ -2141,8 +2136,7 @@
             if (t) {
                 const photosBody = document.getElementById('photos-body')
                 const contactsBody = document.getElementById('contacts-body')
-                if (photosBody) photosBody.style.display = 'block'
-                if (contactsBody) contactsBody.style.display = 'block'
+                // Sections stay closed - user opens them
 
                 const contactSearch = document.getElementById('contact-search')
                 if (contactSearch) contactSearch.value = term
@@ -2499,7 +2493,7 @@ ${userName}`
     </nav>
 
     <!-- Notification -->
-    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v3.6</div>
+    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v3.7</div>
     <div id="notification" class="notification"></div>
 
     <!-- Home Section -->
@@ -2776,7 +2770,7 @@ ${userName}`
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem; cursor:pointer;"
                          onclick="toggleSection('photos-body', 'photos-arrow')">
                         <div style="display:flex; align-items:center; gap:1rem;">
-                            <span id="photos-arrow" style="color:#3b82f6; font-size:1.2rem; transition:transform 0.2s;">▼</span>
+                            <span id="photos-arrow" style="color:#3b82f6; font-size:1.2rem; transition:transform 0.2s;">▶</span>
                             <div>
                                 <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">📸 Photos & Memories</h4>
                                 <p style="color:#6b7280; font-size:0.9rem;"><span id="photos-count-header">0 photos</span> preserved</p>
@@ -2825,7 +2819,7 @@ ${userName}`
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem; cursor:pointer;"
                          onclick="toggleSection('contacts-body', 'contacts-arrow')">
                         <div style="display:flex; align-items:center; gap:1rem;">
-                            <span id="contacts-arrow" style="color:#8b5cf6; font-size:1.2rem; transition:transform 0.2s;">▼</span>
+                            <span id="contacts-arrow" style="color:#8b5cf6; font-size:1.2rem; transition:transform 0.2s;">▶</span>
                             <div>
                                 <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">👥 Contacts & People</h4>
                                 <p style="color:#6b7280; font-size:0.9rem;"><span id="contacts-count-header">0 contacts</span> preserved</p>
