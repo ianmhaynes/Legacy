@@ -1720,10 +1720,32 @@
             const form = document.getElementById('add-contact-form')
             if (form.style.display === 'none') {
                 form.style.display = 'block'
+                // Inject existing custom categories into pill row
+                injectCustomCatPills()
                 setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
             } else {
                 form.style.display = 'none'
             }
+        }
+
+        function injectCustomCatPills() {
+            var stdCats = ['Family','Friends','Business','Romantic','Disliked','Others']
+            var existingCustomCats = [...new Set(savedContacts.map(x => x.category).filter(x => x && !stdCats.includes(x)))]
+            const row = document.getElementById('cat-btn-row')
+            if (!row) return
+            // Remove any previously injected custom pills
+            row.querySelectorAll('[data-custom]').forEach(b => b.remove())
+            // Add a pill for each existing custom category (before the Custom... button)
+            const customBtn = document.getElementById('btn-custom-cat')
+            existingCustomCats.forEach(cat => {
+                const btn = document.createElement('button')
+                btn.type = 'button'
+                btn.setAttribute('data-custom', cat)
+                btn.textContent = '📋 ' + cat
+                btn.style.cssText = 'padding:0.4rem 0.9rem;border:2px solid #c4b5fd;border-radius:50px;font-size:0.82rem;background:#faf5ff;cursor:pointer;color:#7c3aed;'
+                btn.onclick = function() { selCat(this, cat) }
+                row.insertBefore(btn, customBtn)
+            })
         }
 
         function showImportInstructions() {
@@ -1963,6 +1985,10 @@
             const term = filter.toLowerCase()
             const categoryEmoji = { 'Family':'👨‍👩‍👧‍👦', 'Friends':'👫', 'Business':'💼', 'Romantic':'💕', 'Disliked':'😬', 'Others':'⭐', '':'📋', 'All':'👥' }
             const categoryOrder = ['Family', 'Friends', 'Business', 'Romantic', 'Disliked', 'Others', '']
+            const mvStdCats = ['Family','Friends','Business','Romantic','Disliked','Others']
+            // Collect all custom categories currently in use
+            const moveCustCats = [...new Set(savedContacts.map(x => x.category).filter(x => x && !mvStdCats.includes(x)))]
+            const allMoveCats = [...mvStdCats, ...moveCustCats]
 
             // Count per category for tabs
             const catCounts = {}
@@ -2002,9 +2028,9 @@
             }
 
             // Build category tabs - includes custom categories
-            const standardCats = ['Family', 'Friends', 'Business', 'Romantic', 'Disliked', 'Others']
-            const customCats = Object.keys(catCounts).filter(c => c && !standardCats.includes(c))
-            const tabList = ['All', ...standardCats, ...customCats]
+            const tabStdCats = ['Family', 'Friends', 'Business', 'Romantic', 'Disliked', 'Others']
+            const customCats = Object.keys(catCounts).filter(c => c && !tabStdCats.includes(c))
+            const tabList = ['All', ...tabStdCats, ...customCats]
             let tabsHtml = '<div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:1rem;">'
             tabList.forEach(cat => {
                 const n = cat === 'All' ? savedContacts.length : (catCounts[cat] || 0)
@@ -2042,8 +2068,8 @@
                         ${c.note ? `<div style="color:#6b7280; font-size:0.85rem; margin-top:0.4rem; font-style:italic; line-height:1.4;">"${c.note}"</div>` : ''}
                         <div style="margin-top:0.5rem; display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
                             <span style="color:#9ca3af; font-size:0.78rem;">${c.category ? '📂 ' + c.category + ' — move to:' : 'Move to:'}</span>
-                            ${[...new Set([...['Family','Friends','Business','Romantic','Disliked','Others'], ...savedContacts.map(x=>x.category).filter(x=>x && !['Family','Friends','Business','Romantic','Disliked','Others'].includes(x))])].filter(cat => cat !== c.category).map(cat =>
-                                `<button onclick="assignContactCategory(${c.id},'${cat}')" style="padding:0.15rem 0.5rem; border:1px solid ${['Family','Friends','Business','Romantic','Disliked','Others'].includes(cat) ? '#e5e7eb' : '#c4b5fd'}; border-radius:4px; font-size:0.75rem; background:${['Family','Friends','Business','Romantic','Disliked','Others'].includes(cat) ? '#f9fafb' : '#faf5ff'}; cursor:pointer; color:${['Family','Friends','Business','Romantic','Disliked','Others'].includes(cat) ? '#374151' : '#7c3aed'};">${categoryEmoji[cat] || '📋'} ${cat}</button>`
+                            ${allMoveCats.filter(cat => cat !== c.category).map(cat =>
+                                `<button onclick="assignContactCategory(${c.id},'${cat}')" style="padding:0.15rem 0.5rem; border:1px solid ${mvStdCats.includes(cat) ? '#e5e7eb' : '#c4b5fd'}; border-radius:4px; font-size:0.75rem; background:${mvStdCats.includes(cat) ? '#f9fafb' : '#faf5ff'}; cursor:pointer; color:${mvStdCats.includes(cat) ? '#374151' : '#7c3aed'};">${categoryEmoji[cat] || '📋'} ${cat}</button>`
                             ).join('')}
                             <button onclick="promptCustomCategory(${c.id})" style="padding:0.15rem 0.5rem; border:1px dashed #8b5cf6; border-radius:4px; font-size:0.75rem; background:#faf5ff; cursor:pointer; color:#7c3aed;">✏️ New</button>
                         </div>
@@ -2473,7 +2499,7 @@ ${userName}`
     </nav>
 
     <!-- Notification -->
-    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v3.5</div>
+    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v3.6</div>
     <div id="notification" class="notification"></div>
 
     <!-- Home Section -->
