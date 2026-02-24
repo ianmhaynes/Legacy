@@ -2300,8 +2300,8 @@
         function updateFixedCollapseButtons() {
             var pb = document.getElementById('photos-body')
             var cb = document.getElementById('contacts-body')
-            var photosOpen = pb && pb.style.display === 'block'
-            var contactsOpen = cb && cb.style.display === 'block'
+            var photosOpen = pb && pb.style.display === 'block' && currentVaultTab === 'memories'
+            var contactsOpen = cb && cb.style.display === 'block' && currentVaultTab === 'contacts'
             var fcP = document.getElementById('fixed-collapse-photos')
             var fcC = document.getElementById('fixed-collapse-contacts')
             if (fcP) fcP.style.display = photosOpen ? 'block' : 'none'
@@ -2647,7 +2647,7 @@ ${userName}`
     </nav>
 
     <!-- Notification -->
-    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.0</div>
+    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.1</div>
     <div id="notification" class="notification"></div>
 
     <!-- Home Section -->
@@ -2870,7 +2870,7 @@ ${userName}`
             </div>
 
             <!-- ===== MAIN NAV TABS ===== -->
-            <div id="vault-tabs" style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; margin-bottom:1.5rem; overflow-x:auto;">
+            <div id="vault-tabs" style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; margin-bottom:1.5rem; overflow-x:auto; position:sticky; top:60px; background:white; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
                 <button onclick="switchVaultTab('memories')" id="vtab-memories"
                     style="padding:0.75rem 1.25rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.95rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
                     📸 Memories
@@ -2895,14 +2895,6 @@ ${userName}`
             <div class="vault-section">
                 <h3 style="margin-bottom: 1rem;">🎵 Connect Your Services</h3>
                 
-                <!-- Universal Search -->
-                <div style="margin-bottom:1.5rem;">
-                    <input id="vault-search" placeholder="🔍 Search your entire vault - photos, contacts, music..." 
-                        style="width:100%; padding:0.85rem 1rem; border:2px solid #e5e7eb; border-radius:10px; font-size:1rem; transition:border 0.2s;"
-                        oninput="searchVault(this.value)"
-                        onfocus="this.style.borderColor='#3b82f6'"
-                        onblur="this.style.borderColor='#e5e7eb'">
-                </div>
 
                 <!-- Spotify Card -->
                 <div id="spotify-card" style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #1db954; margin-bottom:1rem;">
@@ -4344,6 +4336,7 @@ ${userName}`
             setTimeout(() => {
                 loadContacts()
             loadEssentials()
+            switchVaultTab('memories')
                 loadSavedPhotos()
                 loadStories()
                 loadLifebook()
