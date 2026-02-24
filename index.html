@@ -2365,18 +2365,13 @@
 
             <!-- TAB: MEMORIES -->
             <div id="vtabcontent-memories" style="padding-top:1.5rem;">
-                <div style="display:flex; gap:0; border-bottom:1px solid #e5e7eb; margin-bottom:1.5rem; overflow-x:auto;">
+                <div style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; margin-bottom:1.5rem; overflow-x:auto;">
                     <button onclick="switchSubTab('memories','music')" id="vstab-memories-music" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid #3b82f6; background:none; font-weight:700; font-size:0.85rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">🎵 Music</button>
                     <button onclick="switchSubTab('memories','photos')" id="vstab-memories-photos" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">📸 Photos</button>
                     <button onclick="switchSubTab('memories','stories')" id="vstab-memories-stories" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">✨ Stories</button>
                     <button onclick="switchSubTab('memories','lifebook')" id="vstab-memories-lifebook" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">📖 Life Book</button>
                 </div>
-                <div id="vstabcontent-memories-music"><div id="spotify-card" style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #1db954; margin-bottom:1rem;">
-                    <div style="margin-bottom:1rem;">
-                        <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">🎵 Your Music Library</h4>
-                        <p style="color:#6b7280;">Search for your favorite songs and add them to your collection</p>
-                    </div>
-
+                <div id="vstabcontent-memories-music"><div id="spotify-card">
                     <!-- Search Bar -->
                     <div style="margin-bottom:1rem;">
                         <input id="song-search" type="text" placeholder="🔍 Search for a song..." 
@@ -2658,7 +2653,7 @@
 
             <!-- TAB: ESSENTIALS -->
             <div id="vtabcontent-essentials" style="display:none; padding-top:1.5rem;">
-                <div style="display:flex; gap:0; border-bottom:1px solid #e5e7eb; margin-bottom:1.5rem; overflow-x:auto;">
+                <div style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; margin-bottom:1.5rem; overflow-x:auto;">
                     <button onclick="switchSubTab('essentials','finance')" id="vstab-essentials-finance" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid #3b82f6; background:none; font-weight:700; font-size:0.85rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">💰 Financial</button>
                     <button onclick="switchSubTab('essentials','access')" id="vstab-essentials-access" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">🔑 Access</button>
                     <button onclick="switchSubTab('essentials','digital')" id="vstab-essentials-digital" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">💻 Digital</button>
@@ -2708,7 +2703,7 @@
 
             <!-- TAB: LEGACY -->
             <div id="vtabcontent-legacy" style="display:none; padding-top:1.5rem;">
-                <div style="display:flex; gap:0; border-bottom:1px solid #e5e7eb; margin-bottom:1.5rem; overflow-x:auto;">
+                <div style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; margin-bottom:1.5rem; overflow-x:auto;">
                     <button onclick="switchSubTab('legacy','inheritors')" id="vstab-legacy-inheritors" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid #3b82f6; background:none; font-weight:700; font-size:0.85rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">👨‍👩‍👧‍👦 Inheritors</button>
                     <button onclick="switchSubTab('legacy','secrets')" id="vstab-legacy-secrets" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">🔒 Secrets</button>
                     <button onclick="switchSubTab('legacy','valuables')" id="vstab-legacy-valuables" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">💎 Valuables</button>
@@ -3838,8 +3833,9 @@
             parentEl.querySelectorAll('[id^="vstab-' + parent + '-"]').forEach(function(btn) {
                 var active = btn.id === 'vstab-'+parent+'-'+sub
                 btn.style.borderBottomColor = active ? '#3b82f6' : 'transparent'
+                btn.style.borderBottomWidth = '3px'
                 btn.style.color = active ? '#1e3a8a' : '#6b7280'
-                btn.style.fontWeight = active ? '700' : '500'
+                btn.style.fontWeight = active ? '700' : '600'
             })
         }
 
