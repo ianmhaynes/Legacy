@@ -1748,72 +1748,93 @@
             }, 500)
         }
 
-        // Category pill button system
-        function selectCategory(btn, cat) {
-            // Deselect all
-            document.querySelectorAll('.cat-btn').forEach(b => {
-                b.style.background = 'white'
-                b.style.borderColor = '#e5e7eb'
-                b.style.color = '#374151'
-                b.style.fontWeight = 'normal'
-            })
-            // Hide custom input
-            document.getElementById('custom-cat-row').style.display = 'none'
-            document.getElementById('contact-category-custom').value = ''
-            // Select this button
-            btn.style.background = '#7c3aed'
-            btn.style.borderColor = '#7c3aed'
-            btn.style.color = 'white'
-            btn.style.fontWeight = '600'
-            // Set hidden input
+        // ---- Category selector ----
+        function selCat(btn, cat) {
+            // deselect all
+            var btns = document.querySelectorAll('[data-cat]')
+            for (var i=0;i<btns.length;i++) {
+                btns[i].style.background='white'
+                btns[i].style.borderColor='#e5e7eb'
+                btns[i].style.color='#374151'
+                btns[i].style.fontWeight='normal'
+            }
+            // reset custom
+            closeCustomCat()
+            // select this
+            btn.style.background='#7c3aed'
+            btn.style.borderColor='#7c3aed'
+            btn.style.color='white'
+            btn.style.fontWeight='bold'
             document.getElementById('contact-category').value = cat
         }
 
-        function showCustomCatInput() {
-            // Deselect all standard buttons
-            document.querySelectorAll('.cat-btn').forEach(b => {
-                b.style.background = 'white'
-                b.style.borderColor = '#e5e7eb'
-                b.style.color = '#374151'
-                b.style.fontWeight = 'normal'
-            })
-            document.getElementById('cat-btn-custom').style.background = '#ede9fe'
-            document.getElementById('cat-btn-custom').style.borderColor = '#7c3aed'
-            // Show input row
-            const row = document.getElementById('custom-cat-row')
-            row.style.display = 'flex'
-            document.getElementById('contact-category').value = ''
-            setTimeout(() => document.getElementById('contact-category-custom').focus(), 50)
+        function toggleCustomCat() {
+            var box = document.getElementById('custom-cat-box')
+            if (!box) return
+            if (box.style.display === 'none' || box.style.display === '') {
+                // deselect all standard buttons
+                var btns = document.querySelectorAll('[data-cat]')
+                for (var i=0;i<btns.length;i++) {
+                    btns[i].style.background='white'
+                    btns[i].style.borderColor='#e5e7eb'
+                    btns[i].style.color='#374151'
+                    btns[i].style.fontWeight='normal'
+                }
+                box.style.display = 'block'
+                var inp = document.getElementById('custom-cat-input')
+                if (inp) setTimeout(function(){ inp.focus() }, 50)
+            } else {
+                box.style.display = 'none'
+            }
         }
 
-        function hideCustomCatInput() {
-            document.getElementById('custom-cat-row').style.display = 'none'
-            document.getElementById('contact-category-custom').value = ''
-            document.getElementById('contact-category').value = ''
-            document.getElementById('cat-btn-custom').style.background = '#faf5ff'
-            document.getElementById('cat-btn-custom').style.borderColor = '#8b5cf6'
-        }
-
-        function previewCustomCat(val) {
-            document.getElementById('contact-category').value = val
-        }
-
-        function confirmCustomCategory() {
-            const val = document.getElementById('contact-category-custom').value.trim()
+        function applyCustomCat() {
+            var inp = document.getElementById('custom-cat-input')
+            if (!inp) return
+            var val = inp.value.trim()
             if (!val) { showNotification('Please type a category name'); return }
             document.getElementById('contact-category').value = val
-            document.getElementById('custom-cat-row').style.display = 'none'
-            // Style the custom button as selected
-            const btn = document.getElementById('cat-btn-custom')
-            btn.textContent = '✓ ' + val
-            btn.style.background = '#7c3aed'
-            btn.style.borderColor = '#7c3aed'
-            btn.style.color = 'white'
-            btn.style.fontWeight = '600'
-            showNotification('✅ Category "' + val + '" ready')
+            document.getElementById('custom-cat-box').style.display = 'none'
+            var btn = document.getElementById('btn-custom-cat')
+            if (btn) {
+                btn.textContent = '✓ ' + val
+                btn.style.background='#7c3aed'
+                btn.style.borderColor='#7c3aed'
+                btn.style.color='white'
+                btn.style.fontWeight='bold'
+                btn.style.border='2px solid #7c3aed'
+            }
         }
 
-        function saveContact() {
+        function closeCustomCat() {
+            var box = document.getElementById('custom-cat-box')
+            if (box) box.style.display = 'none'
+            var inp = document.getElementById('custom-cat-input')
+            if (inp) inp.value = ''
+            var btn = document.getElementById('btn-custom-cat')
+            if (btn) {
+                btn.textContent = '✏️ Custom...'
+                btn.style.background='#faf5ff'
+                btn.style.borderColor='#8b5cf6'
+                btn.style.color='#7c3aed'
+                btn.style.fontWeight='normal'
+                btn.style.border='2px dashed #8b5cf6'
+            }
+        }
+
+        function resetCategoryButtons() {
+            var btns = document.querySelectorAll('[data-cat]')
+            for (var i=0;i<btns.length;i++) {
+                btns[i].style.background='white'
+                btns[i].style.borderColor='#e5e7eb'
+                btns[i].style.color='#374151'
+                btns[i].style.fontWeight='normal'
+            }
+            closeCustomCat()
+            document.getElementById('contact-category').value = ''
+        }
+
+                function saveContact() {
             const name = document.getElementById('contact-name').value.trim()
             if (!name) { showNotification('Please enter a name!'); return }
 
@@ -1840,14 +1861,7 @@
             document.getElementById('contact-name').value = ''
             document.getElementById('contact-phone').value = ''
             document.getElementById('contact-email').value = ''
-            document.getElementById('contact-category').value = ''
-            document.getElementById('contact-category-custom').value = ''
-            document.getElementById('custom-cat-row').style.display = 'none'
-            document.getElementById('cat-btn-custom').textContent = '✏️ Custom...'
-            document.getElementById('cat-btn-custom').style.background = '#faf5ff'
-            document.getElementById('cat-btn-custom').style.borderColor = '#8b5cf6'
-            document.getElementById('cat-btn-custom').style.color = '#7c3aed'
-            document.querySelectorAll('.cat-btn').forEach(b => { b.style.background='white'; b.style.borderColor='#e5e7eb'; b.style.color='#374151'; b.style.fontWeight='normal' })
+            resetCategoryButtons()
             document.getElementById('contact-relation').value = ''
             document.getElementById('contact-note').value = ''
             document.getElementById('add-contact-form').style.display = 'none'
@@ -2110,25 +2124,23 @@
         }
 
         function updateFixedCollapseButtons() {
-            const photosOpen = document.getElementById('photos-body') && document.getElementById('photos-body').style.display !== 'none'
-            const contactsOpen = document.getElementById('contacts-body') && document.getElementById('contacts-body').style.display !== 'none'
-            const fcP = document.getElementById('fixed-collapse-photos')
-            const fcC = document.getElementById('fixed-collapse-contacts')
+            var pb = document.getElementById('photos-body')
+            var cb = document.getElementById('contacts-body')
+            var photosOpen = pb && pb.style.display === 'block'
+            var contactsOpen = cb && cb.style.display === 'block'
+            var fcP = document.getElementById('fixed-collapse-photos')
+            var fcC = document.getElementById('fixed-collapse-contacts')
             if (fcP) fcP.style.display = photosOpen ? 'block' : 'none'
             if (fcC) fcC.style.display = contactsOpen ? 'block' : 'none'
         }
 
         function toggleSection(bodyId, arrowId) {
-            const body = document.getElementById(bodyId)
-            const arrow = document.getElementById(arrowId)
+            var body = document.getElementById(bodyId)
+            var arrow = document.getElementById(arrowId)
             if (!body) return
-            if (body.style.display === 'none') {
-                body.style.display = 'block'
-                if (arrow) arrow.textContent = '▼'
-            } else {
-                body.style.display = 'none'
-                if (arrow) arrow.textContent = '▶'
-            }
+            var isOpen = body.style.display === 'block'
+            body.style.display = isOpen ? 'none' : 'block'
+            if (arrow) arrow.textContent = isOpen ? '▶' : '▼'
             updateFixedCollapseButtons()
         }
 
@@ -2461,6 +2473,7 @@ ${userName}`
     </nav>
 
     <!-- Notification -->
+    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v2.9</div>
     <div id="notification" class="notification"></div>
 
     <!-- Home Section -->
@@ -2856,26 +2869,26 @@ ${userName}`
                             <input id="contact-relation" placeholder="Relationship (e.g. Sister, Best Friend)" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
                         </div>
 
-                        <!-- CATEGORY SELECTOR - always fully visible, no hide/show tricks -->
+                        <!-- CATEGORY SELECTOR -->
                         <div style="margin-bottom:0.75rem;">
-                            <label style="display:block; font-size:0.85rem; font-weight:600; color:#374151; margin-bottom:0.4rem;">Category</label>
-                            <div style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.5rem;" id="cat-btn-row">
-                                <button type="button" onclick="selectCategory(this,'Family')"    class="cat-btn" style="padding:0.4rem 0.8rem; border:2px solid #e5e7eb; border-radius:980px; font-size:0.82rem; background:white; cursor:pointer;">👨‍👩‍👧‍👦 Family</button>
-                                <button type="button" onclick="selectCategory(this,'Friends')"   class="cat-btn" style="padding:0.4rem 0.8rem; border:2px solid #e5e7eb; border-radius:980px; font-size:0.82rem; background:white; cursor:pointer;">👫 Friends</button>
-                                <button type="button" onclick="selectCategory(this,'Business')"  class="cat-btn" style="padding:0.4rem 0.8rem; border:2px solid #e5e7eb; border-radius:980px; font-size:0.82rem; background:white; cursor:pointer;">💼 Business</button>
-                                <button type="button" onclick="selectCategory(this,'Romantic')"  class="cat-btn" style="padding:0.4rem 0.8rem; border:2px solid #e5e7eb; border-radius:980px; font-size:0.82rem; background:white; cursor:pointer;">💕 Romantic</button>
-                                <button type="button" onclick="selectCategory(this,'Disliked')"  class="cat-btn" style="padding:0.4rem 0.8rem; border:2px solid #e5e7eb; border-radius:980px; font-size:0.82rem; background:white; cursor:pointer;">😬 Disliked</button>
-                                <button type="button" onclick="selectCategory(this,'Others')"    class="cat-btn" style="padding:0.4rem 0.8rem; border:2px solid #e5e7eb; border-radius:980px; font-size:0.82rem; background:white; cursor:pointer;">⭐ Others</button>
-                                <button type="button" onclick="showCustomCatInput()" id="cat-btn-custom" style="padding:0.4rem 0.8rem; border:2px dashed #8b5cf6; border-radius:980px; font-size:0.82rem; background:#faf5ff; cursor:pointer; color:#7c3aed;">✏️ Custom...</button>
+                            <label style="display:block; font-size:0.85rem; font-weight:600; color:#374151; margin-bottom:0.5rem;">Category</label>
+                            <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+                                <button type="button" onclick="selCat(this,'Family')"    data-cat="Family"   style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">👨‍👩‍👧‍👦 Family</button>
+                                <button type="button" onclick="selCat(this,'Friends')"   data-cat="Friends"  style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">👫 Friends</button>
+                                <button type="button" onclick="selCat(this,'Business')"  data-cat="Business" style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">💼 Business</button>
+                                <button type="button" onclick="selCat(this,'Romantic')"  data-cat="Romantic" style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">💕 Romantic</button>
+                                <button type="button" onclick="selCat(this,'Disliked')"  data-cat="Disliked" style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">😬 Disliked</button>
+                                <button type="button" onclick="selCat(this,'Others')"    data-cat="Others"   style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">⭐ Others</button>
+                                <button type="button" id="btn-custom-cat" onclick="toggleCustomCat()" style="padding:0.4rem 0.9rem;border:2px dashed #8b5cf6;border-radius:50px;font-size:0.82rem;background:#faf5ff;cursor:pointer;color:#7c3aed;">✏️ Custom...</button>
                             </div>
-                            <!-- Custom category input — always in DOM, shown/hidden cleanly -->
-                            <div id="custom-cat-row" style="display:none; align-items:center; gap:0.4rem; background:#f5f3ff; border:1px solid #c4b5fd; border-radius:8px; padding:0.5rem 0.6rem;">
-                                <input id="contact-category-custom" placeholder="Name your category (e.g. Watch Contacts)" 
-                                    style="flex:1; padding:0.45rem 0.6rem; border:1px solid #c4b5fd; border-radius:6px; font-size:0.9rem; min-width:0;"
-                                    oninput="previewCustomCat(this.value)"
-                                    onkeydown="if(event.key==='Enter'){event.preventDefault();confirmCustomCategory()}">
-                                <button type="button" onclick="confirmCustomCategory()" style="background:#7c3aed; color:white; border:none; padding:0.45rem 0.9rem; border-radius:6px; font-size:0.88rem; font-weight:700; cursor:pointer; white-space:nowrap; flex-shrink:0;">✓ Use</button>
-                                <button type="button" onclick="hideCustomCatInput()" style="background:none; border:1px solid #e5e7eb; color:#9ca3af; padding:0.45rem 0.5rem; border-radius:6px; font-size:0.88rem; cursor:pointer; flex-shrink:0;">✕</button>
+                            <div id="custom-cat-box" style="display:none;margin-top:0.5rem;padding:0.6rem;background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;">
+                                <p style="margin:0 0 0.4rem;font-size:0.82rem;color:#5b21b6;font-weight:600;">Type your custom category name:</p>
+                                <div style="display:flex;gap:0.4rem;">
+                                    <input id="custom-cat-input" type="text" placeholder="e.g. Watch Contacts, Golf Club..."
+                                        style="flex:1;padding:0.4rem 0.6rem;border:1px solid #c4b5fd;border-radius:6px;font-size:0.9rem;">
+                                    <button type="button" onclick="applyCustomCat()" style="background:#7c3aed;color:white;border:none;padding:0.4rem 0.9rem;border-radius:6px;font-size:0.9rem;font-weight:bold;cursor:pointer;">✓ Use</button>
+                                    <button type="button" onclick="closeCustomCat()" style="background:#f3f4f6;color:#6b7280;border:1px solid #ddd;padding:0.4rem 0.6rem;border-radius:6px;font-size:0.9rem;cursor:pointer;">✕</button>
+                                </div>
                             </div>
                             <input type="hidden" id="contact-category" value="">
                         </div>
@@ -4692,18 +4705,37 @@ ${userName}`
             }, 3000);
         }
     </script>
-    <!-- Fixed collapse buttons - always visible when sections open -->
-    <div id="fixed-collapse-photos" style="display:none; position:fixed; bottom:5rem; right:1.5rem; z-index:500;">
-        <button onclick="toggleSection('photos-body','photos-arrow'); updateFixedCollapseButtons()"
-            style="background:#3b82f6; color:white; border:none; padding:0.6rem 1.2rem; border-radius:980px; font-size:0.88rem; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(59,130,246,0.5); white-space:nowrap;">
+    <!-- Fixed collapse buttons -->
+    <div id="fixed-collapse-photos" style="display:none; position:fixed; bottom:80px; right:20px; z-index:9998;">
+        <button id="fcb-photos"
+            style="background:#3b82f6; color:white; border:none; padding:10px 20px; border-radius:50px; font-size:14px; font-weight:bold; cursor:pointer; box-shadow:0 4px 16px rgba(59,130,246,0.6);">
             ▲ Collapse Photos
         </button>
     </div>
-    <div id="fixed-collapse-contacts" style="display:none; position:fixed; bottom:5rem; right:1.5rem; z-index:500;">
-        <button onclick="toggleSection('contacts-body','contacts-arrow'); updateFixedCollapseButtons()"
-            style="background:#8b5cf6; color:white; border:none; padding:0.6rem 1.2rem; border-radius:980px; font-size:0.88rem; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(139,92,246,0.5); white-space:nowrap;">
+    <div id="fixed-collapse-contacts" style="display:none; position:fixed; bottom:80px; right:20px; z-index:9998;">
+        <button id="fcb-contacts"
+            style="background:#8b5cf6; color:white; border:none; padding:10px 20px; border-radius:50px; font-size:14px; font-weight:bold; cursor:pointer; box-shadow:0 4px 16px rgba(139,92,246,0.6);">
             ▲ Collapse Contacts
         </button>
     </div>
+    <script>
+    // Wire up fixed collapse buttons after DOM ready
+    document.addEventListener('DOMContentLoaded', function() {
+        var fcbP = document.getElementById('fcb-photos')
+        var fcbC = document.getElementById('fcb-contacts')
+        if (fcbP) fcbP.addEventListener('click', function() {
+            var b = document.getElementById('photos-body')
+            var a = document.getElementById('photos-arrow')
+            if (b) { b.style.display = 'none'; if(a) a.textContent = '▶' }
+            document.getElementById('fixed-collapse-photos').style.display = 'none'
+        })
+        if (fcbC) fcbC.addEventListener('click', function() {
+            var b = document.getElementById('contacts-body')
+            var a = document.getElementById('contacts-arrow')
+            if (b) { b.style.display = 'none'; if(a) a.textContent = '▶' }
+            document.getElementById('fixed-collapse-contacts').style.display = 'none'
+        })
+    })
+    </script>
 </body>
 </html>
