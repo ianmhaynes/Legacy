@@ -17,6 +17,10 @@
             color: #1f2937;
         }
 
+
+        /* Lightbox */
+        #photo-lightbox { display:none !important; }
+        #photo-lightbox.lb-open { display:flex !important; align-items:flex-start; justify-content:center; }
         /* Navigation */
         nav {
             background: rgba(251, 251, 253, 0.8);
@@ -1817,11 +1821,30 @@
         }
 
         function deleteContact(id) {
-            savedContacts = savedContacts.filter(c => c.id !== id)
-            localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
-            syncVaultToSupabase('vault_contacts', savedContacts)
-            renderContacts()
-            showNotification('Contact removed')
+            const contact = savedContacts.find(c => c.id == id)
+            if (!contact) return
+            const choice = confirm(
+                'What would you like to do with ' + contact.name + '?\n\n' +
+                'Click OK to move them to Uncategorised\n' +
+                'Click Cancel to permanently delete them'
+            )
+            if (choice) {
+                // Move to uncategorised
+                contact.category = ''
+                localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
+                syncVaultToSupabase('vault_contacts', savedContacts)
+                renderContacts(document.getElementById('contact-search')?.value || '')
+                showNotification('✅ ' + contact.name + ' moved to Uncategorised')
+            } else {
+                // Permanent delete - confirm again
+                if (confirm('Are you sure you want to permanently delete ' + contact.name + '? This cannot be undone.')) {
+                    savedContacts = savedContacts.filter(c => c.id != id)
+                    localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
+                    syncVaultToSupabase('vault_contacts', savedContacts)
+                    renderContacts(document.getElementById('contact-search')?.value || '')
+                    showNotification('🗑️ ' + contact.name + ' deleted')
+                }
+            }
         }
 
         function handleContactsUpload(input) {
@@ -2111,32 +2134,36 @@
             setTimeout(() => {
                 if (confirm(`Would you like to send ${name} an email to let them know they've been added as a vault inheritor?\n\nThis will open your email app with a pre-written message.`)) {
                     const subject = encodeURIComponent('You have been named as my We Loved Life vault inheritor')
-                    const userName = user ? user.name || user.email : 'Someone you know'
+                    const userName = user ? user.name || user.email.split('@')[0] : 'Someone you know'
+                    const userEmail = user ? user.email : ''
                     const body = encodeURIComponent(
 `Hi ${name},
 
-${userName} has chosen you as a trusted inheritor of their We Loved Life digital vault.
+My name is ${userName} and I have chosen you as a trusted inheritor of my We Loved Life digital vault.
 
 ABOUT WE LOVED LIFE
-We Loved Life (www.welovedlife.com) is a personal legacy vault — a place where people preserve the memories, stories, music, photos, and contacts that shaped their life, so that future generations can truly understand who they were.
+We Loved Life (www.welovedlife.com) is a personal legacy vault — a place where people preserve the memories, stories, music, photos, and contacts that shaped their life, so that future generations can truly understand who they were and what they loved.
 
-Inside ${userName}'s vault you will find:
-• Their most meaningful songs and the memories behind them
-• Photos with personal captions and stories
-• A handwritten Life Book — their autobiography in their own words
-• Life stories and personal reflections
-• Important contacts and the people who mattered to them
-• Valuables and where to find them
-• Private secrets, sealed until the time is right
+WHAT YOU WILL FIND IN MY VAULT
+• My most meaningful songs and the memories and stories behind each one
+• My personal photos with captions and stories
+• My Life Book — my autobiography written in my own words
+• My life stories and personal reflections
+• The important contacts and people who mattered to me
+• My valuables and where to find them
+• My private secrets, sealed until the time is right
 
-ACCESSING THE VAULT
-When the time comes, please visit www.welovedlife.com and log in using ${userName}'s registered email address.
+HOW TO ACCESS MY VAULT
+When the time comes, please visit:
+www.welovedlife.com
 
-To obtain the password, please seek it from Ian, who has been entrusted to provide access when appropriate.
+Login email: ${userEmail}
 
-No action is needed from you right now. This email is simply to let you know you have been chosen and trusted with this responsibility.
+You will need my password to log in. Please contact Ian who holds my password and will provide it to you when appropriate.
 
-With love,
+No action is needed from you right now. This email is simply to let you know you have been chosen and entrusted with preserving my memories.
+
+With all my love,
 ${userName}`
                     )
                     window.location.href = `mailto:${email}?subject=${subject}&body=${body}`
@@ -2663,7 +2690,7 @@ ${userName}`
                 </div>
 
                 <!-- Photos Upload Card -->
-                <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #3b82f6; margin-bottom:1rem; overflow:hidden;">
+                <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #3b82f6; margin-bottom:1rem;">
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem; cursor:pointer;"
                          onclick="toggleSection('photos-body', 'photos-arrow')">
                         <div style="display:flex; align-items:center; gap:1rem;">
@@ -2680,7 +2707,7 @@ ${userName}`
                     <div id="photos-body" style="padding:0 1.5rem 1.5rem; display:none;">
 
                     <div style="position:sticky; top:44px; z-index:50; text-align:right; margin-bottom:0.75rem;">
-                        <button onclick="toggleSection('photos-body','photos-arrow')" style="background:#3b82f6; color:white; border:none; padding:0.4rem 1rem; border-radius:6px; font-size:0.82rem; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.15);">▲ Collapse Photos</button>
+                        <button onclick="toggleSection('photos-body','photos-arrow')" style="background:#3b82f6; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; font-size:0.85rem; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(59,130,246,0.4);">▲ Collapse Photos</button>
                     </div>
 
                     <input type="file" id="photo-upload-input" multiple accept="image/*" style="display:none;" onchange="handlePhotoUpload(this.files)">
@@ -2709,7 +2736,7 @@ ${userName}`
                 </div>
 
                 <!-- Contacts Card -->
-                <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #8b5cf6; margin-bottom:1rem; overflow:hidden;">
+                <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #8b5cf6; margin-bottom:1rem;">
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem; cursor:pointer;"
                          onclick="toggleSection('contacts-body', 'contacts-arrow')">
                         <div style="display:flex; align-items:center; gap:1rem;">
@@ -2731,7 +2758,7 @@ ${userName}`
                     <div id="contacts-body" style="padding:0 1.5rem 1.5rem; display:none;">
 
                     <div style="position:sticky; top:44px; z-index:50; text-align:right; margin-bottom:0.75rem;">
-                        <button onclick="toggleSection('contacts-body','contacts-arrow')" style="background:#8b5cf6; color:white; border:none; padding:0.4rem 1rem; border-radius:6px; font-size:0.82rem; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.15);">▲ Collapse Contacts</button>
+                        <button onclick="toggleSection('contacts-body','contacts-arrow')" style="background:#8b5cf6; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; font-size:0.85rem; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(139,92,246,0.4);">▲ Collapse Contacts</button>
                     </div>
 
                     <!-- Export Instructions -->
@@ -2776,7 +2803,7 @@ ${userName}`
 
                     <div id="add-contact-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
                         <h4 style="color:#1e3a8a; margin-bottom:1rem;">Add a Contact</h4>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.5rem;">
                             <input id="contact-name" placeholder="Full Name *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
                             <input id="contact-phone" placeholder="Phone Number" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
                             <input id="contact-email" placeholder="Email Address" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
@@ -2791,23 +2818,22 @@ ${userName}`
                                 <option disabled style="border-top:1px solid #e5e7eb; color:#9ca3af;">──────────────</option>
                                 <option value="__custom__">✏️ Create new category...</option>
                             </select>
-                            <!-- Custom category creation panel -->
-                            <div id="custom-category-panel" style="display:none; margin-top:0.5rem; background:#f5f3ff; border:1px solid #c4b5fd; border-radius:8px; padding:0.75rem;">
-                                <p style="color:#5b21b6; font-size:0.82rem; font-weight:600; margin-bottom:0.4rem;">Create a new category:</p>
-                                <div style="display:flex; gap:0.4rem; align-items:center;">
-                                    <input id="contact-category-custom" placeholder="e.g. Watch Contacts, Golf Club, School..." 
-                                        style="flex:1; padding:0.5rem; border:1px solid #c4b5fd; border-radius:6px; font-size:0.9rem;"
-                                        onkeydown="if(event.key==='Enter'){event.preventDefault();confirmCustomCategory()}">
-                                    <button type="button" onclick="confirmCustomCategory()" style="background:#7c3aed; color:white; border:none; padding:0.5rem 0.85rem; border-radius:6px; font-size:0.85rem; cursor:pointer; white-space:nowrap;">✓ Use</button>
-                                    <button type="button" onclick="cancelCustomCategory()" style="background:#f3f4f6; color:#6b7280; border:1px solid #e5e7eb; padding:0.5rem 0.6rem; border-radius:6px; font-size:0.85rem; cursor:pointer;">✕</button>
-                                </div>
-                                <p id="custom-cat-preview" style="color:#7c3aed; font-size:0.8rem; margin-top:0.35rem; display:none;"></p>
-                            </div>
-                            <div id="category-confirmed-badge" style="display:none; margin-top:0.35rem;">
-                                <span style="background:#ede9fe; color:#5b21b6; padding:0.2rem 0.6rem; border-radius:4px; font-size:0.82rem;">✓ Custom: <span id="category-confirmed-name"></span></span>
-                                <button onclick="clearCustomCategory()" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:0.8rem; margin-left:0.3rem;">✕ Change</button>
-                            </div>
                             <input id="contact-relation" placeholder="Relationship (e.g. Sister, Best Friend)" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; grid-column:span 2;">
+                        </div>
+                        <!-- Custom category creation panel — OUTSIDE grid so it renders full width -->
+                        <div id="custom-category-panel" style="display:none; margin-bottom:0.75rem; background:#f5f3ff; border:1px solid #c4b5fd; border-radius:8px; padding:0.75rem;">
+                            <p style="color:#5b21b6; font-size:0.85rem; font-weight:600; margin-bottom:0.5rem;">✏️ Name your new category:</p>
+                            <div style="display:flex; gap:0.4rem; align-items:center;">
+                                <input id="contact-category-custom" placeholder="e.g. Watch Contacts, Golf Club, School..."
+                                    style="flex:1; padding:0.55rem 0.7rem; border:1px solid #c4b5fd; border-radius:6px; font-size:0.9rem;"
+                                    onkeydown="if(event.key==='Enter'){event.preventDefault();confirmCustomCategory()}">
+                                <button type="button" onclick="confirmCustomCategory()" style="background:#7c3aed; color:white; border:none; padding:0.55rem 1rem; border-radius:6px; font-size:0.9rem; font-weight:600; cursor:pointer; white-space:nowrap;">✓ Use it</button>
+                                <button type="button" onclick="cancelCustomCategory()" style="background:#f3f4f6; color:#6b7280; border:1px solid #e5e7eb; padding:0.55rem 0.7rem; border-radius:6px; font-size:0.85rem; cursor:pointer;">✕</button>
+                            </div>
+                        </div>
+                        <div id="category-confirmed-badge" style="display:none; margin-bottom:0.75rem; padding:0.4rem 0.6rem; background:#ede9fe; border-radius:6px;">
+                            <span style="color:#5b21b6; font-size:0.85rem; font-weight:600;">✓ Category: <span id="category-confirmed-name" style="font-style:italic;"></span></span>
+                            <button onclick="clearCustomCategory()" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:0.82rem; margin-left:0.5rem; text-decoration:underline;">Change</button>
                         </div>
                         <textarea id="contact-note" placeholder="Why are they meaningful to you? Share a memory or story..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:80px; resize:vertical;"></textarea>
                         <div style="display:flex; gap:0.5rem;">
@@ -4301,6 +4327,9 @@ ${userName}`
             lightboxCurrentUrl = url
             const lb = document.getElementById('photo-lightbox')
             document.getElementById('lightbox-img').src = url
+            // Reset printer panel
+            const pp = document.getElementById('printer-search-panel')
+            if (pp) { pp.style.display = 'none'; document.getElementById('printer-results').innerHTML = ''; document.getElementById('printer-location').value = '' }
 
             // Show caption info
             let cap = {}
@@ -4314,9 +4343,7 @@ ${userName}`
             captionEl.innerHTML = capHtml
             captionBtn.textContent = capHtml ? '✏️ Edit Caption' : '✏️ Add Caption'
 
-            lb.style.display = 'flex'
-            lb.style.alignItems = 'center'
-            lb.style.justifyContent = 'center'
+            lb.classList.add('lb-open')
             document.body.style.overflow = 'hidden'
         }
 
@@ -4337,7 +4364,7 @@ ${userName}`
         }
 
         function closePhotoLightbox() {
-            document.getElementById('photo-lightbox').style.display = 'none'
+            document.getElementById('photo-lightbox').classList.remove('lb-open')
             document.body.style.overflow = ''
         }
 
