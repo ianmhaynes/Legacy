@@ -2012,7 +2012,7 @@
                 const isActive = activeCategory === cat
                 tabsHtml += `<button onclick="renderContacts(document.getElementById('contact-search')?.value||'','${cat}')"
                     style="padding:0.3rem 0.75rem; border-radius:980px; font-size:0.8rem; font-weight:600; cursor:pointer; border:2px solid ${isActive ? '#3730a3' : '#e5e7eb'}; background:${isActive ? '#3730a3' : 'white'}; color:${isActive ? 'white' : '#6b7280'};">
-                    ${categoryEmoji[cat]} ${cat} (${n})</button>`
+                    ${categoryEmoji[cat] || '📋'} ${cat} (${n})</button>`
             })
             const uncatCount = catCounts[''] || 0
             if (uncatCount > 0) {
@@ -2473,7 +2473,7 @@ ${userName}`
     </nav>
 
     <!-- Notification -->
-    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v3.3</div>
+    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v3.4</div>
     <div id="notification" class="notification"></div>
 
     <!-- Home Section -->
