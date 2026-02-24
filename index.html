@@ -1230,23 +1230,28 @@
                 return
             }
 
+            // Store track data for safe access
+            window._searchTracks = {}
+            tracks.forEach(t => { window._searchTracks[t.trackId] = t })
+
             results.style.display = 'block'
             results.innerHTML = tracks.map(track => `
                 <div style="display:flex; align-items:center; padding:1rem; border-bottom:1px solid #f3f4f6; gap:1rem; cursor:pointer; transition:background 0.2s;"
                      onmouseover="this.style.background='#f9fafb'"
                      onmouseout="this.style.background='white'"
-                     onclick="addSongToLibrary('${track.trackId}', '${(track.trackName || '').replace(/'/g, "\\'")}', '${(track.artistName || '').replace(/'/g, "\\'")}', '${(track.collectionName || '').replace(/'/g, "\\'")}', '${track.artworkUrl100 || ""}')">
+                     onclick="addSongFromSearch('${track.trackId}')">
                     <img src="${track.artworkUrl60 || track.artworkUrl100}" style="width:50px; height:50px; border-radius:6px;">
                     <div style="flex:1; min-width:0;">
                         <div style="font-weight:600; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${track.trackName}</div>
                         <div style="color:#6b7280; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${track.artistName} • ${track.collectionName}</div>
+                        ${track.previewUrl ? '<span style="color:#1db954; font-size:0.75rem;">▶ Preview available</span>' : ''}
                     </div>
                     <button style="background:#1db954; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; font-size:0.85rem; font-weight:600;">+ Add</button>
                 </div>
             `).join('')
         }
 
-        function addSongToLibrary(id, name, artist, album, image) {
+        function addSongToLibrary(id, name, artist, album, image, preview_url, spotify_url) {
             if (savedSongs.find(s => s.id === id)) {
                 showNotification('Song already in your library!')
                 return
@@ -1258,6 +1263,8 @@
                 artist: artist,
                 album: album,
                 image: image,
+                preview_url: preview_url || '',
+                spotify_url: spotify_url || '',
                 captured_at: new Date().toISOString()
             }
 
@@ -1308,8 +1315,10 @@
                                 <div style="color:#6b7280; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${song.artist} • ${song.album}</div>
                                 ${song.why ? `<div style="color:#7c3aed; font-size:0.78rem; margin-top:0.2rem; font-style:italic;">💜 ${song.why}${song.period ? ' · '+song.period : ''}</div>` : ''}
                             </div>
-                            <div style="display:flex; gap:0.4rem; flex-shrink:0;">
-                                <button onclick="openSongMemory('${song.id}')" style="background:#ede9fe; color:#7c3aed; border:none; padding:0.3rem 0.6rem; border-radius:6px; font-size:0.85rem;" title="Add Memory">✏️</button>
+                            <div style="display:flex; gap:0.4rem; flex-shrink:0; align-items:center;">
+                                ${song.preview_url ? `<button onclick="playSongPreview('${song.id}','${song.preview_url}')" id="play-btn-${song.id}" style="background:#1db954; color:white; border:none; padding:0.3rem 0.7rem; border-radius:6px; font-size:0.85rem; cursor:pointer;" title="Preview">▶</button>` : ''}
+                                ${song.spotify_url ? `<a href="${song.spotify_url}" target="_blank" style="background:#1db954; color:white; text-decoration:none; padding:0.3rem 0.6rem; border-radius:6px; font-size:0.75rem; white-space:nowrap;" title="Open in Spotify">🎵 Play</a>` : ''}
+                                <button onclick="openSongMemory('${song.id}')" style="background:#ede9fe; color:#7c3aed; border:none; padding:0.3rem 0.6rem; border-radius:6px; font-size:0.85rem; cursor:pointer;" title="Add Memory">✏️</button>
                                 <button onclick="removeSong('${song.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem;" title="Remove">🗑️</button>
                             </div>
                         </div>
@@ -3840,25 +3849,31 @@
         function renderCategoryStrip() {
             const strip = document.getElementById('contacts-cat-strip')
             if (!strip) return
-            // Build category counts
-            const counts = { 'All': savedContacts.length }
+            // Build category counts including uncategorised
+            const counts = { 'All': savedContacts.length, 'Uncategorised': 0 }
             savedContacts.forEach(c => {
                 const cat = c.category || ''
-                if (!counts[cat]) counts[cat] = 0
-                counts[cat]++
+                if (!cat) {
+                    counts['Uncategorised']++
+                } else {
+                    if (!counts[cat]) counts[cat] = 0
+                    counts[cat]++
+                }
             })
             // All standard + any custom cats found in data
             const stdCats = ['Family','Friends','Business','Romantic','Disliked','Others']
             const customCats = [...new Set(savedContacts.map(c => c.category).filter(c => c && !stdCats.includes(c)))]
             const allCats = ['All', ...stdCats, ...customCats]
+            if (counts['Uncategorised'] > 0) allCats.push('Uncategorised')
             
             const activeCat = strip.dataset.active || 'All'
-            strip.innerHTML = allCats.filter(cat => cat === 'All' || counts[cat]).map(cat => {
-                const n = counts[cat] || 0
+            strip.innerHTML = allCats.filter(cat => cat === 'All' || (counts[cat] || 0) > 0).map(cat => {
+                const n = cat === 'All' ? savedContacts.length : (counts[cat] || 0)
                 const isActive = cat === activeCat
+                const emoji = cat === 'Uncategorised' ? '❓' : (categoryEmoji[cat] || '📋')
                 return `<button onclick="filterContactsByCategory('${cat}')" 
                     style="padding:0.3rem 0.75rem; border-radius:980px; border:1px solid ${isActive ? '#3b82f6' : '#e5e7eb'}; background:${isActive ? '#3b82f6' : 'white'}; color:${isActive ? 'white' : '#374151'}; font-size:0.8rem; cursor:pointer; white-space:nowrap; font-weight:${isActive ? '600' : '400'};">
-                    ${categoryEmoji[cat] || '📋'} ${cat}${cat !== 'All' ? ' ('+n+')' : ' ('+savedContacts.length+')'}
+                    ${emoji} ${cat} (${n})
                 </button>`
             }).join('')
         }
@@ -3872,7 +3887,10 @@
             } else {
                 const list = document.getElementById('contacts-list')
                 if (!list) return
-                const filtered = savedContacts.filter(c => (c.category || '') === cat || (!c.category && cat === 'Others'))
+                const filtered = savedContacts.filter(c => {
+                    if (cat === 'Uncategorised') return !c.category || c.category === ''
+                    return (c.category || '') === cat
+                })
                 const sorted = [...filtered].sort((a,b) => a.name.localeCompare(b.name))
                 if (sorted.length === 0) {
                     list.innerHTML = '<p style="color:#9ca3af; text-align:center; padding:1.5rem;">No contacts in this category.</p>'
@@ -4181,7 +4199,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.12</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.13</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; align-items:center; justify-content:center; padding:1rem;" onclick="closePhotoLightbox()">
