@@ -1120,7 +1120,7 @@
                     <div style="display:flex; align-items:center; gap:0.75rem;">
                         <span id="spotify-tracks-arrow" style="color:#1db954; font-size:1rem;">▶</span>
                         <div>
-                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">🎵 Your Music Library</h4>
+                            <h4 style="color:#1e3a8a; font-size:1.15rem; margin-bottom:0.1rem;">🎵 Your Music Library</h4>
                             <p style="color:#6b7280;">${tracks.length} songs preserved • ${captureDate}</p>
                         </div>
                     </div>
@@ -1352,6 +1352,8 @@
 
             header.style.display = 'block'
             count.textContent = `${savedSongs.length} song${savedSongs.length !== 1 ? 's' : ''} saved`
+            const sch = document.getElementById('songs-count-header')
+            if (sch) sch.textContent = `${savedSongs.length} song${savedSongs.length !== 1 ? 's' : ''}`
 
             list.innerHTML = `
                 <div style="background:white; border-radius:10px; border:1px solid #e5e7eb; overflow:hidden;">
@@ -2652,7 +2654,7 @@ ${userName}`
     </nav>
 
     <!-- Notification -->
-    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.3</div>
+    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.4</div>
     <div id="notification" class="notification"></div>
 
     <!-- Home Section -->
@@ -2837,49 +2839,47 @@ ${userName}`
     <!-- Dashboard Section -->
     <section id="dashboard-section" class="dashboard">
         <div class="container">
-            <div class="dashboard-header">
-                <h2>Your We Loved Life</h2>
-                <p>Welcome back, <span id="user-name">User</span></p>
-            </div>
-
-            <!-- Compact Stats Strip -->
-            <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:1rem;">
-                <div style="display:flex; align-items:center; gap:0.5rem; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:0.5rem 0.9rem;">
-                    <span style="font-size:1.1rem;">📸</span>
-                    <div><div style="font-size:1.1rem; font-weight:700; color:#1e3a8a;" id="total-memories">0</div><div style="font-size:0.7rem; color:#6b7280;">memories</div></div>
-                </div>
-                <div style="display:flex; align-items:center; gap:0.5rem; background:#f5f3ff; border:1px solid #ddd6fe; border-radius:8px; padding:0.5rem 0.9rem;">
-                    <span style="font-size:1.1rem;">👥</span>
-                    <div><div style="font-size:1.1rem; font-weight:700; color:#1e3a8a;" id="contacts-stat">0</div><div style="font-size:0.7rem; color:#6b7280;">contacts</div></div>
-                </div>
-                <div style="display:flex; align-items:center; gap:0.5rem; background:#fef9c3; border:1px solid #fde68a; border-radius:8px; padding:0.5rem 0.9rem;">
-                    <span style="font-size:1.1rem;">🗝️</span>
-                    <div><div style="font-size:1.1rem; font-weight:700; color:#1e3a8a;" id="essentials-stat">0</div><div style="font-size:0.7rem; color:#6b7280;">essentials</div></div>
-                </div>
-                <div style="display:flex; align-items:center; gap:0.5rem; background:#fdf2f8; border:1px solid #fbcfe8; border-radius:8px; padding:0.5rem 0.9rem;">
-                    <span style="font-size:1.1rem;">🏛️</span>
-                    <div><div style="font-size:1.1rem; font-weight:700; color:#1e3a8a;" id="inheritors-count">0</div><div style="font-size:0.7rem; color:#6b7280;">inheritors</div></div>
-                </div>
-                <div style="display:flex; align-items:center; gap:0.5rem; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:0.5rem 0.9rem;">
-                    <span style="font-size:1.1rem;">💾</span>
-                    <div><div style="font-size:1.1rem; font-weight:700; color:#1e3a8a;" id="storage-used">0</div><div style="font-size:0.7rem; color:#6b7280;">storage</div></div>
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem; padding-top:0.5rem;">
+                <div>
+                    <span style="font-size:1.1rem; font-weight:700; color:#1e3a8a;">We Loved Life</span>
+                    <span style="color:#9ca3af; font-size:0.85rem; margin-left:0.5rem;">· <span id="user-name">User</span></span>
                 </div>
             </div>
 
-            <!-- Sync status + search row -->
-            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap; margin-bottom:1.5rem;">
-                <div id="sync-status" style="display:inline-flex; align-items:center; gap:0.4rem; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:980px; padding:0.4rem 1rem; font-size:0.85rem; color:#16a34a;">
-                    <span id="sync-dot" style="width:8px; height:8px; border-radius:50%; background:#16a34a; display:inline-block;"></span>
-                    <span id="sync-label">Ready</span>
-                </div>
-                <button onclick="manualSync()" style="background:#3730a3; color:white; border:none; border-radius:980px; padding:0.4rem 1rem; font-size:0.85rem; cursor:pointer;">☁️ Sync Now</button>
-                <input id="vault-search" placeholder="🔍 Search vault..." 
-                    style="flex:1; min-width:200px; padding:0.5rem 1rem; border:2px solid #e5e7eb; border-radius:980px; font-size:0.9rem;"
-                    oninput="searchVault(this.value)">
-            </div>
+            <!-- Sticky header: stats + sync + search + tabs -->
+            <div style="position:sticky; top:60px; background:white; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin:0 -1rem; padding:0.5rem 1rem 0;">
 
-            <!-- ===== MAIN NAV TABS ===== -->
-            <div id="vault-tabs" style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; margin-bottom:1.5rem; overflow-x:auto; position:sticky; top:60px; background:white; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                <!-- Stats + sync row -->
+                <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; margin-bottom:0.5rem;">
+                    <div style="display:flex; align-items:center; gap:0.35rem; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; padding:0.3rem 0.6rem;">
+                        <span>📸</span><span style="font-weight:700; color:#1e3a8a; font-size:0.9rem;" id="total-memories">0</span><span style="color:#9ca3af; font-size:0.7rem;">mem</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.35rem; background:#f5f3ff; border:1px solid #ddd6fe; border-radius:6px; padding:0.3rem 0.6rem;">
+                        <span>👥</span><span style="font-weight:700; color:#1e3a8a; font-size:0.9rem;" id="contacts-stat">0</span><span style="color:#9ca3af; font-size:0.7rem;">contacts</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.35rem; background:#fef9c3; border:1px solid #fde68a; border-radius:6px; padding:0.3rem 0.6rem;">
+                        <span>🗝️</span><span style="font-weight:700; color:#1e3a8a; font-size:0.9rem;" id="essentials-stat">0</span><span style="color:#9ca3af; font-size:0.7rem;">essentials</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.35rem; background:#fdf2f8; border:1px solid #fbcfe8; border-radius:6px; padding:0.3rem 0.6rem;">
+                        <span>🏛️</span><span style="font-weight:700; color:#1e3a8a; font-size:0.9rem;" id="inheritors-count">0</span><span style="color:#9ca3af; font-size:0.7rem;">inheritors</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.35rem; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; padding:0.3rem 0.6rem;">
+                        <span>💾</span><span style="font-weight:700; color:#1e3a8a; font-size:0.9rem;" id="storage-used">0</span><span style="color:#9ca3af; font-size:0.7rem;">storage</span>
+                    </div>
+                    <div style="flex:1; min-width:150px;">
+                        <input id="vault-search" placeholder="🔍 Search..." 
+                            style="width:100%; padding:0.3rem 0.75rem; border:1px solid #e5e7eb; border-radius:980px; font-size:0.85rem; box-sizing:border-box;"
+                            oninput="searchVault(this.value)">
+                    </div>
+                    <div id="sync-status" style="display:inline-flex; align-items:center; gap:0.3rem; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:980px; padding:0.3rem 0.7rem; font-size:0.78rem; color:#16a34a;">
+                        <span id="sync-dot" style="width:6px; height:6px; border-radius:50%; background:#16a34a; display:inline-block;"></span>
+                        <span id="sync-label">Ready</span>
+                    </div>
+                    <button onclick="manualSync()" style="background:#3730a3; color:white; border:none; border-radius:980px; padding:0.3rem 0.75rem; font-size:0.78rem; cursor:pointer; white-space:nowrap;">☁️ Sync</button>
+                </div>
+
+                <!-- Tabs -->
+                <div id="vault-tabs" style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; overflow-x:auto;">
                 <button onclick="switchVaultTab('memories')" id="vtab-memories"
                     style="padding:0.75rem 1.25rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.95rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
                     📸 Memories
@@ -2896,22 +2896,23 @@ ${userName}`
                     style="padding:0.75rem 1.25rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.95rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
                     🏛️ Legacy
                 </button>
-            </div>
+                </div>
+            </div><!-- /sticky header -->
 
             <!-- ===== TAB: MEMORIES ===== -->
             <div id="vtabcontent-memories">
                 <!-- Music Card -->
                 <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #1db954; margin-bottom:1rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.5rem; cursor:pointer;" onclick="toggleSection('music-body','music-arrow')">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:0.9rem 1.2rem; cursor:pointer;" onclick="toggleSection('music-body','music-arrow')">
                         <div style="display:flex; align-items:center; gap:0.75rem;">
                             <span id="music-arrow" style="color:#1db954; font-size:1.2rem;">▶</span>
                             <div>
-                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">🎵 Music Library</h4>
+                                <h4 style="color:#1e3a8a; font-size:1.15rem; margin-bottom:0.1rem;">🎵 Music Library</h4>
                                 <p style="color:#6b7280; font-size:0.9rem;"><span id="songs-count-header">0 songs</span> saved</p>
                             </div>
                         </div>
                     </div>
-                    <div id="music-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                    <div id="music-body" style="display:none; padding:0 1.2rem 1.2rem;">
 
                 <!-- Spotify Card -->
                 <div id="spotify-card" style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #1db954; margin-bottom:1rem;">
@@ -2953,7 +2954,7 @@ ${userName}`
                         <div style="display:flex; align-items:center; gap:1rem;">
                             <span id="photos-arrow" style="color:#3b82f6; font-size:1.2rem; transition:transform 0.2s;">▶</span>
                             <div>
-                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">📸 Photos & Memories</h4>
+                                <h4 style="color:#1e3a8a; font-size:1.15rem; margin-bottom:0.1rem;">📸 Photos & Memories</h4>
                                 <p style="color:#6b7280; font-size:0.9rem;"><span id="photos-count-header">0 photos</span> preserved</p>
                             </div>
                         </div>
@@ -2961,7 +2962,7 @@ ${userName}`
                             📸 Upload Photos
                         </label>
                     </div>
-                    <div id="photos-body" style="padding:0 1.5rem 1.5rem; display:none;">
+                    <div id="photos-body" style="padding:0 1.2rem 1.2rem; display:none;">
 
                     <div style="text-align:right; margin-bottom:0.75rem;">
                         <button onclick="toggleSection('photos-body','photos-arrow')" style="background:#3b82f6; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; font-size:0.85rem; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(59,130,246,0.4);">▲ Collapse Photos</button>
@@ -3002,7 +3003,7 @@ ${userName}`
                         <div style="display:flex; align-items:center; gap:0.75rem;">
                             <span id="stories-arrow" style="color:#f59e0b; font-size:1rem;">▶</span>
                             <div>
-                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">✨ Life Stories</h4>
+                                <h4 style="color:#1e3a8a; font-size:1.15rem; margin-bottom:0.1rem;">✨ Life Stories</h4>
                                 <p style="color:#6b7280; font-size:0.9rem;"><span id="stories-count-header">Write your story</span></p>
                             </div>
                         </div>
@@ -3011,7 +3012,7 @@ ${userName}`
                         </button>
                     </div>
 
-                    <div id="stories-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                    <div id="stories-body" style="display:none; padding:0 1.2rem 1.2rem;">
                         <div id="stories-prompts" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
                             
                             <div class="story-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
@@ -3076,7 +3077,7 @@ ${userName}`
                         <div style="display:flex; align-items:center; gap:0.75rem;">
                             <span id="lifebook-arrow" style="color:#8b5cf6; font-size:1rem;">▶</span>
                             <div>
-                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">📖 My Life Book</h4>
+                                <h4 style="color:#1e3a8a; font-size:1.15rem; margin-bottom:0.1rem;">📖 My Life Book</h4>
                                 <p style="color:#6b7280; font-size:0.9rem;"><span id="lifebook-count-header">Write your autobiography</span></p>
                             </div>
                         </div>
@@ -3085,7 +3086,7 @@ ${userName}`
                         </button>
                     </div>
 
-                    <div id="lifebook-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                    <div id="lifebook-body" style="display:none; padding:0 1.2rem 1.2rem;">
                         <div id="lifebook-prompts" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
                             
                             <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
@@ -3202,7 +3203,7 @@ ${userName}`
                         <div style="display:flex; align-items:center; gap:1rem;">
                             <span id="contacts-arrow" style="color:#8b5cf6; font-size:1.2rem; transition:transform 0.2s;">▶</span>
                             <div>
-                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">👥 Contacts & People</h4>
+                                <h4 style="color:#1e3a8a; font-size:1.15rem; margin-bottom:0.1rem;">👥 Contacts & People</h4>
                                 <p style="color:#6b7280; font-size:0.9rem;"><span id="contacts-count-header">0 contacts</span> preserved</p>
                             </div>
                         </div>
@@ -3218,7 +3219,7 @@ ${userName}`
                     <!-- Category quick-filter strip - always visible -->
                     <div id="contacts-cat-strip" style="padding:0.5rem 1.5rem 0.75rem; display:flex; flex-wrap:wrap; gap:0.4rem; border-top:1px solid #ede9fe;"></div>
 
-                    <div id="contacts-body" style="padding:0 1.5rem 1.5rem; display:none;">
+                    <div id="contacts-body" style="padding:0 1.2rem 1.2rem; display:none;">
 
                     <div style="text-align:right; margin-bottom:0.75rem;">
                         <button onclick="toggleSection('contacts-body','contacts-arrow')" style="background:#8b5cf6; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; font-size:0.85rem; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(139,92,246,0.4);">▲ Collapse Contacts</button>
@@ -3330,7 +3331,7 @@ ${userName}`
             <div id="vtabcontent-essentials" style="display:none;">
                 <!-- Financial & Legal -->
                 <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #f59e0b; margin-bottom:1rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:1.5rem; cursor:pointer;" onclick="toggleSection('essentials-finance-body','essentials-finance-arrow')">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.9rem 1.2rem; cursor:pointer;" onclick="toggleSection('essentials-finance-body','essentials-finance-arrow')">
                         <div style="display:flex; align-items:center; gap:0.75rem;">
                             <span id="essentials-finance-arrow" style="color:#f59e0b;">▶</span>
                             <div>
@@ -3340,7 +3341,7 @@ ${userName}`
                         </div>
                         <button onclick="event.stopPropagation(); showAddEssential('finance')" style="background:#f59e0b; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add</button>
                     </div>
-                    <div id="essentials-finance-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                    <div id="essentials-finance-body" style="display:none; padding:0 1.2rem 1.2rem;">
                         <div id="essentials-finance-list"></div>
                         <p id="essentials-finance-empty" style="color:#9ca3af; font-size:0.9rem; font-style:italic;">No entries yet. Add your bank accounts, will location, insurance policies...</p>
                     </div>
@@ -3348,7 +3349,7 @@ ${userName}`
 
                 <!-- Physical Access -->
                 <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #10b981; margin-bottom:1rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:1.5rem; cursor:pointer;" onclick="toggleSection('essentials-access-body','essentials-access-arrow')">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.9rem 1.2rem; cursor:pointer;" onclick="toggleSection('essentials-access-body','essentials-access-arrow')">
                         <div style="display:flex; align-items:center; gap:0.75rem;">
                             <span id="essentials-access-arrow" style="color:#10b981;">▶</span>
                             <div>
@@ -3358,7 +3359,7 @@ ${userName}`
                         </div>
                         <button onclick="event.stopPropagation(); showAddEssential('access')" style="background:#10b981; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add</button>
                     </div>
-                    <div id="essentials-access-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                    <div id="essentials-access-body" style="display:none; padding:0 1.2rem 1.2rem;">
                         <div id="essentials-access-list"></div>
                         <p id="essentials-access-empty" style="color:#9ca3af; font-size:0.9rem; font-style:italic;">No entries yet. Add safe combinations, storage unit details, spare key locations...</p>
                     </div>
@@ -3366,7 +3367,7 @@ ${userName}`
 
                 <!-- Digital Access -->
                 <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #6366f1; margin-bottom:1rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:1.5rem; cursor:pointer;" onclick="toggleSection('essentials-digital-body','essentials-digital-arrow')">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.9rem 1.2rem; cursor:pointer;" onclick="toggleSection('essentials-digital-body','essentials-digital-arrow')">
                         <div style="display:flex; align-items:center; gap:0.75rem;">
                             <span id="essentials-digital-arrow" style="color:#6366f1;">▶</span>
                             <div>
@@ -3376,7 +3377,7 @@ ${userName}`
                         </div>
                         <button onclick="event.stopPropagation(); showAddEssential('digital')" style="background:#6366f1; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add</button>
                     </div>
-                    <div id="essentials-digital-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                    <div id="essentials-digital-body" style="display:none; padding:0 1.2rem 1.2rem;">
                         <div id="essentials-digital-list"></div>
                         <p id="essentials-digital-empty" style="color:#9ca3af; font-size:0.9rem; font-style:italic;">No entries yet. Add password manager details, important email accounts, crypto wallets...</p>
                     </div>
@@ -3384,7 +3385,7 @@ ${userName}`
 
                 <!-- Important Documents -->
                 <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #ef4444; margin-bottom:1rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:1.5rem; cursor:pointer;" onclick="toggleSection('essentials-docs-body','essentials-docs-arrow')">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.9rem 1.2rem; cursor:pointer;" onclick="toggleSection('essentials-docs-body','essentials-docs-arrow')">
                         <div style="display:flex; align-items:center; gap:0.75rem;">
                             <span id="essentials-docs-arrow" style="color:#ef4444;">▶</span>
                             <div>
@@ -3394,7 +3395,7 @@ ${userName}`
                         </div>
                         <button onclick="event.stopPropagation(); showAddEssential('docs')" style="background:#ef4444; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add</button>
                     </div>
-                    <div id="essentials-docs-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                    <div id="essentials-docs-body" style="display:none; padding:0 1.2rem 1.2rem;">
                         <div id="essentials-docs-list"></div>
                         <p id="essentials-docs-empty" style="color:#9ca3af; font-size:0.9rem; font-style:italic;">No entries yet. Add passport location, NHS number, birth certificate, NI number...</p>
                     </div>
@@ -3402,7 +3403,7 @@ ${userName}`
 
                 <!-- Final Wishes -->
                 <div style="background:#f9fafb; border-radius:10px; border-left:4px solid #8b5cf6; margin-bottom:1rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:1.5rem; cursor:pointer;" onclick="toggleSection('essentials-wishes-body','essentials-wishes-arrow')">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.9rem 1.2rem; cursor:pointer;" onclick="toggleSection('essentials-wishes-body','essentials-wishes-arrow')">
                         <div style="display:flex; align-items:center; gap:0.75rem;">
                             <span id="essentials-wishes-arrow" style="color:#8b5cf6;">▶</span>
                             <div>
@@ -3412,7 +3413,7 @@ ${userName}`
                         </div>
                         <button onclick="event.stopPropagation(); showAddEssential('wishes')" style="background:#8b5cf6; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add</button>
                     </div>
-                    <div id="essentials-wishes-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                    <div id="essentials-wishes-body" style="display:none; padding:0 1.2rem 1.2rem;">
                         <div id="essentials-wishes-list"></div>
                         <p id="essentials-wishes-empty" style="color:#9ca3af; font-size:0.9rem; font-style:italic;">No entries yet. Add funeral wishes, who to contact first, digital account instructions...</p>
                     </div>
@@ -3446,7 +3447,7 @@ ${userName}`
                         <div style="display:flex; align-items:center; gap:0.75rem;">
                             <span id="secrets-arrow" style="color:#dc2626; font-size:1rem;">▶</span>
                             <div>
-                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">🔒 My Secrets</h4>
+                                <h4 style="color:#1e3a8a; font-size:1.15rem; margin-bottom:0.1rem;">🔒 My Secrets</h4>
                                 <p style="color:#6b7280; font-size:0.9rem;"><span id="secrets-count-header">Only to be opened after my death</span></p>
                             </div>
                         </div>
@@ -3454,7 +3455,7 @@ ${userName}`
                             + Add Secret
                         </button>
                     </div>
-                    <div id="secrets-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                    <div id="secrets-body" style="display:none; padding:0 1.2rem 1.2rem;">
                         <!-- Solemn consent notice -->
                         <div style="background:#fef2f2; border:2px solid #fecaca; border-radius:10px; padding:1.5rem; margin-bottom:1.5rem; text-align:center;">
                             <div style="font-size:2.5rem; margin-bottom:0.75rem;">🔒</div>
@@ -3495,7 +3496,7 @@ ${userName}`
                         <div style="display:flex; align-items:center; gap:0.75rem;">
                             <span id="valuables-arrow" style="color:#d97706; font-size:1rem;">▶</span>
                             <div>
-                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">💎 My Valuables</h4>
+                                <h4 style="color:#1e3a8a; font-size:1.15rem; margin-bottom:0.1rem;">💎 My Valuables</h4>
                                 <p style="color:#6b7280; font-size:0.9rem;"><span id="valuables-count-header">Record what you own, where to find it, and what it's worth</span></p>
                             </div>
                         </div>
@@ -3503,7 +3504,7 @@ ${userName}`
                             + Add Valuable
                         </button>
                     </div>
-                    <div id="valuables-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                    <div id="valuables-body" style="display:none; padding:0 1.2rem 1.2rem;">
                         <div id="valuables-list" style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;"></div>
                         <!-- Add valuable form -->
                         <div style="background:white; border-radius:8px; padding:1rem; border:1px solid #fde68a;">
@@ -3541,7 +3542,7 @@ ${userName}`
                              onclick="toggleSection('inheritors-body','inheritors-arrow')">
                             <span id="inheritors-arrow" style="color:#ec4899; font-size:1rem;">▶</span>
                             <div>
-                                <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">👨‍👩‍👧‍👦 Inheritors</h4>
+                                <h4 style="color:#1e3a8a; font-size:1.15rem; margin-bottom:0.1rem;">👨‍👩‍👧‍👦 Inheritors</h4>
                                 <p style="color:#6b7280; font-size:0.9rem;"><span id="inheritors-count-header">Who will receive your legacy</span></p>
                             </div>
                         </div>
@@ -3550,7 +3551,7 @@ ${userName}`
                         </button>
                     </div>
 
-                    <div id="inheritors-body" style="display:none; padding:0 1.5rem 1.5rem;">
+                    <div id="inheritors-body" style="display:none; padding:0 1.2rem 1.2rem;">
                         <div id="add-inheritor-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
                             <h4 style="color:#1e3a8a; margin-bottom:1rem;">Add an Inheritor</h4>
                             <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
