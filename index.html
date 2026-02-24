@@ -2027,20 +2027,21 @@
             const customCats = Object.keys(catCounts).filter(c => c && !tabStdCats.includes(c))
             const tabList = ['All', ...tabStdCats, ...customCats]
             let tabsHtml = '<div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:1rem;">'
+            let stripHtml = ''
             tabList.forEach(cat => {
                 const n = cat === 'All' ? savedContacts.length : (catCounts[cat] || 0)
                 if (n === 0 && cat !== 'All') return
                 const isActive = activeCategory === cat
-                tabsHtml += `<button onclick="renderContacts(document.getElementById('contact-search')?.value||'','${cat}')"
-                    style="padding:0.3rem 0.75rem; border-radius:980px; font-size:0.8rem; font-weight:600; cursor:pointer; border:2px solid ${isActive ? '#3730a3' : '#e5e7eb'}; background:${isActive ? '#3730a3' : 'white'}; color:${isActive ? 'white' : '#6b7280'};">
-                    ${categoryEmoji[cat] || '📋'} ${cat} (${n})</button>`
+                const tabBtn = `<button onclick="openAndFilter('${cat}')" style="padding:0.3rem 0.75rem; border-radius:980px; font-size:0.8rem; font-weight:600; cursor:pointer; border:2px solid ${isActive ? '#3730a3' : '#e5e7eb'}; background:${isActive ? '#3730a3' : 'white'}; color:${isActive ? 'white' : '#6b7280'};">${categoryEmoji[cat] || '📋'} ${cat} (${n})</button>`
+                tabsHtml += tabBtn
+                stripHtml += tabBtn
             })
             const uncatCount = catCounts[''] || 0
             if (uncatCount > 0) {
                 const isActive = activeCategory === ''
-                tabsHtml += `<button onclick="renderContacts(document.getElementById('contact-search')?.value||','')"
-                    style="padding:0.3rem 0.75rem; border-radius:980px; font-size:0.8rem; font-weight:600; cursor:pointer; border:2px solid ${isActive ? '#3730a3' : '#e5e7eb'}; background:${isActive ? '#3730a3' : 'white'}; color:${isActive ? 'white' : '#6b7280'};">
-                    📋 Uncategorised (${uncatCount})</button>`
+                const uncatBtn = `<button onclick="openAndFilter('')" style="padding:0.3rem 0.75rem; border-radius:980px; font-size:0.8rem; font-weight:600; cursor:pointer; border:2px solid ${isActive ? '#3730a3' : '#e5e7eb'}; background:${isActive ? '#3730a3' : 'white'}; color:${isActive ? 'white' : '#6b7280'};">📋 Uncategorised (${uncatCount})</button>`
+                tabsHtml += uncatBtn
+                stripHtml += uncatBtn
             }
             tabsHtml += '</div>'
 
@@ -2073,6 +2074,10 @@
                     <button onclick="deleteContact(${c.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; flex-shrink:0;" title="Delete">🗑️</button>
                 </div>
             `
+
+            // Inject into always-visible header strip
+            const catStrip = document.getElementById('contacts-cat-strip')
+            if (catStrip) catStrip.innerHTML = stripHtml
 
             let html = tabsHtml
             if (activeCategory === 'All') {
@@ -2107,6 +2112,22 @@
             if (val && val.trim()) {
                 assignContactCategory(id, val.trim())
             }
+        }
+
+        function openAndFilter(cat) {
+            // Open contacts section if closed
+            var cb = document.getElementById('contacts-body')
+            var ca = document.getElementById('contacts-arrow')
+            if (cb && cb.style.display !== 'block') {
+                cb.style.display = 'block'
+                if (ca) ca.textContent = '▼'
+                updateFixedCollapseButtons()
+            }
+            // Filter to this category
+            var searchVal = document.getElementById('contact-search') ? document.getElementById('contact-search').value : ''
+            renderContacts(searchVal, cat)
+            // Scroll contacts into view
+            if (cb) setTimeout(function(){ cb.scrollIntoView({behavior:'smooth', block:'start'}) }, 100)
         }
 
         function assignContactCategory(id, category) {
@@ -2493,7 +2514,7 @@ ${userName}`
     </nav>
 
     <!-- Notification -->
-    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v3.7</div>
+    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v3.8</div>
     <div id="notification" class="notification"></div>
 
     <!-- Home Section -->
@@ -2834,6 +2855,9 @@ ${userName}`
                             </button>
                         </div>
                     </div>
+                    <!-- Category quick-filter strip - always visible -->
+                    <div id="contacts-cat-strip" style="padding:0.5rem 1.5rem 0.75rem; display:flex; flex-wrap:wrap; gap:0.4rem; border-top:1px solid #ede9fe;"></div>
+
                     <div id="contacts-body" style="padding:0 1.5rem 1.5rem; display:none;">
 
                     <div style="text-align:right; margin-bottom:0.75rem;">
