@@ -1230,28 +1230,23 @@
                 return
             }
 
-            // Store track data for safe access
-            window._searchTracks = {}
-            tracks.forEach(t => { window._searchTracks[t.trackId] = t })
-
             results.style.display = 'block'
             results.innerHTML = tracks.map(track => `
                 <div style="display:flex; align-items:center; padding:1rem; border-bottom:1px solid #f3f4f6; gap:1rem; cursor:pointer; transition:background 0.2s;"
                      onmouseover="this.style.background='#f9fafb'"
                      onmouseout="this.style.background='white'"
-                     onclick="addSongFromSearch('${track.trackId}')">
+                     onclick="addSongToLibrary('${track.trackId}', '${(track.trackName || '').replace(/'/g, "\\'")}', '${(track.artistName || '').replace(/'/g, "\\'")}', '${(track.collectionName || '').replace(/'/g, "\\'")}', '${track.artworkUrl100 || ""}')">
                     <img src="${track.artworkUrl60 || track.artworkUrl100}" style="width:50px; height:50px; border-radius:6px;">
                     <div style="flex:1; min-width:0;">
                         <div style="font-weight:600; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${track.trackName}</div>
                         <div style="color:#6b7280; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${track.artistName} • ${track.collectionName}</div>
-                        ${track.previewUrl ? '<span style="color:#1db954; font-size:0.75rem;">▶ Preview available</span>' : ''}
                     </div>
                     <button style="background:#1db954; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; font-size:0.85rem; font-weight:600;">+ Add</button>
                 </div>
             `).join('')
         }
 
-        function addSongToLibrary(id, name, artist, album, image, preview_url, spotify_url) {
+        function addSongToLibrary(id, name, artist, album, image) {
             if (savedSongs.find(s => s.id === id)) {
                 showNotification('Song already in your library!')
                 return
@@ -1263,8 +1258,6 @@
                 artist: artist,
                 album: album,
                 image: image,
-                preview_url: preview_url || '',
-                spotify_url: spotify_url || '',
                 captured_at: new Date().toISOString()
             }
 
@@ -1315,10 +1308,8 @@
                                 <div style="color:#6b7280; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${song.artist} • ${song.album}</div>
                                 ${song.why ? `<div style="color:#7c3aed; font-size:0.78rem; margin-top:0.2rem; font-style:italic;">💜 ${song.why}${song.period ? ' · '+song.period : ''}</div>` : ''}
                             </div>
-                            <div style="display:flex; gap:0.4rem; flex-shrink:0; align-items:center;">
-                                ${song.preview_url ? `<button onclick="playSongPreview('${song.id}','${song.preview_url}')" id="play-btn-${song.id}" style="background:#1db954; color:white; border:none; padding:0.3rem 0.7rem; border-radius:6px; font-size:0.85rem; cursor:pointer;" title="Preview">▶</button>` : ''}
-                                ${song.spotify_url ? `<a href="${song.spotify_url}" target="_blank" style="background:#1db954; color:white; text-decoration:none; padding:0.3rem 0.6rem; border-radius:6px; font-size:0.75rem; white-space:nowrap;" title="Open in Spotify">🎵 Play</a>` : ''}
-                                <button onclick="openSongMemory('${song.id}')" style="background:#ede9fe; color:#7c3aed; border:none; padding:0.3rem 0.6rem; border-radius:6px; font-size:0.85rem; cursor:pointer;" title="Add Memory">✏️</button>
+                            <div style="display:flex; gap:0.4rem; flex-shrink:0;">
+                                <button onclick="openSongMemory('${song.id}')" style="background:#ede9fe; color:#7c3aed; border:none; padding:0.3rem 0.6rem; border-radius:6px; font-size:0.85rem;" title="Add Memory">✏️</button>
                                 <button onclick="removeSong('${song.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem;" title="Remove">🗑️</button>
                             </div>
                         </div>
@@ -2366,12 +2357,17 @@
             <!-- TAB: MEMORIES -->
             <div id="vtabcontent-memories" style="padding-top:1.5rem;">
                 <div style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; margin-bottom:1.5rem; overflow-x:auto;">
-                    <button onclick="switchSubTab('memories','music')" id="vstab-memories-music" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid #3b82f6; background:none; font-weight:700; font-size:0.85rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">🎵 Music</button>
-                    <button onclick="switchSubTab('memories','photos')" id="vstab-memories-photos" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">📸 Photos</button>
-                    <button onclick="switchSubTab('memories','stories')" id="vstab-memories-stories" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">✨ Stories</button>
-                    <button onclick="switchSubTab('memories','lifebook')" id="vstab-memories-lifebook" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">📖 Life Book</button>
+                    <button onclick="switchSubTab('memories','music')" id="vstab-memories-music" style="padding:0.5rem 1.1rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.88rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">🎵 Music</button>
+                    <button onclick="switchSubTab('memories','photos')" id="vstab-memories-photos" style="padding:0.5rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">📸 Photos</button>
+                    <button onclick="switchSubTab('memories','stories')" id="vstab-memories-stories" style="padding:0.5rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">✨ Stories</button>
+                    <button onclick="switchSubTab('memories','lifebook')" id="vstab-memories-lifebook" style="padding:0.5rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">📖 Life Book</button>
                 </div>
-                <div id="vstabcontent-memories-music"><div id="spotify-card">
+                <div id="vstabcontent-memories-music"><div id="spotify-card" style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #1db954; margin-bottom:1rem;">
+                    <div style="margin-bottom:1rem;">
+                        <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">🎵 Your Music Library</h4>
+                        <p style="color:#6b7280;">Search for your favorite songs and add them to your collection</p>
+                    </div>
+
                     <!-- Search Bar -->
                     <div style="margin-bottom:1rem;">
                         <input id="song-search" type="text" placeholder="🔍 Search for a song..." 
@@ -2654,11 +2650,11 @@
             <!-- TAB: ESSENTIALS -->
             <div id="vtabcontent-essentials" style="display:none; padding-top:1.5rem;">
                 <div style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; margin-bottom:1.5rem; overflow-x:auto;">
-                    <button onclick="switchSubTab('essentials','finance')" id="vstab-essentials-finance" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid #3b82f6; background:none; font-weight:700; font-size:0.85rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">💰 Financial</button>
-                    <button onclick="switchSubTab('essentials','access')" id="vstab-essentials-access" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">🔑 Access</button>
-                    <button onclick="switchSubTab('essentials','digital')" id="vstab-essentials-digital" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">💻 Digital</button>
-                    <button onclick="switchSubTab('essentials','docs')" id="vstab-essentials-docs" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">📄 Docs</button>
-                    <button onclick="switchSubTab('essentials','wishes')" id="vstab-essentials-wishes" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">🕊️ Wishes</button>
+                    <button onclick="switchSubTab('essentials','finance')" id="vstab-essentials-finance" style="padding:0.5rem 1.1rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.88rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">💰 Financial</button>
+                    <button onclick="switchSubTab('essentials','access')" id="vstab-essentials-access" style="padding:0.5rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">🔑 Access</button>
+                    <button onclick="switchSubTab('essentials','digital')" id="vstab-essentials-digital" style="padding:0.5rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">💻 Digital</button>
+                    <button onclick="switchSubTab('essentials','docs')" id="vstab-essentials-docs" style="padding:0.5rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">📄 Docs</button>
+                    <button onclick="switchSubTab('essentials','wishes')" id="vstab-essentials-wishes" style="padding:0.5rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">🕊️ Wishes</button>
                 </div>
                 <div id="vstabcontent-essentials-finance">
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;"><button onclick="showAddEssential('finance')" style="background:#f59e0b; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Entry</button></div>
@@ -2704,9 +2700,9 @@
             <!-- TAB: LEGACY -->
             <div id="vtabcontent-legacy" style="display:none; padding-top:1.5rem;">
                 <div style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; margin-bottom:1.5rem; overflow-x:auto;">
-                    <button onclick="switchSubTab('legacy','inheritors')" id="vstab-legacy-inheritors" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid #3b82f6; background:none; font-weight:700; font-size:0.85rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">👨‍👩‍👧‍👦 Inheritors</button>
-                    <button onclick="switchSubTab('legacy','secrets')" id="vstab-legacy-secrets" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">🔒 Secrets</button>
-                    <button onclick="switchSubTab('legacy','valuables')" id="vstab-legacy-valuables" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">💎 Valuables</button>
+                    <button onclick="switchSubTab('legacy','inheritors')" id="vstab-legacy-inheritors" style="padding:0.5rem 1.1rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.88rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">👨‍👩‍👧‍👦 Inheritors</button>
+                    <button onclick="switchSubTab('legacy','secrets')" id="vstab-legacy-secrets" style="padding:0.5rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">🔒 Secrets</button>
+                    <button onclick="switchSubTab('legacy','valuables')" id="vstab-legacy-valuables" style="padding:0.5rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">💎 Valuables</button>
                 </div>
                 <div id="vstabcontent-legacy-inheritors">
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
@@ -3845,31 +3841,25 @@
         function renderCategoryStrip() {
             const strip = document.getElementById('contacts-cat-strip')
             if (!strip) return
-            // Build category counts including uncategorised
-            const counts = { 'All': savedContacts.length, 'Uncategorised': 0 }
+            // Build category counts
+            const counts = { 'All': savedContacts.length }
             savedContacts.forEach(c => {
                 const cat = c.category || ''
-                if (!cat) {
-                    counts['Uncategorised']++
-                } else {
-                    if (!counts[cat]) counts[cat] = 0
-                    counts[cat]++
-                }
+                if (!counts[cat]) counts[cat] = 0
+                counts[cat]++
             })
             // All standard + any custom cats found in data
             const stdCats = ['Family','Friends','Business','Romantic','Disliked','Others']
             const customCats = [...new Set(savedContacts.map(c => c.category).filter(c => c && !stdCats.includes(c)))]
             const allCats = ['All', ...stdCats, ...customCats]
-            if (counts['Uncategorised'] > 0) allCats.push('Uncategorised')
             
             const activeCat = strip.dataset.active || 'All'
-            strip.innerHTML = allCats.filter(cat => cat === 'All' || (counts[cat] || 0) > 0).map(cat => {
-                const n = cat === 'All' ? savedContacts.length : (counts[cat] || 0)
+            strip.innerHTML = allCats.filter(cat => cat === 'All' || counts[cat]).map(cat => {
+                const n = counts[cat] || 0
                 const isActive = cat === activeCat
-                const emoji = cat === 'Uncategorised' ? '❓' : (categoryEmoji[cat] || '📋')
                 return `<button onclick="filterContactsByCategory('${cat}')" 
                     style="padding:0.3rem 0.75rem; border-radius:980px; border:1px solid ${isActive ? '#3b82f6' : '#e5e7eb'}; background:${isActive ? '#3b82f6' : 'white'}; color:${isActive ? 'white' : '#374151'}; font-size:0.8rem; cursor:pointer; white-space:nowrap; font-weight:${isActive ? '600' : '400'};">
-                    ${emoji} ${cat} (${n})
+                    ${categoryEmoji[cat] || '📋'} ${cat}${cat !== 'All' ? ' ('+n+')' : ' ('+savedContacts.length+')'}
                 </button>`
             }).join('')
         }
@@ -3883,10 +3873,7 @@
             } else {
                 const list = document.getElementById('contacts-list')
                 if (!list) return
-                const filtered = savedContacts.filter(c => {
-                    if (cat === 'Uncategorised') return !c.category || c.category === ''
-                    return (c.category || '') === cat
-                })
+                const filtered = savedContacts.filter(c => (c.category || '') === cat || (!c.category && cat === 'Others'))
                 const sorted = [...filtered].sort((a,b) => a.name.localeCompare(b.name))
                 if (sorted.length === 0) {
                     list.innerHTML = '<p style="color:#9ca3af; text-align:center; padding:1.5rem;">No contacts in this category.</p>'
@@ -3930,15 +3917,8 @@
                 contact.category = category
                 localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
                 syncVaultToSupabase('vault_contacts', savedContacts)
-                // Stay on whichever filter is currently active
-                const strip = document.getElementById('contacts-cat-strip')
-                const activeCat = strip ? strip.dataset.active : 'All'
+                renderContacts()
                 renderCategoryStrip()
-                if (!activeCat || activeCat === 'All') {
-                    renderContacts()
-                } else {
-                    filterContactsByCategory(activeCat)
-                }
                 showNotification('✅ Moved to ' + category)
             }
         }
@@ -4202,7 +4182,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.13</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.17</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; align-items:center; justify-content:center; padding:1rem;" onclick="closePhotoLightbox()">
