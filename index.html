@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>We Loved Life — and we won't let our family forget why!</title>
+    <title>We Love Life - Preserve Your Story, Music, Photos & Memories Forever</title>
     <style>
         * {
             margin: 0;
@@ -17,10 +17,6 @@
             color: #1f2937;
         }
 
-
-        /* Lightbox */
-        #photo-lightbox { display:none !important; }
-        #photo-lightbox.lb-open { display:flex !important; align-items:flex-start; justify-content:center; }
         /* Navigation */
         nav {
             background: rgba(251, 251, 253, 0.8);
@@ -557,9 +553,6 @@
             font-size: 1.2rem;
             color: #6b7280;
         }
-
-        #login-modal { display: none; }
-        #login-modal.active { display: block; }
 
         .vault-stats {
             display: grid;
@@ -1123,7 +1116,7 @@
                     <div style="display:flex; align-items:center; gap:0.75rem;">
                         <span id="spotify-tracks-arrow" style="color:#1db954; font-size:1rem;">▶</span>
                         <div>
-                            <h4 style="color:#1e3a8a; font-size:1.15rem; margin-bottom:0.1rem;">🎵 Your Music Library</h4>
+                            <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.2rem;">🎵 Your Music Library</h4>
                             <p style="color:#6b7280;">${tracks.length} songs preserved • ${captureDate}</p>
                         </div>
                     </div>
@@ -1242,19 +1235,18 @@
                 <div style="display:flex; align-items:center; padding:1rem; border-bottom:1px solid #f3f4f6; gap:1rem; cursor:pointer; transition:background 0.2s;"
                      onmouseover="this.style.background='#f9fafb'"
                      onmouseout="this.style.background='white'"
-                     onclick="addSongToLibrary('${track.trackId}', '${(track.trackName || '').replace(/'/g, "\\'")}', '${(track.artistName || '').replace(/'/g, "\\'")}', '${(track.collectionName || '').replace(/'/g, "\\'")}', '${track.artworkUrl100 || ""}', '${track.trackViewUrl || ""}', '${track.previewUrl || ""}')">
+                     onclick="addSongToLibrary('${track.trackId}', '${(track.trackName || '').replace(/'/g, "\\'")}', '${(track.artistName || '').replace(/'/g, "\\'")}', '${(track.collectionName || '').replace(/'/g, "\\'")}', '${track.artworkUrl100 || ""}')">
                     <img src="${track.artworkUrl60 || track.artworkUrl100}" style="width:50px; height:50px; border-radius:6px;">
                     <div style="flex:1; min-width:0;">
                         <div style="font-weight:600; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${track.trackName}</div>
                         <div style="color:#6b7280; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${track.artistName} • ${track.collectionName}</div>
                     </div>
-                    ${track.previewUrl ? `<button onclick="event.stopPropagation(); playPreview('${track.previewUrl}', this)" style="background:#1db954; color:white; border:none; padding:0.4rem 0.7rem; border-radius:6px; font-size:0.8rem; flex-shrink:0;">▶ Preview</button>` : ''}
-                    <button style="background:#3730a3; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; font-size:0.85rem; font-weight:600; flex-shrink:0;">+ Add</button>
+                    <button style="background:#1db954; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; font-size:0.85rem; font-weight:600;">+ Add</button>
                 </div>
             `).join('')
         }
 
-        function addSongToLibrary(id, name, artist, album, image, trackUrl, previewUrl) {
+        function addSongToLibrary(id, name, artist, album, image) {
             if (savedSongs.find(s => s.id === id)) {
                 showNotification('Song already in your library!')
                 return
@@ -1266,11 +1258,6 @@
                 artist: artist,
                 album: album,
                 image: image,
-                trackUrl: trackUrl || '',
-                previewUrl: previewUrl || '',
-                why: '',
-                period: '',
-                meaning: '',
                 captured_at: new Date().toISOString()
             }
 
@@ -1283,10 +1270,7 @@
             
             updateSavedSongsDisplay()
             refreshDashboardStats()
-            showNotification(`🎵 "${name}" added! Add your memory below.`)
-
-            // Open the memory form for the newly added song
-            setTimeout(() => openSongMemory(id), 300)
+            showNotification(`🎵 "${name}" added to your library!`)
 
             if (user && user.email) {
                 supabaseClient.from('legacy_content').upsert({
@@ -1295,50 +1279,6 @@
                     data: { tracks: savedSongs, total_count: savedSongs.length, captured_at: new Date().toISOString() },
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'user_email,content_type' })
-            }
-        }
-
-        // Audio preview player
-        let currentAudio = null
-        function playPreview(url, btn) {
-            if (currentAudio) {
-                currentAudio.pause()
-                document.querySelectorAll('.preview-btn').forEach(b => b.textContent = '▶ Preview')
-                if (currentAudio.src === url) { currentAudio = null; return }
-            }
-            currentAudio = new Audio(url)
-            currentAudio.play()
-            if (btn) { btn.classList.add('preview-btn'); btn.textContent = '⏸ Stop' }
-            currentAudio.onended = () => {
-                if (btn) btn.textContent = '▶ Preview'
-                currentAudio = null
-            }
-        }
-
-        function openSongMemory(id) {
-            // Close any open memory forms first
-            document.querySelectorAll('.song-memory-form').forEach(f => f.style.display = 'none')
-            const form = document.getElementById('song-memory-' + id)
-            if (form) {
-                form.style.display = 'block'
-                form.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-            }
-        }
-
-        function saveSongMemory(id) {
-            const why = document.getElementById('song-why-' + id)?.value.trim() || ''
-            const period = document.getElementById('song-period-' + id)?.value.trim() || ''
-            const meaning = document.getElementById('song-meaning-' + id)?.value.trim() || ''
-            const song = savedSongs.find(s => s.id == id)
-            if (song) {
-                song.why = why
-                song.period = period
-                song.meaning = meaning
-                localStorage.setItem('spotify_music_data', JSON.stringify(savedSongs))
-                syncVaultToSupabase('spotify_music_data', savedSongs)
-                document.getElementById('song-memory-' + id).style.display = 'none'
-                updateSavedSongsDisplay()
-                showNotification('💾 Memory saved for "' + song.name + '"')
             }
         }
 
@@ -1355,62 +1295,18 @@
 
             header.style.display = 'block'
             count.textContent = `${savedSongs.length} song${savedSongs.length !== 1 ? 's' : ''} saved`
-            const sch = document.getElementById('songs-count-header')
-            if (sch) sch.textContent = `${savedSongs.length} song${savedSongs.length !== 1 ? 's' : ''}`
 
             list.innerHTML = `
-                <div style="background:white; border-radius:10px; border:1px solid #e5e7eb; overflow:hidden;">
+                <div style="background:white; border-radius:10px; border:1px solid #e5e7eb; max-height:500px; overflow-y:auto;">
                     ${savedSongs.map((song, index) => `
-                        <div style="border-bottom:1px solid #f3f4f6;">
-                            <div style="display:flex; align-items:center; padding:1rem; gap:1rem;">
-                                <div style="color:#9ca3af; font-size:0.9rem; width:30px; text-align:right; flex-shrink:0;">${index + 1}</div>
-                                <img src="${song.image}" style="width:50px; height:50px; border-radius:6px; flex-shrink:0;" onerror="this.style.display='none'">
-                                <div style="flex:1; min-width:0;">
-                                    <div style="font-weight:600; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${song.name}</div>
-                                    <div style="color:#6b7280; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${song.artist} • ${song.album}</div>
-                                    ${song.period ? `<div style="color:#8b5cf6; font-size:0.8rem; margin-top:0.2rem;">📅 ${song.period}</div>` : ''}
-                                    ${song.why ? `<div style="color:#059669; font-size:0.8rem; margin-top:0.2rem; font-style:italic;">💬 "${song.why}"</div>` : ''}
-                                    ${song.meaning ? `<div style="color:#0ea5e9; font-size:0.8rem; margin-top:0.2rem;">❤️ ${song.meaning}</div>` : ''}
-                                    ${!song.why && !song.period && !song.meaning ? `<div style="color:#d1d5db; font-size:0.75rem; margin-top:0.2rem; font-style:italic;">No memory added yet — click ✏️ to add one</div>` : ''}
-                                </div>
-                                <div style="display:flex; gap:0.4rem; flex-shrink:0; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-                                    <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(song.artist + ' ' + song.name)}" target="_blank" title="Find on YouTube"
-                                        style="background:#ff0000; color:white; padding:0.35rem 0.6rem; border-radius:6px; font-size:0.8rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.25rem;">
-                                        ▶ YouTube
-                                    </a>
-                                    <a href="https://www.google.com/search?q=${encodeURIComponent(song.artist + ' ' + song.name + ' song')}" target="_blank" title="Google this song"
-                                        style="background:#4285F4; color:white; padding:0.35rem 0.6rem; border-radius:6px; font-size:0.8rem; text-decoration:none;">
-                                        🔍
-                                    </a>
-                                    <button onclick="openSongMemory('${song.id}')" style="background:#ede9fe; border:none; color:#7c3aed; cursor:pointer; padding:0.35rem 0.6rem; border-radius:6px; font-size:0.85rem;" title="Add memory">✏️</button>
-                                    <button onclick="removeSong('${song.id}')" style="background:#fee2e2; border:none; color:#ef4444; cursor:pointer; padding:0.35rem 0.6rem; border-radius:6px; font-size:0.85rem;" title="Remove">🗑️</button>
-                                </div>
+                        <div style="display:flex; align-items:center; padding:1rem; border-bottom:1px solid #f3f4f6; gap:1rem;">
+                            <div style="color:#9ca3af; font-size:0.9rem; width:30px; text-align:right; flex-shrink:0;">${index + 1}</div>
+                            <img src="${song.image}" style="width:50px; height:50px; border-radius:6px; flex-shrink:0;" onerror="this.style.display='none'">
+                            <div style="flex:1; min-width:0;">
+                                <div style="font-weight:600; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${song.name}</div>
+                                <div style="color:#6b7280; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${song.artist} • ${song.album}</div>
                             </div>
-                            <!-- Memory Form -->
-                            <div id="song-memory-${song.id}" class="song-memory-form" style="display:none; background:#f9f7ff; border-top:1px solid #ede9fe; padding:1rem; gap:0.75rem; flex-direction:column;">
-                                <p style="color:#7c3aed; font-weight:600; font-size:0.9rem; margin-bottom:0.5rem;">✏️ Add your memory for "${song.name}"</p>
-                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
-                                    <div>
-                                        <label style="display:block; font-size:0.8rem; color:#6b7280; margin-bottom:0.25rem;">Why did you love it?</label>
-                                        <input id="song-why-${song.id}" value="${song.why || ''}" placeholder="e.g. It was our wedding song..." 
-                                            style="width:100%; padding:0.5rem; border:1px solid #ddd6fe; border-radius:6px; font-size:0.9rem;">
-                                    </div>
-                                    <div>
-                                        <label style="display:block; font-size:0.8rem; color:#6b7280; margin-bottom:0.25rem;">What period of your life?</label>
-                                        <input id="song-period-${song.id}" value="${song.period || ''}" placeholder="e.g. University, 1990s, Summer of '85..." 
-                                            style="width:100%; padding:0.5rem; border:1px solid #ddd6fe; border-radius:6px; font-size:0.9rem;">
-                                    </div>
-                                </div>
-                                <div style="margin-bottom:0.75rem;">
-                                    <label style="display:block; font-size:0.8rem; color:#6b7280; margin-bottom:0.25rem;">Special meaning or memory</label>
-                                    <textarea id="song-meaning-${song.id}" placeholder="Tell the story behind this song..." 
-                                        style="width:100%; padding:0.5rem; border:1px solid #ddd6fe; border-radius:6px; font-size:0.9rem; height:70px; resize:vertical; font-family:inherit;">${song.meaning || ''}</textarea>
-                                </div>
-                                <div style="display:flex; gap:0.5rem;">
-                                    <button onclick="saveSongMemory('${song.id}')" style="background:#7c3aed; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; font-size:0.9rem; cursor:pointer; font-weight:600;">Save Memory</button>
-                                    <button onclick="document.getElementById('song-memory-${song.id}').style.display='none'" style="background:#f3f4f6; color:#6b7280; border:none; padding:0.5rem 1rem; border-radius:6px; font-size:0.9rem; cursor:pointer;">Cancel</button>
-                                </div>
-                            </div>
+                            <button onclick="removeSong('${song.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem;" title="Remove">🗑️</button>
                         </div>
                     `).join('')}
                 </div>
@@ -1652,40 +1548,16 @@
                         .from('vault-photos')
                         .getPublicUrl(userEmail + '/' + file.name)
 
-                    const captions = JSON.parse(localStorage.getItem('vault_photo_captions') || '{}')
-                    const caption = captions[file.name] || {}
-                    const hasCaption = !!(caption.date || caption.who || caption.why)
-                    uploadedPhotos.push({ name: file.name, url: urlData.publicUrl, caption })
+                    uploadedPhotos.push({ name: file.name, url: urlData.publicUrl })
 
                     const div = document.createElement('div')
-                    div.style = 'aspect-ratio:1; border-radius:8px; overflow:hidden; position:relative; cursor:pointer; background:#f3f4f6;'
-                    div.dataset.url = urlData.publicUrl
-                    div.dataset.name = file.name
-                    div.dataset.caption = JSON.stringify(caption)
-                    div.addEventListener('click', function(e) {
-                        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return
-                        const cap = JSON.parse(this.dataset.caption || '{}')
-                        openPhotoLightbox(this.dataset.url, this.dataset.name, cap)
-                    })
+                    div.style = 'aspect-ratio:1; border-radius:8px; overflow:hidden; position:relative; cursor:pointer;'
                     div.innerHTML = `
-                        <img src="${urlData.publicUrl}" style="width:100%; height:100%; object-fit:cover; display:block; pointer-events:none;"
+                        <img src="${urlData.publicUrl}" style="width:100%; height:100%; object-fit:cover;" 
                              onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📸</text></svg>'" />
-                        ${hasCaption ? `<div style="position:absolute; top:5px; right:5px; font-size:1.1rem; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5)); pointer-events:none;">❤️</div>` : ''}
-                        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.55); opacity:0; transition:opacity 0.2s; display:flex; flex-direction:column; justify-content:flex-end; padding:0.5rem; pointer-events:none;"
+                        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.4); opacity:0; transition:opacity 0.2s; display:flex; align-items:center; justify-content:center;"
                              onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">
-                            ${caption.date ? `<div style="color:#fbbf24; font-size:0.7rem; margin-bottom:0.15rem; pointer-events:none;">📅 ${caption.date}</div>` : ''}
-                            ${caption.who ? `<div style="color:white; font-size:0.72rem; font-weight:600; margin-bottom:0.15rem; pointer-events:none;">👥 ${caption.who}</div>` : ''}
-                            ${caption.why ? `<div style="color:#d1d5db; font-size:0.68rem; font-style:italic; margin-bottom:0.3rem; pointer-events:none;">"${caption.why}"</div>` : ''}
-                            <div style="display:flex; gap:0.3rem; pointer-events:auto;">
-                                <button onclick="event.stopPropagation(); openPhotoCaptionModal('${file.name}', '${urlData.publicUrl}')"
-                                    style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:white; padding:0.2rem 0.4rem; border-radius:4px; font-size:0.68rem; cursor:pointer; flex:1;">
-                                    ✏️ ${hasCaption ? 'Edit' : 'Caption'}
-                                </button>
-                                <button onclick="event.stopPropagation(); downloadCurrentPhotoByUrl('${urlData.publicUrl}','${file.name}')"
-                                    style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:white; padding:0.2rem 0.4rem; border-radius:4px; font-size:0.68rem; cursor:pointer;">
-                                    ⬇️
-                                </button>
-                            </div>
+                            <span style="color:white; font-size:0.75rem; text-align:center; padding:0.25rem;">${file.name.substring(0,20)}</span>
                         </div>
                     `
                     grid.appendChild(div)
@@ -1696,7 +1568,12 @@
                 const photosHeader = document.getElementById('photos-count-header')
                 if (photosHeader) photosHeader.textContent = countText
 
-                // Section stays closed - user opens it
+                if (data.length > 0) {
+                    const pb = document.getElementById('photos-body')
+                    const pa = document.getElementById('photos-arrow')
+                    if (pb) pb.style.display = 'block'
+                    if (pa) pa.textContent = '▼'
+                }
 
                 console.log('Loaded', data.length, 'photos')
 
@@ -1707,8 +1584,6 @@
 
         // Contacts handling
         let savedContacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]')
-        let currentContactFilter = ''      // current search term
-        let currentContactCategory = 'All' // current active category tab
 
         function showAddContactForm() {
             const contactsBody = document.getElementById('contacts-body')
@@ -1716,38 +1591,15 @@
             if (contactsBody.style.display === 'none') {
                 contactsBody.style.display = 'block'
                 if (contactsArrow) contactsArrow.textContent = '▼'
-                updateFixedCollapseButtons()
             }
             
             const form = document.getElementById('add-contact-form')
             if (form.style.display === 'none') {
                 form.style.display = 'block'
-                // Inject existing custom categories into pill row
-                injectCustomCatPills()
-                setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+                setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100)
             } else {
                 form.style.display = 'none'
             }
-        }
-
-        function injectCustomCatPills() {
-            var stdCats = ['Family','Friends','Business','Romantic','Disliked','Others']
-            var existingCustomCats = [...new Set(savedContacts.map(x => x.category).filter(x => x && !stdCats.includes(x)))]
-            const row = document.getElementById('cat-btn-row')
-            if (!row) return
-            // Remove any previously injected custom pills
-            row.querySelectorAll('[data-custom]').forEach(b => b.remove())
-            // Add a pill for each existing custom category (before the Custom... button)
-            const customBtn = document.getElementById('btn-custom-cat')
-            existingCustomCats.forEach(cat => {
-                const btn = document.createElement('button')
-                btn.type = 'button'
-                btn.setAttribute('data-custom', cat)
-                btn.textContent = '📋 ' + cat
-                btn.style.cssText = 'padding:0.4rem 0.9rem;border:2px solid #c4b5fd;border-radius:50px;font-size:0.82rem;background:#faf5ff;cursor:pointer;color:#7c3aed;'
-                btn.onclick = function() { selCat(this, cat) }
-                row.insertBefore(btn, customBtn)
-            })
         }
 
         function showImportInstructions() {
@@ -1756,7 +1608,6 @@
             if (contactsBody.style.display === 'none') {
                 contactsBody.style.display = 'block'
                 if (contactsArrow) contactsArrow.textContent = '▼'
-                updateFixedCollapseButtons()
             }
             
             const instructions = document.getElementById('export-instructions')
@@ -1772,96 +1623,15 @@
             }, 500)
         }
 
-        // ---- Category selector ----
-        function selCat(btn, cat) {
-            // deselect all
-            var btns = document.querySelectorAll('[data-cat]')
-            for (var i=0;i<btns.length;i++) {
-                btns[i].style.background='white'
-                btns[i].style.borderColor='#e5e7eb'
-                btns[i].style.color='#374151'
-                btns[i].style.fontWeight='normal'
-            }
-            // reset custom
-            closeCustomCat()
-            // select this
-            btn.style.background='#7c3aed'
-            btn.style.borderColor='#7c3aed'
-            btn.style.color='white'
-            btn.style.fontWeight='bold'
-            document.getElementById('contact-category').value = cat
-        }
-
-        function toggleCustomCat() {
-            var box = document.getElementById('custom-cat-box')
-            if (!box) { alert('custom-cat-box not found'); return }
-            // Force show — don't toggle, just always open it
-            box.style.cssText = 'display:block !important; margin-top:0.6rem; padding:0.75rem; background:#f5f3ff; border:2px solid #7c3aed; border-radius:8px; position:relative; z-index:100;'
-            var inp = document.getElementById('custom-cat-input')
-            if (inp) {
-                inp.style.cssText = 'flex:1; padding:0.5rem 0.7rem; border:2px solid #7c3aed; border-radius:6px; font-size:0.95rem; width:100%; box-sizing:border-box; margin-bottom:0.4rem;'
-                setTimeout(function(){ inp.focus() }, 50)
-            }
-        }
-
-        function applyCustomCat() {
-            var inp = document.getElementById('custom-cat-input')
-            if (!inp) return
-            var val = inp.value.trim()
-            if (!val) { showNotification('Please type a category name'); return }
-            document.getElementById('contact-category').value = val
-            document.getElementById('custom-cat-box').style.display = 'none'
-            var btn = document.getElementById('btn-custom-cat')
-            if (btn) {
-                btn.textContent = '✓ ' + val
-                btn.style.background='#7c3aed'
-                btn.style.borderColor='#7c3aed'
-                btn.style.color='white'
-                btn.style.fontWeight='bold'
-                btn.style.border='2px solid #7c3aed'
-            }
-        }
-
-        function closeCustomCat() {
-            var box = document.getElementById('custom-cat-box')
-            if (box) box.style.display = 'none'
-            var inp = document.getElementById('custom-cat-input')
-            if (inp) inp.value = ''
-            var btn = document.getElementById('btn-custom-cat')
-            if (btn) {
-                btn.textContent = '✏️ Custom...'
-                btn.style.background='#faf5ff'
-                btn.style.borderColor='#8b5cf6'
-                btn.style.color='#7c3aed'
-                btn.style.fontWeight='normal'
-                btn.style.border='2px dashed #8b5cf6'
-            }
-        }
-
-        function resetCategoryButtons() {
-            var btns = document.querySelectorAll('[data-cat]')
-            for (var i=0;i<btns.length;i++) {
-                btns[i].style.background='white'
-                btns[i].style.borderColor='#e5e7eb'
-                btns[i].style.color='#374151'
-                btns[i].style.fontWeight='normal'
-            }
-            closeCustomCat()
-            document.getElementById('contact-category').value = ''
-        }
-
-                function saveContact() {
+        function saveContact() {
             const name = document.getElementById('contact-name').value.trim()
             if (!name) { showNotification('Please enter a name!'); return }
-
-            const category = document.getElementById('contact-category').value
 
             const contact = {
                 id: Date.now(),
                 name: name,
                 phone: document.getElementById('contact-phone').value.trim(),
                 email: document.getElementById('contact-email').value.trim(),
-                category: category,
                 relation: document.getElementById('contact-relation').value.trim(),
                 note: document.getElementById('contact-note').value.trim(),
                 addedAt: new Date().toISOString()
@@ -1877,37 +1647,17 @@
             document.getElementById('contact-name').value = ''
             document.getElementById('contact-phone').value = ''
             document.getElementById('contact-email').value = ''
-            resetCategoryButtons()
             document.getElementById('contact-relation').value = ''
             document.getElementById('contact-note').value = ''
             document.getElementById('add-contact-form').style.display = 'none'
         }
 
         function deleteContact(id) {
-            const contact = savedContacts.find(c => c.id == id)
-            if (!contact) return
-            const choice = confirm(
-                'What would you like to do with ' + contact.name + '?\n\n' +
-                'Click OK to move them to Uncategorised\n' +
-                'Click Cancel to permanently delete them'
-            )
-            if (choice) {
-                // Move to uncategorised
-                contact.category = ''
-                localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
-                syncVaultToSupabase('vault_contacts', savedContacts)
-                renderContacts(document.getElementById('contact-search')?.value || '')
-                showNotification('✅ ' + contact.name + ' moved to Uncategorised')
-            } else {
-                // Permanent delete - confirm again
-                if (confirm('Are you sure you want to permanently delete ' + contact.name + '? This cannot be undone.')) {
-                    savedContacts = savedContacts.filter(c => c.id != id)
-                    localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
-                    syncVaultToSupabase('vault_contacts', savedContacts)
-                    renderContacts(document.getElementById('contact-search')?.value || '')
-                    showNotification('🗑️ ' + contact.name + ' deleted')
-                }
-            }
+            savedContacts = savedContacts.filter(c => c.id !== id)
+            localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
+            syncVaultToSupabase('vault_contacts', savedContacts)
+            renderContacts()
+            showNotification('Contact removed')
         }
 
         function handleContactsUpload(input) {
@@ -1969,10 +1719,7 @@
             return contacts
         }
 
-        function renderContacts(filter = '', activeCategory = 'All') {
-            // Remember current state so re-renders after assign stay in same view
-            currentContactFilter = filter
-            currentContactCategory = activeCategory
+        function renderContacts(filter = '') {
             const list = document.getElementById('contacts-list')
             const count = document.getElementById('contacts-count')
             const searchBar = document.getElementById('contacts-search-bar')
@@ -1988,37 +1735,24 @@
             if (searchBar) searchBar.style.display = 'block'
 
             const term = filter.toLowerCase()
-            const categoryEmoji = { 'Family':'👨‍👩‍👧‍👦', 'Friends':'👫', 'Business':'💼', 'Romantic':'💕', 'Disliked':'😬', 'Others':'⭐', '':'📋', 'All':'👥' }
-            const categoryOrder = ['Family', 'Friends', 'Business', 'Romantic', 'Disliked', 'Others', '']
-            const mvStdCats = ['Family','Friends','Business','Romantic','Disliked','Others']
-            // Collect all custom categories currently in use
-            const moveCustCats = [...new Set(savedContacts.map(x => x.category).filter(x => x && !mvStdCats.includes(x)))]
-            const allMoveCats = [...mvStdCats, ...moveCustCats]
+            let filtered = savedContacts
 
-            // Count per category for tabs
-            const catCounts = {}
-            savedContacts.forEach(c => {
-                const cat = c.category || ''
-                catCounts[cat] = (catCounts[cat] || 0) + 1
-            })
-
-            // Filter by search term
-            let filtered = savedContacts.filter(c =>
-                !term ||
-                c.name.toLowerCase().includes(term) ||
-                (c.category && c.category.toLowerCase().includes(term)) ||
-                (c.relation && c.relation.toLowerCase().includes(term)) ||
-                (c.phone && c.phone.includes(term)) ||
-                (c.email && c.email.toLowerCase().includes(term)) ||
-                (c.note && c.note.toLowerCase().includes(term))
-            )
-
-            // Filter by active category tab
-            if (activeCategory !== 'All') {
-                filtered = filtered.filter(c => (c.category || '') === activeCategory)
+            if (term) {
+                filtered = savedContacts.filter(c =>
+                    c.name.toLowerCase().includes(term) ||
+                    (c.relation && c.relation.toLowerCase().includes(term)) ||
+                    (c.phone && c.phone.includes(term)) ||
+                    (c.email && c.email.toLowerCase().includes(term)) ||
+                    (c.note && c.note.toLowerCase().includes(term))
+                )
             }
 
-            filtered.sort((a, b) => a.name.localeCompare(b.name))
+            const sortBy = document.getElementById('contacts-sort') ? document.getElementById('contacts-sort').value : 'name'
+            if (sortBy === 'date') {
+                filtered.sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt))
+            } else {
+                filtered.sort((a, b) => a.name.localeCompare(b.name))
+            }
 
             const contactCountText = savedContacts.length + ' contact' + (savedContacts.length !== 1 ? 's' : '')
             count.textContent = contactCountText + ' preserved' + (filter ? ' (' + filtered.length + ' shown)' : '')
@@ -2032,132 +1766,31 @@
                 if (ca) ca.textContent = '▼'
             }
 
-            // Build category tabs - includes custom categories
-            const tabStdCats = ['Family', 'Friends', 'Business', 'Romantic', 'Disliked', 'Others']
-            const customCats = Object.keys(catCounts).filter(c => c && !tabStdCats.includes(c))
-            const tabList = ['All', ...tabStdCats, ...customCats]
-            let tabsHtml = '<div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:1rem;">'
-            let stripHtml = ''
-            tabList.forEach(cat => {
-                const n = cat === 'All' ? savedContacts.length : (catCounts[cat] || 0)
-                if (n === 0 && cat !== 'All') return
-                const isActive = activeCategory === cat
-                const tabBtn = `<button onclick="openAndFilter('${cat}')" style="padding:0.3rem 0.75rem; border-radius:980px; font-size:0.8rem; font-weight:600; cursor:pointer; border:2px solid ${isActive ? '#3730a3' : '#e5e7eb'}; background:${isActive ? '#3730a3' : 'white'}; color:${isActive ? 'white' : '#6b7280'};">${categoryEmoji[cat] || '📋'} ${cat} (${n})</button>`
-                tabsHtml += tabBtn
-                stripHtml += tabBtn
-            })
-            const uncatCount = catCounts[''] || 0
-            if (uncatCount > 0) {
-                const isActive = activeCategory === ''
-                const uncatBtn = `<button onclick="openAndFilter('')" style="padding:0.3rem 0.75rem; border-radius:980px; font-size:0.8rem; font-weight:600; cursor:pointer; border:2px solid ${isActive ? '#3730a3' : '#e5e7eb'}; background:${isActive ? '#3730a3' : 'white'}; color:${isActive ? 'white' : '#6b7280'};">📋 Uncategorised (${uncatCount})</button>`
-                tabsHtml += uncatBtn
-                stripHtml += uncatBtn
-            }
-            tabsHtml += '</div>'
-
             if (filtered.length === 0) {
-                list.innerHTML = tabsHtml + '<p style="color:#9ca3af; text-align:center; padding:1rem;">No contacts in this category</p>'
+                list.innerHTML = '<p style="color:#9ca3af; text-align:center; padding:1rem;">No contacts match your search</p>'
                 return
             }
 
-            const contactCard = c => `
-                <div style="background:white; border-radius:8px; padding:1rem; display:flex; align-items:flex-start; gap:1rem; border:1px solid #e5e7eb;">
+            list.innerHTML = filtered.map(c => `
+                <div style="background:white; border-radius:8px; padding:1rem; display:flex; align-items:center; gap:1rem; border:1px solid #e5e7eb;">
                     <div style="width:45px; height:45px; border-radius:50%; background:#8b5cf6; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:1.1rem; flex-shrink:0;">
                         ${c.name.charAt(0).toUpperCase()}
                     </div>
                     <div style="flex:1; min-width:0;">
                         <div style="font-weight:600; color:#1e3a8a;">${c.name}</div>
-                        <div style="color:#6b7280; font-size:0.85rem; margin-top:0.2rem; display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
-                            ${c.relation ? `<span style="background:#ede9fe; color:#6d28d9; padding:0.1rem 0.5rem; border-radius:4px; font-size:0.8rem;">${c.relation}</span>` : ''}
+                        <div style="color:#6b7280; font-size:0.85rem; margin-top:0.2rem;">
+                            ${c.relation ? '<span style="background:#ede9fe; color:#6d28d9; padding:0.1rem 0.5rem; border-radius:4px; margin-right:0.5rem; font-size:0.8rem;">' + c.relation + '</span>' : ''}
                             ${c.phone ? '📞 ' + c.phone : ''} ${c.email ? '• ✉️ ' + c.email : ''}
                         </div>
-                        ${c.note ? `<div style="color:#6b7280; font-size:0.85rem; margin-top:0.4rem; font-style:italic; line-height:1.4;">"${c.note}"</div>` : ''}
-                        <div style="margin-top:0.5rem; display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
-                            <span style="color:#9ca3af; font-size:0.78rem;">${c.category ? '📂 ' + c.category + ' — move to:' : 'Move to:'}</span>
-                            ${allMoveCats.filter(cat => cat !== c.category).map(cat =>
-                                `<button onclick="assignContactCategory(${c.id},'${cat}')" style="padding:0.15rem 0.5rem; border:1px solid ${mvStdCats.includes(cat) ? '#e5e7eb' : '#c4b5fd'}; border-radius:4px; font-size:0.75rem; background:${mvStdCats.includes(cat) ? '#f9fafb' : '#faf5ff'}; cursor:pointer; color:${mvStdCats.includes(cat) ? '#374151' : '#7c3aed'};">${categoryEmoji[cat] || '📋'} ${cat}</button>`
-                            ).join('')}
-                            <button onclick="promptCustomCategory(${c.id})" style="padding:0.15rem 0.5rem; border:1px dashed #8b5cf6; border-radius:4px; font-size:0.75rem; background:#faf5ff; cursor:pointer; color:#7c3aed;">✏️ New</button>
-                        </div>
-                        <div style="color:#d1d5db; font-size:0.75rem; margin-top:0.3rem;">Added ${new Date(c.addedAt).toLocaleDateString()}</div>
+                        ${c.note ? '<div style="color:#9ca3af; font-size:0.8rem; margin-top:0.3rem; font-style:italic;">' + c.note + '</div>' : ''}
+                        <div style="color:#d1d5db; font-size:0.75rem; margin-top:0.2rem;">Added ${new Date(c.addedAt).toLocaleDateString()}</div>
                     </div>
-                    <button onclick="deleteContact(${c.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; flex-shrink:0;" title="Delete">🗑️</button>
+                    <button onclick="deleteContact(${c.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem; flex-shrink:0;" title="Delete">🗑️</button>
                 </div>
-            `
-
-            // Inject into always-visible header strip
-            const catStrip = document.getElementById('contacts-cat-strip')
-            if (catStrip) catStrip.innerHTML = stripHtml
-            // Update contacts stat
-            const cstat = document.getElementById('contacts-stat')
-            if (cstat) cstat.textContent = savedContacts.length
-
-            let html = tabsHtml
-            if (activeCategory === 'All') {
-                const groups = {}
-                filtered.forEach(c => {
-                    const cat = c.category || ''
-                    if (!groups[cat]) groups[cat] = []
-                    groups[cat].push(c)
-                })
-                categoryOrder.forEach(cat => {
-                    if (!groups[cat] || groups[cat].length === 0) return
-                    const label = cat || 'Uncategorised'
-                    const emoji = categoryEmoji[cat] || '📋'
-                    html += `<div style="margin-bottom:1.5rem;">
-                        <h4 style="color:#4b5563; font-size:0.95rem; font-weight:700; margin-bottom:0.75rem; padding-bottom:0.4rem; border-bottom:2px solid #ede9fe;">
-                            ${emoji} ${label} <span style="color:#9ca3af; font-weight:400; font-size:0.85rem;">(${groups[cat].length})</span>
-                        </h4>
-                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
-                            ${groups[cat].map(contactCard).join('')}
-                        </div>
-                    </div>`
-                })
-            } else {
-                html += `<div style="display:flex; flex-direction:column; gap:0.5rem;">${filtered.map(contactCard).join('')}</div>`
-            }
-
-            list.innerHTML = html
+            `).join('')
         }
 
-        function promptCustomCategory(id) {
-            var val = prompt('Enter a custom category name:')
-            if (val && val.trim()) {
-                assignContactCategory(id, val.trim())
-            }
-        }
-
-        function openAndFilter(cat) {
-            // Open contacts section if closed
-            var cb = document.getElementById('contacts-body')
-            var ca = document.getElementById('contacts-arrow')
-            if (cb && cb.style.display !== 'block') {
-                cb.style.display = 'block'
-                if (ca) ca.textContent = '▼'
-                updateFixedCollapseButtons()
-            }
-            // Filter to this category and remember it
-            var searchVal = document.getElementById('contact-search') ? document.getElementById('contact-search').value : ''
-            currentContactCategory = cat
-            currentContactFilter = searchVal
-            renderContacts(searchVal, cat)
-            // Scroll contacts into view
-            if (cb) setTimeout(function(){ cb.scrollIntoView({behavior:'smooth', block:'start'}) }, 100)
-        }
-
-        function assignContactCategory(id, category) {
-            const contact = savedContacts.find(c => c.id == id)
-            if (contact) {
-                contact.category = category
-                localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
-                syncVaultToSupabase('vault_contacts', savedContacts)
-                // Stay in the same filtered view — don't jump to All
-                renderContacts(currentContactFilter, currentContactCategory)
-                showNotification('✅ Moved to ' + category)
-            }
-        }
-
-                function searchContacts(term) {
+        function searchContacts(term) {
             renderContacts(term)
         }
 
@@ -2173,165 +1806,25 @@
             if (t) {
                 const photosBody = document.getElementById('photos-body')
                 const contactsBody = document.getElementById('contacts-body')
-                // Sections stay closed - user opens them
+                if (photosBody) photosBody.style.display = 'block'
+                if (contactsBody) contactsBody.style.display = 'block'
 
                 const contactSearch = document.getElementById('contact-search')
                 if (contactSearch) contactSearch.value = term
             }
         }
 
-        // ===== VAULT TAB SWITCHING =====
-        var currentVaultTab = 'memories'
-        var currentSubTabs = { memories: 'music', essentials: 'finance', legacy: 'secrets' }
-
-        function switchVaultTab(tab) {
-            currentVaultTab = tab
-            var tabs = ['memories','contacts','essentials','legacy']
-            tabs.forEach(function(t) {
-                var content = document.getElementById('vtabcontent-' + t)
-                var btn = document.getElementById('vtab-' + t)
-                if (content) content.style.display = t === tab ? 'block' : 'none'
-                if (btn) {
-                    btn.style.borderBottomColor = t === tab ? '#3b82f6' : 'transparent'
-                    btn.style.color = t === tab ? '#1e3a8a' : '#6b7280'
-                    btn.style.fontWeight = t === tab ? '700' : '600'
-                }
-            })
-            window.scrollTo({top: 0, behavior: 'smooth'})
-        }
-
-        function switchSubTab(parent, sub) {
-            currentSubTabs[parent] = sub
-            // Find all sub-tab content divs for this parent
-            var parentEl = document.getElementById('vtabcontent-' + parent)
-            if (!parentEl) return
-            parentEl.querySelectorAll('[id^="vstabcontent-' + parent + '-"]').forEach(function(el) {
-                el.style.display = el.id === 'vstabcontent-' + parent + '-' + sub ? 'block' : 'none'
-            })
-            // Update sub-tab button styles
-            parentEl.querySelectorAll('[id^="vstab-' + parent + '-"]').forEach(function(btn) {
-                var isActive = btn.id === 'vstab-' + parent + '-' + sub
-                btn.style.borderBottomColor = isActive ? '#3b82f6' : 'transparent'
-                btn.style.color = isActive ? '#1e3a8a' : '#6b7280'
-                btn.style.fontWeight = isActive ? '700' : '500'
-            })
-        }
-
-        // ===== ESSENTIALS =====
-        var savedEssentials = JSON.parse(localStorage.getItem('vault_essentials') || '[]')
-
-        function showAddEssential(category) {
-            var colours = {finance:'#f59e0b', access:'#10b981', digital:'#6366f1', docs:'#ef4444', wishes:'#8b5cf6'}
-            var labels = {finance:'Financial & Legal', access:'Physical Access', digital:'Digital Access', docs:'Important Documents', wishes:'Final Wishes'}
-            var form = document.getElementById('add-essential-form')
-            document.getElementById('essential-category').value = category
-            document.getElementById('add-essential-title').textContent = '+ Add: ' + (labels[category] || category)
-            document.getElementById('add-essential-title').style.color = colours[category] || '#1e3a8a'
-            document.getElementById('essential-heading').value = ''
-            document.getElementById('essential-detail').value = ''
-            document.getElementById('essential-image').value = ''
-            form.style.display = 'block'
-            // Switch to this essentials sub-tab
-            switchSubTab('essentials', category)
-            setTimeout(function(){ form.scrollIntoView({behavior:'smooth', block:'nearest'}) }, 100)
-        }
-
-        function saveEssential() {
-            var heading = document.getElementById('essential-heading').value.trim()
-            var detail = document.getElementById('essential-detail').value.trim()
-            var category = document.getElementById('essential-category').value
-            if (!heading) { showNotification('Please add a heading'); return }
-            var imgFile = document.getElementById('essential-image').files[0]
-            if (imgFile) {
-                var reader = new FileReader()
-                reader.onload = function(e) {
-                    doSaveEssential(heading, detail, category, e.target.result)
-                }
-                reader.readAsDataURL(imgFile)
-            } else {
-                doSaveEssential(heading, detail, category, null)
-            }
-        }
-
-        function doSaveEssential(heading, detail, category, imageData) {
-            var entry = {
-                id: Date.now(),
-                heading: heading,
-                detail: detail,
-                category: category,
-                image: imageData,
-                addedAt: new Date().toISOString()
-            }
-            savedEssentials.push(entry)
-            localStorage.setItem('vault_essentials', JSON.stringify(savedEssentials))
-            syncVaultToSupabase('vault_essentials', savedEssentials)
-            document.getElementById('add-essential-form').style.display = 'none'
-            renderEssentials()
-            showNotification('✅ Saved to ' + category)
-        }
-
-        function deleteEssential(id) {
-            if (!confirm('Delete this entry?')) return
-            savedEssentials = savedEssentials.filter(function(e) { return e.id !== id })
-            localStorage.setItem('vault_essentials', JSON.stringify(savedEssentials))
-            syncVaultToSupabase('vault_essentials', savedEssentials)
-            renderEssentials()
-        }
-
-        function renderEssentials() {
-            const estat = document.getElementById('essentials-stat')
-            if (estat) estat.textContent = savedEssentials.length
-            var categories = ['finance','access','digital','docs','wishes']
-            categories.forEach(function(cat) {
-                var items = savedEssentials.filter(function(e) { return e.category === cat })
-                var list = document.getElementById('essentials-' + cat + '-list')
-                var empty = document.getElementById('essentials-' + cat + '-empty')
-                if (!list) return
-                if (items.length === 0) {
-                    list.innerHTML = ''
-                    if (empty) empty.style.display = 'block'
-                    return
-                }
-                if (empty) empty.style.display = 'none'
-                list.innerHTML = items.map(function(e) {
-                    return '<div style="background:white; border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin-bottom:0.75rem;">' +
-                        '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;">' +
-                        '<div style="flex:1;">' +
-                        '<div style="font-weight:700; color:#1e3a8a; margin-bottom:0.25rem;">' + e.heading + '</div>' +
-                        (e.detail ? '<div style="color:#4b5563; font-size:0.9rem; white-space:pre-wrap; line-height:1.5;">' + e.detail + '</div>' : '') +
-                        (e.image ? '<div style="margin-top:0.75rem;"><img src="' + e.image + '" style="max-width:200px; max-height:150px; border-radius:6px; border:1px solid #e5e7eb; cursor:pointer;" onclick="window.open(this.src)"></div>' : '') +
-                        '<div style="color:#d1d5db; font-size:0.75rem; margin-top:0.4rem;">Added ' + new Date(e.addedAt).toLocaleDateString() + '</div>' +
-                        '</div>' +
-                        '<button onclick="deleteEssential(' + e.id + ')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; flex-shrink:0;" title="Delete">🗑️</button>' +
-                        '</div></div>'
-                }).join('')
-            })
-        }
-
-        function loadEssentials() {
-            savedEssentials = JSON.parse(localStorage.getItem('vault_essentials') || '[]')
-            renderEssentials()
-        }
-
-        function updateFixedCollapseButtons() {
-            var pb = document.getElementById('photos-body')
-            var cb = document.getElementById('contacts-body')
-            var photosOpen = pb && pb.style.display === 'block' && currentVaultTab === 'memories'
-            var contactsOpen = cb && cb.style.display === 'block' && currentVaultTab === 'contacts'
-            var fcP = document.getElementById('fixed-collapse-photos')
-            var fcC = document.getElementById('fixed-collapse-contacts')
-            if (fcP) fcP.style.display = photosOpen ? 'block' : 'none'
-            if (fcC) fcC.style.display = contactsOpen ? 'block' : 'none'
-        }
-
         function toggleSection(bodyId, arrowId) {
-            var body = document.getElementById(bodyId)
-            var arrow = document.getElementById(arrowId)
+            const body = document.getElementById(bodyId)
+            const arrow = document.getElementById(arrowId)
             if (!body) return
-            var isOpen = body.style.display === 'block'
-            body.style.display = isOpen ? 'none' : 'block'
-            if (arrow) arrow.textContent = isOpen ? '▶' : '▼'
-            updateFixedCollapseButtons()
+            if (body.style.display === 'none') {
+                body.style.display = 'block'
+                if (arrow) arrow.textContent = '▼'
+            } else {
+                body.style.display = 'none'
+                if (arrow) arrow.textContent = '▶'
+            }
         }
 
         // Inheritors Management
@@ -2374,46 +1867,6 @@
             renderInheritors()
             refreshDashboardStats()
             showNotification(`👨‍👩‍👧‍👦 ${name} added as inheritor!`)
-
-            // Offer to notify the inheritor by email
-            setTimeout(() => {
-                if (confirm(`Would you like to send ${name} an email to let them know they've been added as a vault inheritor?\n\nThis will open your email app with a pre-written message.`)) {
-                    const subject = encodeURIComponent('You have been named as my We Loved Life vault inheritor')
-                    const userName = user ? user.name || user.email.split('@')[0] : 'Someone you know'
-                    const userEmail = user ? user.email : ''
-                    const body = encodeURIComponent(
-`Hi ${name},
-
-My name is ${userName} and I have chosen you as a trusted inheritor of my We Loved Life digital vault.
-
-ABOUT WE LOVED LIFE
-We Loved Life (www.welovedlife.com) is a personal legacy vault — a place where people preserve the memories, stories, music, photos, and contacts that shaped their life, so that future generations can truly understand who they were and what they loved.
-
-WHAT YOU WILL FIND IN MY VAULT
-• My most meaningful songs and the memories and stories behind each one
-• My personal photos with captions and stories
-• My Life Book — my autobiography written in my own words
-• My life stories and personal reflections
-• The important contacts and people who mattered to me
-• My valuables and where to find them
-• My private secrets, sealed until the time is right
-
-HOW TO ACCESS MY VAULT
-When the time comes, please visit:
-www.welovedlife.com
-
-Login email: ${userEmail}
-
-You will need my password to log in. Please contact Ian who holds my password and will provide it to you when appropriate.
-
-No action is needed from you right now. This email is simply to let you know you have been chosen and entrusted with preserving my memories.
-
-With all my love,
-${userName}`
-                    )
-                    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`
-                }
-            }, 500)
         }
 
         function deleteInheritor(id) {
@@ -2645,14 +2098,14 @@ ${userName}`
     <!-- Navigation -->
     <nav>
         <div class="container">
-            <div class="logo">📖 We Loved Life</div>
+            <div class="logo">📖 We Love Life</div>
             <button class="hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="Menu">
                 <span></span><span></span><span></span>
             </button>
             <ul class="nav-links" id="nav-links-list">
                 <li><a href="#home" onclick="showSection('home'); closeMobileNav()">Home</a></li>
                 <li><a href="#how" onclick="scrollToSection('how-it-works'); closeMobileNav()">How It Works</a></li>
-                <li><a href="#pricing" onclick="scrollToSection('pricing'); closeMobileNav()">Free</a></li>
+                <li><a href="#pricing" onclick="scrollToSection('pricing'); closeMobileNav()">Pricing</a></li>
                 <li id="nav-share" class="hidden"><a href="#" onclick="openShareModal(); closeMobileNav()">🔗 Share</a></li>
                 <li id="nav-dashboard" class="hidden"><a href="#dashboard" onclick="showSection('dashboard'); closeMobileNav()">My Vault</a></li>
                 <li id="nav-login"><a href="#" onclick="showLogin(); closeMobileNav()" class="btn-nav">Start Your Legacy</a></li>
@@ -2663,7 +2116,6 @@ ${userName}`
     </nav>
 
     <!-- Notification -->
-    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.8</div>
     <div id="notification" class="notification"></div>
 
     <!-- Home Section -->
@@ -2672,13 +2124,12 @@ ${userName}`
         <section class="hero">
             <div class="hero-content">
                 <h1>Your life. Your story. Preserved forever.</h1>
-                <p class="subtitle">...and we won't let our family forget why!</p>
+                <p class="subtitle">Share who you are with the people who matter most.</p>
                 <p>Your music, photos, memories, and life story—all in one place. Create a digital time capsule that your family will treasure for generations.</p>
                 <div class="cta-buttons">
-                    <button class="cta-button" onclick="showLogin()">Claim Your Free Vault</button>
+                    <button class="cta-button" onclick="showLogin()">Start Preserving Your Story</button>
                     <button class="cta-button secondary" onclick="scrollToSection('how-it-works')">See How It Works</button>
                 </div>
-                <p style="margin-top:1rem; color:rgba(255,255,255,0.75); font-size:0.9rem;">🎁 Free forever for the first 10,000 members · No credit card needed</p>
             </div>
         </section>
 
@@ -2717,7 +2168,7 @@ ${userName}`
         <!-- Solution Section -->
         <section class="solution-section">
             <h2>A Digital Time Capsule for Future Generations</h2>
-            <p class="intro">We Loved Life preserves your digital life so your family can discover who you really were—decades after you're gone.</p>
+            <p class="intro">We Love Life preserves your digital life so your family can discover who you really were—decades after you're gone.</p>
             <div class="feature-grid">
                 <div class="feature-card">
                     <div class="feature-icon">🎵</div>
@@ -2794,7 +2245,7 @@ ${userName}`
             <h2>Stories from Families</h2>
             <div class="testimonial-grid">
                 <div class="testimonial">
-                    <p class="testimonial-text">"When my father passed, we couldn't access his phone. All his photos were locked forever. I created a We Loved Life vault so my kids never experience that loss."</p>
+                    <p class="testimonial-text">"When my father passed, we couldn't access his phone. All his photos were locked forever. I created a We Love Life vault so my kids never experience that loss."</p>
                     <p class="testimonial-author">Sarah M.</p>
                     <p class="testimonial-role">Mother of three</p>
                 </div>
@@ -2806,41 +2257,54 @@ ${userName}`
                 <div class="testimonial">
                     <p class="testimonial-text">"This isn't just backup software—it's an heirloom. I'm creating something my great-great-grandchildren will treasure."</p>
                     <p class="testimonial-author">Maria R.</p>
-                    <p class="testimonial-role">We Loved Life member</p>
+                    <p class="testimonial-role">We Love Life member</p>
                 </div>
             </div>
         </section>
 
         <!-- Pricing Section -->
         <section class="pricing" id="pricing">
-            <h2>Free. For Now. For You.</h2>
-            <p class="subtitle">We Loved Life is completely free for our first 10,000 members</p>
-
-            <div style="max-width:680px; margin:0 auto;">
-                <div style="background:linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%); border-radius:20px; padding:3rem 2.5rem; text-align:center; color:white; position:relative; overflow:hidden;">
-                    <div style="position:absolute; top:-30px; right:-30px; width:120px; height:120px; background:rgba(255,255,255,0.05); border-radius:50%;"></div>
-                    <div style="position:absolute; bottom:-40px; left:-20px; width:160px; height:160px; background:rgba(255,255,255,0.04); border-radius:50%;"></div>
-                    <div style="font-size:3.5rem; margin-bottom:1rem;">🎁</div>
-                    <div style="font-size:3rem; font-weight:800; margin-bottom:0.5rem;">Free Forever</div>
-                    <div style="font-size:1.1rem; opacity:0.85; margin-bottom:2rem;">for the first 10,000 members</div>
-                    <ul style="list-style:none; text-align:left; display:inline-block; margin-bottom:2rem;">
-                        <li style="padding:0.4rem 0; font-size:1rem;">✅ Unlimited music library & memories</li>
-                        <li style="padding:0.4rem 0; font-size:1rem;">✅ Unlimited photos with captions</li>
-                        <li style="padding:0.4rem 0; font-size:1rem;">✅ Unlimited contacts & people</li>
-                        <li style="padding:0.4rem 0; font-size:1rem;">✅ Write your Life Book</li>
-                        <li style="padding:0.4rem 0; font-size:1rem;">✅ Unlimited inheritors</li>
-                        <li style="padding:0.4rem 0; font-size:1rem;">✅ 100-year preservation guarantee</li>
-                        <li style="padding:0.4rem 0; font-size:1rem;">✅ No ads. Ever.</li>
+            <h2>Choose Your Plan</h2>
+            <p class="subtitle">Preserve your life story for generations</p>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Monthly</h3>
+                    <div class="price">$2</div>
+                    <span class="price-period">per month (USD)</span>
+                    <ul class="pricing-features">
+                        <li>Unlimited music library</li>
+                        <li>Unlimited photos & videos</li>
+                        <li>Unlimited contacts</li>
+                        <li>Write your Life Book</li>
+                        <li>Export to Kindle</li>
+                        <li>Unlimited inheritors</li>
+                        <li>100-year guarantee</li>
+                        <li>Bank-level encryption</li>
+                        <li>Cancel anytime</li>
                     </ul>
-                    <div>
-                        <button class="pricing-cta" onclick="showLogin()" style="font-size:1.1rem; padding:1rem 2.5rem;">Claim Your Free Vault</button>
-                    </div>
-                    <p style="opacity:0.6; font-size:0.85rem; margin-top:1.5rem;">No credit card. No catch. Just your story, preserved.</p>
+                    <button class="pricing-cta" onclick="showLoginWithPlan('monthly')">Start Your Story</button>
                 </div>
 
-                <div style="text-align:center; margin-top:1.5rem; color:#6b7280; font-size:0.9rem;">
-                    <p>🔒 <strong>100% Secure</strong> • All data encrypted • No ads ever • Pricing introduced later for new members only — early members stay free</p>
+                <div class="pricing-card popular">
+                    <span class="popular-badge">Best Value</span>
+                    <h3>Lifetime</h3>
+                    <div class="price">$1,000</div>
+                    <span class="price-period">one-time payment (USD)</span>
+                    <ul class="pricing-features">
+                        <li>Everything in Monthly</li>
+                        <li>Never pay again</li>
+                        <li>Priority support</li>
+                        <li>Early access to new features</li>
+                        <li>Founding member badge</li>
+                        <li>Pass to your children</li>
+                        <li><strong>Pay once, preserve forever</strong></li>
+                    </ul>
+                    <button class="pricing-cta" onclick="showLoginWithPlan('lifetime')">Preserve Forever</button>
                 </div>
+            </div>
+            
+            <div style="text-align:center; margin-top:2rem; color:#6b7280; font-size:0.9rem;">
+                <p>🔒 <strong>100% Secure</strong> • All data encrypted • No ads ever • Cancel monthly plan anytime</p>
             </div>
         </section>
     </div>
@@ -2850,15 +2314,12 @@ ${userName}`
         <div class="container">
             <!-- Compact header -->
             <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem; padding-top:0.5rem;">
-                <div>
-                    <span style="font-size:1.1rem; font-weight:700; color:#1e3a8a;">We Loved Life</span>
-                    <span style="color:#9ca3af; font-size:0.85rem; margin-left:0.5rem;">· <span id="user-name">User</span></span>
-                </div>
+                <span style="font-size:1.1rem; font-weight:700; color:#1e3a8a;">We Loved Life</span>
+                <span style="color:#9ca3af; font-size:0.85rem;">· <span id="user-name">User</span></span>
             </div>
 
-            <!-- Sticky nav: search + sync + main tabs -->
+            <!-- Sticky nav -->
             <div style="position:sticky; top:60px; background:white; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin:0 -1rem; padding:0.6rem 1rem 0;">
-                <!-- Search + sync -->
                 <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.6rem;">
                     <input id="vault-search" placeholder="🔍 Search vault..."
                         style="flex:1; padding:0.4rem 0.9rem; border:1px solid #e5e7eb; border-radius:980px; font-size:0.85rem; outline:none;"
@@ -2869,37 +2330,31 @@ ${userName}`
                     </div>
                     <button onclick="manualSync()" style="background:#3730a3; color:white; border:none; border-radius:980px; padding:0.35rem 0.85rem; font-size:0.78rem; cursor:pointer; white-space:nowrap;">☁️ Sync</button>
                 </div>
-                <!-- Main tabs with counts -->
-                <div id="vault-tabs" style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; overflow-x:auto;">
-                    <button onclick="switchVaultTab('memories')" id="vtab-memories"
-                        style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.88rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                <div id="vault-tabs" style="display:flex; border-bottom:2px solid #e5e7eb; overflow-x:auto;">
+                    <button onclick="switchVaultTab('memories')" id="vtab-memories" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.88rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
                         📸 Memories <span id="vtab-memories-count" style="font-size:0.75rem; color:#6b7280; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchVaultTab('contacts')" id="vtab-contacts"
-                        style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                    <button onclick="switchVaultTab('contacts')" id="vtab-contacts" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
                         👥 Contacts <span id="vtab-contacts-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchVaultTab('essentials')" id="vtab-essentials"
-                        style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                    <button onclick="switchVaultTab('essentials')" id="vtab-essentials" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
                         🗝️ Essentials <span id="vtab-essentials-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchVaultTab('legacy')" id="vtab-legacy"
-                        style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                    <button onclick="switchVaultTab('legacy')" id="vtab-legacy" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
                         🏛️ Legacy <span id="vtab-legacy-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
                 </div>
             </div>
 
             <!-- TAB: MEMORIES -->
-            <div id="vtabcontent-memories" style="padding-top:1rem;">
+            <div id="vtabcontent-memories" style="padding-top:1.5rem;">
                 <div style="display:flex; gap:0; border-bottom:1px solid #e5e7eb; margin-bottom:1.5rem; overflow-x:auto;">
-                    <button onclick="switchSubTab('memories','music')" id="vstab-memories-music" style="padding:0.5rem 1rem; border:none; border-bottom:2px solid #3b82f6; background:none; font-weight:700; font-size:0.85rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">🎵 Music</button>
-                    <button onclick="switchSubTab('memories','photos')" id="vstab-memories-photos" style="padding:0.5rem 1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">📸 Photos</button>
-                    <button onclick="switchSubTab('memories','stories')" id="vstab-memories-stories" style="padding:0.5rem 1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">✨ Stories</button>
-                    <button onclick="switchSubTab('memories','lifebook')" id="vstab-memories-lifebook" style="padding:0.5rem 1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">📖 Life Book</button>
+                    <button onclick="switchSubTab('memories','music')" id="vstab-memories-music" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid #3b82f6; background:none; font-weight:700; font-size:0.85rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">🎵 Music</button>
+                    <button onclick="switchSubTab('memories','photos')" id="vstab-memories-photos" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">📸 Photos</button>
+                    <button onclick="switchSubTab('memories','stories')" id="vstab-memories-stories" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">✨ Stories</button>
+                    <button onclick="switchSubTab('memories','lifebook')" id="vstab-memories-lifebook" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">📖 Life Book</button>
                 </div>
-                <div id="vstabcontent-memories-music"><!-- Spotify Card -->
-                <div id="spotify-card" style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #1db954; margin-bottom:1rem;">
+                <div id="vstabcontent-memories-music"><div id="spotify-card" style="background:#f9fafb; padding:1.5rem; border-radius:10px; border-left:4px solid #1db954; margin-bottom:1rem;">
                     <div style="margin-bottom:1rem;">
                         <h4 style="color:#1e3a8a; font-size:1.3rem; margin-bottom:0.5rem;">🎵 Your Music Library</h4>
                         <p style="color:#6b7280;">Search for your favorite songs and add them to your collection</p>
@@ -3110,7 +2565,7 @@ ${userName}`
             </div>
 
             <!-- TAB: CONTACTS -->
-            <div id="vtabcontent-contacts" style="display:none; padding-top:1rem;">
+            <div id="vtabcontent-contacts" style="display:none; padding-top:1.5rem;">
                 <div id="contacts-cat-strip" style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:1rem;"></div>
                 <!-- Export Instructions -->
                     <div id="export-instructions" style="background:#eff6ff; border:1px solid #3b82f6; border-radius:8px; padding:1.25rem; margin-bottom:1.5rem;">
@@ -3154,38 +2609,13 @@ ${userName}`
 
                     <div id="add-contact-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
                         <h4 style="color:#1e3a8a; margin-bottom:1rem;">Add a Contact</h4>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
                             <input id="contact-name" placeholder="Full Name *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
                             <input id="contact-phone" placeholder="Phone Number" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
                             <input id="contact-email" placeholder="Email Address" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                            <input id="contact-relation" placeholder="Relationship (e.g. Sister, Best Friend)" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                            <input id="contact-relation" placeholder="Relationship" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
                         </div>
-
-                        <!-- CATEGORY SELECTOR -->
-                        <div style="margin-bottom:0.75rem;">
-                            <label style="display:block; font-size:0.85rem; font-weight:600; color:#374151; margin-bottom:0.5rem;">Category</label>
-                            <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
-                                <button type="button" onclick="selCat(this,'Family')"    data-cat="Family"   style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">👨‍👩‍👧‍👦 Family</button>
-                                <button type="button" onclick="selCat(this,'Friends')"   data-cat="Friends"  style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">👫 Friends</button>
-                                <button type="button" onclick="selCat(this,'Business')"  data-cat="Business" style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">💼 Business</button>
-                                <button type="button" onclick="selCat(this,'Romantic')"  data-cat="Romantic" style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">💕 Romantic</button>
-                                <button type="button" onclick="selCat(this,'Disliked')"  data-cat="Disliked" style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">😬 Disliked</button>
-                                <button type="button" onclick="selCat(this,'Others')"    data-cat="Others"   style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">⭐ Others</button>
-                                <button type="button" id="btn-custom-cat" onclick="toggleCustomCat()" style="padding:0.4rem 0.9rem;border:2px dashed #8b5cf6;border-radius:50px;font-size:0.82rem;background:#faf5ff;cursor:pointer;color:#7c3aed;">✏️ Custom...</button>
-                            </div>
-                            <div id="custom-cat-box" style="display:none;margin-top:0.6rem;padding:0.75rem;background:#f5f3ff;border:2px solid #7c3aed;border-radius:8px;">
-                                <p style="margin:0 0 0.5rem;font-size:0.85rem;color:#5b21b6;font-weight:700;">✏️ Name your custom category:</p>
-                                <input id="custom-cat-input" type="text" placeholder="e.g. Watch Contacts, Golf Club, School..."
-                                    style="width:100%;box-sizing:border-box;padding:0.5rem 0.7rem;border:2px solid #7c3aed;border-radius:6px;font-size:0.95rem;margin-bottom:0.5rem;display:block;"
-                                    onkeydown="if(event.key==='Enter'){event.preventDefault();applyCustomCat()}">
-                                <div style="display:flex;gap:0.4rem;">
-                                    <button type="button" onclick="applyCustomCat()" style="flex:1;background:#7c3aed;color:white;border:none;padding:0.5rem;border-radius:6px;font-size:0.95rem;font-weight:bold;cursor:pointer;">✓ Use this category</button>
-                                    <button type="button" onclick="closeCustomCat()" style="background:#f3f4f6;color:#6b7280;border:1px solid #ddd;padding:0.5rem 0.7rem;border-radius:6px;font-size:0.95rem;cursor:pointer;">✕</button>
-                                </div>
-                            </div>
-                            <input type="hidden" id="contact-category" value="">
-                        </div>
-                        <textarea id="contact-note" placeholder="Why are they meaningful to you? Share a memory or story..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:80px; resize:vertical;"></textarea>
+                        <textarea id="contact-note" placeholder="A note about this person..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:60px; resize:vertical;"></textarea>
                         <div style="display:flex; gap:0.5rem;">
                             <button class="action-button" onclick="saveContact()" style="background:#8b5cf6;">Save</button>
                             <button class="action-button secondary" onclick="document.getElementById('add-contact-form').style.display='none'">Cancel</button>
@@ -3210,42 +2640,42 @@ ${userName}`
             </div>
 
             <!-- TAB: ESSENTIALS -->
-            <div id="vtabcontent-essentials" style="display:none; padding-top:1rem;">
+            <div id="vtabcontent-essentials" style="display:none; padding-top:1.5rem;">
                 <div style="display:flex; gap:0; border-bottom:1px solid #e5e7eb; margin-bottom:1.5rem; overflow-x:auto;">
-                    <button onclick="switchSubTab('essentials','finance')" id="vstab-essentials-finance" style="padding:0.5rem 1rem; border:none; border-bottom:2px solid #3b82f6; background:none; font-weight:700; font-size:0.85rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">💰 Financial</button>
-                    <button onclick="switchSubTab('essentials','access')" id="vstab-essentials-access" style="padding:0.5rem 1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">🔑 Access</button>
-                    <button onclick="switchSubTab('essentials','digital')" id="vstab-essentials-digital" style="padding:0.5rem 1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">💻 Digital</button>
-                    <button onclick="switchSubTab('essentials','docs')" id="vstab-essentials-docs" style="padding:0.5rem 1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">📄 Documents</button>
-                    <button onclick="switchSubTab('essentials','wishes')" id="vstab-essentials-wishes" style="padding:0.5rem 1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">🕊️ Wishes</button>
+                    <button onclick="switchSubTab('essentials','finance')" id="vstab-essentials-finance" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid #3b82f6; background:none; font-weight:700; font-size:0.85rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">💰 Financial</button>
+                    <button onclick="switchSubTab('essentials','access')" id="vstab-essentials-access" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">🔑 Access</button>
+                    <button onclick="switchSubTab('essentials','digital')" id="vstab-essentials-digital" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">💻 Digital</button>
+                    <button onclick="switchSubTab('essentials','docs')" id="vstab-essentials-docs" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">📄 Docs</button>
+                    <button onclick="switchSubTab('essentials','wishes')" id="vstab-essentials-wishes" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">🕊️ Wishes</button>
                 </div>
                 <div id="vstabcontent-essentials-finance">
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;"><button onclick="showAddEssential('finance')" style="background:#f59e0b; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Entry</button></div>
                     <div id="essentials-finance-list"></div>
-                    <p id="essentials-finance-empty" style="color:#9ca3af; font-size:0.9rem; text-align:center; padding:2rem; font-style:italic;">No entries yet. Add bank accounts, will location, insurance policies...</p>
+                    <p id="essentials-finance-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No entries yet. Add bank accounts, will location, insurance policies...</p>
                 </div>
                 <div id="vstabcontent-essentials-access" style="display:none;">
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;"><button onclick="showAddEssential('access')" style="background:#10b981; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Entry</button></div>
                     <div id="essentials-access-list"></div>
-                    <p id="essentials-access-empty" style="color:#9ca3af; font-size:0.9rem; text-align:center; padding:2rem; font-style:italic;">No entries yet. Add safe combinations, storage unit details, spare key locations...</p>
+                    <p id="essentials-access-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No entries yet. Add safe combinations, storage unit details...</p>
                 </div>
                 <div id="vstabcontent-essentials-digital" style="display:none;">
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;"><button onclick="showAddEssential('digital')" style="background:#6366f1; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Entry</button></div>
                     <div id="essentials-digital-list"></div>
-                    <p id="essentials-digital-empty" style="color:#9ca3af; font-size:0.9rem; text-align:center; padding:2rem; font-style:italic;">No entries yet. Add password manager, email accounts, crypto wallets...</p>
+                    <p id="essentials-digital-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No entries yet. Add password manager, email accounts, crypto wallets...</p>
                 </div>
                 <div id="vstabcontent-essentials-docs" style="display:none;">
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;"><button onclick="showAddEssential('docs')" style="background:#ef4444; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Entry</button></div>
                     <div id="essentials-docs-list"></div>
-                    <p id="essentials-docs-empty" style="color:#9ca3af; font-size:0.9rem; text-align:center; padding:2rem; font-style:italic;">No entries yet. Add passport, NHS number, birth certificate, NI number...</p>
+                    <p id="essentials-docs-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No entries yet. Add passport, NHS number, birth certificate, NI number...</p>
                 </div>
                 <div id="vstabcontent-essentials-wishes" style="display:none;">
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;"><button onclick="showAddEssential('wishes')" style="background:#8b5cf6; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Entry</button></div>
                     <div id="essentials-wishes-list"></div>
-                    <p id="essentials-wishes-empty" style="color:#9ca3af; font-size:0.9rem; text-align:center; padding:2rem; font-style:italic;">No entries yet. Add funeral wishes, who to contact first, digital account instructions...</p>
+                    <p id="essentials-wishes-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No entries yet. Add funeral wishes, who to contact first...</p>
                 </div>
                 <div id="add-essential-form" style="display:none; background:white; border:2px solid #e5e7eb; border-radius:10px; padding:1.5rem; margin-top:1rem;">
                     <h4 id="add-essential-title" style="color:#1e3a8a; margin-bottom:1rem;">Add Entry</h4>
-                    <input id="essential-heading" placeholder="Heading (e.g. Barclays Current Account, Home Safe)" style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; box-sizing:border-box;">
+                    <input id="essential-heading" placeholder="Heading (e.g. Barclays Current Account)" style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; box-sizing:border-box;">
                     <textarea id="essential-detail" placeholder="Details — location, numbers, instructions..." style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:100px; resize:vertical; box-sizing:border-box;"></textarea>
                     <div style="margin-bottom:0.75rem;">
                         <label style="font-size:0.85rem; color:#374151; font-weight:600; display:block; margin-bottom:0.4rem;">Attach image (optional)</label>
@@ -3260,70 +2690,11 @@ ${userName}`
             </div>
 
             <!-- TAB: LEGACY -->
-            <div id="vtabcontent-legacy" style="display:none; padding-top:1rem;">
+            <div id="vtabcontent-legacy" style="display:none; padding-top:1.5rem;">
                 <div style="display:flex; gap:0; border-bottom:1px solid #e5e7eb; margin-bottom:1.5rem; overflow-x:auto;">
-                    <button onclick="switchSubTab('legacy','secrets')" id="vstab-legacy-secrets" style="padding:0.5rem 1rem; border:none; border-bottom:2px solid #3b82f6; background:none; font-weight:700; font-size:0.85rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">🔒 Secrets</button>
-                    <button onclick="switchSubTab('legacy','valuables')" id="vstab-legacy-valuables" style="padding:0.5rem 1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">💎 Valuables</button>
-                    <button onclick="switchSubTab('legacy','inheritors')" id="vstab-legacy-inheritors" style="padding:0.5rem 1rem; border:none; border-bottom:2px solid transparent; background:none; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">👨‍👩‍👧‍👦 Inheritors</button>
+                    <button onclick="switchSubTab('legacy','inheritors')" id="vstab-legacy-inheritors" style="padding:0.5rem 1.1rem; border:none; border-bottom:2px solid #3b82f6; background:none; font-weight:700; font-size:0.85rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-1px;">👨‍👩‍👧‍👦 Inheritors</button>
                 </div>
-                <div id="vstabcontent-legacy-secrets"><!-- Solemn consent notice -->
-                        <div style="background:#fef2f2; border:2px solid #fecaca; border-radius:10px; padding:1.5rem; margin-bottom:1.5rem; text-align:center;">
-                            <div style="font-size:2.5rem; margin-bottom:0.75rem;">🔒</div>
-                            <p style="color:#7f1d1d; font-weight:700; font-size:1.05rem; margin-bottom:1rem;">These secrets are only to be opened after my death</p>
-                            <p style="color:#7f1d1d; font-size:0.9rem; font-style:italic; margin-bottom:1.25rem;" id="secrets-wish-text">Please respect my wish — <strong id="secrets-user-name"></strong></p>
-                            <div style="background:white; border-radius:8px; padding:1rem; border:1px solid #fecaca; display:inline-block; text-align:left; min-width:300px;">
-                                <p style="color:#374151; font-size:0.9rem; font-weight:600; margin-bottom:0.75rem;">I, <span id="secrets-name-inline" style="color:#dc2626;"></span>, confirm these secrets:</p>
-                                <label style="display:flex; align-items:flex-start; gap:0.6rem; cursor:pointer; margin-bottom:0.6rem;">
-                                    <input type="checkbox" id="secrets-consent-yes" onchange="handleSecretsConsent('yes',this)" 
-                                        style="width:18px; height:18px; margin-top:2px; accent-color:#dc2626; flex-shrink:0;">
-                                    <span style="color:#374151; font-size:0.88rem; line-height:1.4;">✅ Yes — I wish my secrets to remain sealed until after my death. I ask my inheritors to honour this.</span>
-                                </label>
-                                <label style="display:flex; align-items:flex-start; gap:0.6rem; cursor:pointer;">
-                                    <input type="checkbox" id="secrets-consent-no" onchange="handleSecretsConsent('no',this)"
-                                        style="width:18px; height:18px; margin-top:2px; accent-color:#6b7280; flex-shrink:0;">
-                                    <span style="color:#6b7280; font-size:0.88rem; line-height:1.4;">No — these are private notes only, no special wish attached</span>
-                                </label>
-                                <div id="secrets-consent-status" style="margin-top:0.75rem; font-size:0.82rem; color:#9ca3af; font-style:italic;"></div>
-                            </div>
-                        </div>
-                        <div id="secrets-list" style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;"></div>
-                        <!-- Add secret form -->
-                        <div style="background:white; border-radius:8px; padding:1rem; border:1px solid #fecaca;">
-                            <h4 style="color:#dc2626; margin-bottom:1rem; font-size:1rem;">Add a Secret</h4>
-                            <input id="secret-title" placeholder="Title (e.g. The truth about..., A confession...)"
-                                style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem;">
-                            <textarea id="secret-content" placeholder="Write your secret here... This will only be seen by your inheritors after you are gone."
-                                style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; height:120px; resize:vertical; font-family:inherit; margin-bottom:0.75rem;"></textarea>
-                            <button class="action-button" onclick="saveSecret()" style="background:#dc2626;">Save Secret</button>
-                        </div></div>
-                <div id="vstabcontent-legacy-valuables" style="display:none;"><div id="valuables-list" style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;"></div>
-                        <!-- Add valuable form -->
-                        <div style="background:white; border-radius:8px; padding:1rem; border:1px solid #fde68a;">
-                            <h4 style="color:#92400e; margin-bottom:1rem; font-size:1rem;">Add a Valuable</h4>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
-                                <input id="valuable-name" placeholder="What is it? (e.g. Gold watch, Oil painting)"
-                                    style="padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                                <select id="valuable-category" style="padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; background:white;">
-                                    <option value="">Category...</option>
-                                    <option value="Jewellery">💍 Jewellery</option>
-                                    <option value="Art">🎨 Art & Collectibles</option>
-                                    <option value="Property">🏠 Property</option>
-                                    <option value="Investments">📈 Investments</option>
-                                    <option value="Vehicles">🚗 Vehicles</option>
-                                    <option value="Cash">💷 Cash & Accounts</option>
-                                    <option value="Sentimental">❤️ Sentimental</option>
-                                    <option value="Other">📦 Other</option>
-                                </select>
-                                <input id="valuable-value" placeholder="Estimated value (e.g. £2,500)"
-                                    style="padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                                <input id="valuable-location" placeholder="Where to find it (e.g. Top drawer, safe)"
-                                    style="padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                            </div>
-                            <textarea id="valuable-notes" placeholder="Any additional details — provenance, sentimental meaning, who should inherit it..."
-                                style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; height:80px; resize:vertical; font-family:inherit; margin-bottom:0.75rem;"></textarea>
-                            <button class="action-button" onclick="saveValuable()" style="background:#d97706;">Save Valuable</button>
-                        </div></div>
-                <div id="vstabcontent-legacy-inheritors" style="display:none;"><div id="add-inheritor-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
+                <div id="vstabcontent-legacy-inheritors"><div id="add-inheritor-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
                             <h4 style="color:#1e3a8a; margin-bottom:1rem;">Add an Inheritor</h4>
                             <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
                                 <input id="inheritor-name" placeholder="Full Name *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
@@ -3351,6 +2722,85 @@ ${userName}`
 
         </div>
     </section>
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <div id="login-plan-badge" style="text-align:center; margin-bottom:1.5rem; display:none;">
+                <span id="login-plan-label" style="background:#059669; color:white; padding:0.4rem 1.2rem; border-radius:980px; font-size:0.9rem; font-weight:500;"></span>
+            </div>
+            <h2 id="login-modal-title">Start Your We Love Life</h2>
+            <p style="color:#6b7280; font-size:0.9rem; margin-bottom:1.5rem;" id="login-modal-subtitle">Create your account to start preserving your story.</p>
+
+            <!-- Beta tester notice -->
+            <div style="background:#fef9c3; border:1px solid #fbbf24; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1.5rem; font-size:0.85rem; color:#92400e;">
+                🧪 <strong>Beta Testing:</strong> Your data is saved to this browser only. Don't clear your browser cache while testing.
+            </div>
+
+            <!-- Tab switcher -->
+            <div style="display:flex; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; margin-bottom:1.5rem;">
+                <button id="tab-signup" onclick="switchAuthTab('signup')" style="flex:1; padding:0.6rem; border:none; background:#3730a3; color:white; font-weight:600; cursor:pointer; font-size:0.9rem;">Sign Up</button>
+                <button id="tab-login" onclick="switchAuthTab('login')" style="flex:1; padding:0.6rem; border:none; background:white; color:#6b7280; font-weight:600; cursor:pointer; font-size:0.9rem;">Log In</button>
+            </div>
+
+            <form id="login-form" onsubmit="login(event)">
+                <div class="form-group" id="name-group">
+                    <label for="fullname">Your Name</label>
+                    <input type="text" id="fullname" placeholder="Jane Smith" autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required placeholder="you@example.com" autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required placeholder="Min. 8 characters" autocomplete="new-password" minlength="8">
+                </div>
+                <div id="password-hint" style="font-size:0.8rem; color:#9ca3af; margin-top:-1rem; margin-bottom:1rem;">At least 8 characters</div>
+                <div id="login-error" style="display:none; background:#fee2e2; color:#dc2626; padding:0.75rem; border-radius:8px; font-size:0.85rem; margin-bottom:1rem;"></div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-primary" id="login-submit-btn">Create My Vault</button>
+                    <button type="button" class="btn-secondary" onclick="closeLogin()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="modal">
+        <div class="modal-content" style="max-width:600px;">
+            <div style="text-align:center; margin-bottom:2rem;">
+                <div style="font-size:4rem; margin-bottom:1rem;">🔗</div>
+                <h2 style="margin-bottom:0.5rem;">Share Your Legacy</h2>
+                <p style="color:#6b7280;">Show friends & family what you're preserving</p>
+            </div>
+
+            <div style="background:linear-gradient(135deg, #a855f7 0%, #ec4899 100%); border-radius:12px; padding:2rem; margin-bottom:1.5rem;">
+                <div style="background:rgba(255,255,255,0.95); border-radius:8px; padding:1.5rem; margin-bottom:1rem;">
+                    <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+                        <input id="share-modal-link" readonly 
+                            style="flex:1; padding:0.85rem; border-radius:6px; border:2px solid #e5e7eb; font-size:0.9rem; color:#1e3a8a; font-weight:500;" 
+                            value="">
+                        <button onclick="copyShareLinkModal()" 
+                            style="background:#a855f7; color:white; border:none; padding:0.85rem 1.5rem; border-radius:6px; font-weight:600; cursor:pointer;">
+                            Copy
+                        </button>
+                    </div>
+                </div>
+
+                <button onclick="generateShareLink()" class="btn-primary" style="width:100%; background:white; color:#a855f7;">
+                    📤 Generate Share Link
+                </button>
+            </div>
+
+            <div style="background:#fef3c7; border:1px solid #fbbf24; border-radius:8px; padding:1rem; margin-bottom:1.5rem;">
+                <p style="color:#92400e; font-size:0.85rem; margin:0;">
+                    ⚠️ <strong>Privacy Notice:</strong> Anyone with this link can view your vault (but not edit it).
+                </p>
+            </div>
+
+            <button onclick="closeShareModal()" class="btn-secondary" style="width:100%;">Close</button>
+        </div>
+    </div>
 
     <!-- Admin Section -->
     <section id="admin-section" style="display:none; min-height:100vh; background:#0f172a; padding:2rem;">
@@ -3360,7 +2810,7 @@ ${userName}`
             <div style="text-align:center; margin-bottom:2rem;">
                 <div style="font-size:2.5rem; margin-bottom:0.5rem;">⚙️</div>
                 <h2 style="color:white; font-size:1.5rem; margin-bottom:0.25rem;">Admin Panel</h2>
-                <p style="color:#64748b; font-size:0.9rem;">We Loved Life • Beta Dashboard</p>
+                <p style="color:#64748b; font-size:0.9rem;">We Love Life • Beta Dashboard</p>
             </div>
             <div style="margin-bottom:1rem;">
                 <input type="password" id="admin-password-input" placeholder="Enter admin password" 
@@ -3380,7 +2830,7 @@ ${userName}`
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem;">
                 <div>
                     <h1 style="color:white; font-size:1.8rem; font-weight:700; margin-bottom:0.25rem;">⚙️ Admin Panel</h1>
-                    <p style="color:#64748b; font-size:0.9rem;">We Loved Life Beta • <span id="admin-last-refresh"></span></p>
+                    <p style="color:#64748b; font-size:0.9rem;">We Love Life Beta • <span id="admin-last-refresh"></span></p>
                 </div>
                 <div style="display:flex; gap:0.75rem;">
                     <button onclick="refreshAdminData()" style="background:#1e293b; color:#94a3b8; border:1px solid #334155; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer; font-size:0.9rem;">
@@ -3499,7 +2949,7 @@ ${userName}`
     <div id="feedback-modal" class="modal">
         <div class="modal-content">
             <h2 style="margin-bottom:0.5rem;">💬 Beta Feedback</h2>
-            <p style="color:#6b7280; font-size:0.9rem; margin-bottom:1.5rem;">Help us improve We Loved Life. What's working? What's broken?</p>
+            <p style="color:#6b7280; font-size:0.9rem; margin-bottom:1.5rem;">Help us improve We Love Life. What's working? What's broken?</p>
             <div style="margin-bottom:1rem;">
                 <label style="display:block; font-weight:600; color:#4b5563; margin-bottom:0.5rem; font-size:0.9rem;">Rating</label>
                 <div id="feedback-stars" style="display:flex; gap:0.5rem; font-size:1.8rem; cursor:pointer;">
@@ -3536,78 +2986,16 @@ ${userName}`
     </div>
 
     
-    <!-- Photo Lightbox Modal -->
-    <div id="photo-lightbox" style="position:fixed; inset:0; background:rgba(0,0,0,0.93); z-index:9999; padding:1rem; overflow-y:auto;" onclick="closePhotoLightbox()">
-        <div style="max-width:860px; width:100%; margin:auto; position:relative;" onclick="event.stopPropagation()">
-            <!-- Close -->
-            <button onclick="closePhotoLightbox()" style="position:absolute; top:-2.5rem; right:0; background:none; border:none; color:white; font-size:2rem; cursor:pointer; line-height:1; z-index:10;">✕</button>
-            <!-- Image -->
-            <img id="lightbox-img" src="" style="width:100%; max-height:65vh; object-fit:contain; border-radius:10px; display:block;">
-            <!-- Caption -->
-            <div id="lightbox-caption" style="color:white; padding:0.75rem 0; min-height:40px;"></div>
-            <!-- Action Buttons Row 1 -->
-            <div style="display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.6rem;">
-                <button id="lightbox-caption-btn" onclick="lightboxAddCaption()" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.35); color:white; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-size:0.9rem;">✏️ Caption</button>
-                <button onclick="downloadCurrentPhoto()" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.35); color:white; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-size:0.9rem;">⬇️ Download</button>
-                <button onclick="togglePrinterSearch()" style="background:rgba(251,191,36,0.25); border:1px solid rgba(251,191,36,0.5); color:#fbbf24; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-size:0.9rem;">🖨️ Print this Photo</button>
-            </div>
-            <!-- Printer Search Panel -->
-            <div id="printer-search-panel" style="display:none; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:1.25rem; margin-top:0.5rem;">
-                <h4 style="color:white; font-size:1rem; margin-bottom:0.75rem; text-align:center;">🖨️ Find a Local Online Photo Printer</h4>
-                <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem; flex-wrap:wrap;">
-                    <input id="printer-location" placeholder="Your location (e.g. Manchester, M1 2AB...)" 
-                        style="flex:1; min-width:200px; padding:0.6rem 0.8rem; border-radius:6px; border:none; font-size:0.9rem; outline:none;"
-                        onkeydown="if(event.key==='Enter') searchPrinters()">
-                    <button onclick="useMyLocation()" style="background:#3b82f6; color:white; border:none; padding:0.6rem 0.9rem; border-radius:6px; cursor:pointer; font-size:0.85rem; white-space:nowrap;">📍 Use My Location</button>
-                    <button onclick="searchPrinters()" style="background:#fbbf24; color:#1f2937; border:none; padding:0.6rem 1rem; border-radius:6px; cursor:pointer; font-size:0.9rem; font-weight:700;">Search</button>
-                </div>
-                <div id="printer-results" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Photo Caption Modal -->
-    <div id="photo-caption-modal" class="modal">
-        <div class="modal-content" style="max-width:500px;">
-            <div style="text-align:center; margin-bottom:1.5rem;">
-                <img id="caption-modal-img" src="" style="width:100%; max-height:220px; object-fit:cover; border-radius:10px; margin-bottom:1rem;">
-                <h2 style="margin-bottom:0.25rem;">📸 Add Caption</h2>
-                <p style="color:#6b7280; font-size:0.9rem;">Help your family remember this moment</p>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;">
-                <div>
-                    <label style="display:block; font-size:0.85rem; font-weight:600; color:#4b5563; margin-bottom:0.25rem;">📅 Date or period</label>
-                    <input id="caption-date" placeholder="e.g. Summer 1998, Christmas 2005, June 14th 1985..." 
-                        style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                </div>
-                <div>
-                    <label style="display:block; font-size:0.85rem; font-weight:600; color:#4b5563; margin-bottom:0.25rem;">👥 Who is in this photo?</label>
-                    <input id="caption-who" placeholder="e.g. Me, Dad and Aunt Margaret at the beach..." 
-                        style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                </div>
-                <div>
-                    <label style="display:block; font-size:0.85rem; font-weight:600; color:#4b5563; margin-bottom:0.25rem;">❤️ Why is this meaningful?</label>
-                    <textarea id="caption-why" placeholder="Tell the story behind this photo..." 
-                        style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; height:80px; resize:vertical; font-family:inherit;"></textarea>
-                </div>
-            </div>
-            <div class="modal-buttons">
-                <button class="btn-primary" onclick="savePhotoCaption()">Save Caption</button>
-                <button class="btn-secondary" onclick="closePhotoCaptionModal()">Cancel</button>
-            </div>
-        </div>
-    </div>
-
     <footer>
         <div class="footer-content">
             <div class="footer-section">
-                <h3>We Loved Life</h3>
+                <h3>We Love Life</h3>
                 <p style="color: #9ca3af; margin-top: 0.5rem;">Preserving your digital legacy for future generations.</p>
             </div>
             <div class="footer-section">
                 <h3>Product</h3>
                 <ul>
-                    <li><a href="#pricing">Free Access</a></li>
+                    <li><a href="#pricing">Pricing</a></li>
                     <li><a href="#how-it-works">How It Works</a></li>
                     <li><a href="#">Security</a></li>
                 </ul>
@@ -3629,14 +3017,14 @@ ${userName}`
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 We Loved Life — and we won't let our family forget why!</p>
+            <p>&copy; 2026 We Love Life. Your memories, preserved forever.</p>
         </div>
     </footer>
 
     <script>
         // Auth state
         let authMode = 'signup' // 'signup' or 'login'
-        let selectedPlan = 'free'
+        let selectedPlan = 'monthly'
 
         function switchAuthTab(mode) {
             authMode = mode
@@ -3648,7 +3036,7 @@ ${userName}`
             document.getElementById('name-group').style.display = isSignup ? 'block' : 'none'
             document.getElementById('password-hint').style.display = isSignup ? 'block' : 'none'
             document.getElementById('login-submit-btn').textContent = isSignup ? 'Create My Vault' : 'Log In'
-            document.getElementById('login-modal-title').textContent = isSignup ? 'Start Your We Loved Life' : 'Welcome Back'
+            document.getElementById('login-modal-title').textContent = isSignup ? 'Start Your We Love Life' : 'Welcome Back'
             document.getElementById('login-modal-subtitle').textContent = isSignup
                 ? 'Create your account to start preserving your story.'
                 : 'Log in to access your vault.'
@@ -3658,12 +3046,12 @@ ${userName}`
         }
 
         function showLoginWithPlan(plan) {
-            selectedPlan = 'free'
+            selectedPlan = plan
             const badge = document.getElementById('login-plan-badge')
             const label = document.getElementById('login-plan-label')
             badge.style.display = 'block'
-            label.textContent = '🎁 Free Founding Member'
-            label.style.background = '#1e3a8a'
+            label.textContent = plan === 'lifetime' ? '💎 Lifetime Plan Selected' : '📅 Monthly Plan Selected'
+            label.style.background = plan === 'lifetime' ? '#1e3a8a' : '#059669'
             switchAuthTab('signup')
             showLogin()
         }
@@ -3703,140 +3091,58 @@ ${userName}`
         }
 
         // Save vault data to Supabase (with localStorage fallback)
-        // ---- Bulletproof Vault Sync ----
-        // Rule: localStorage is always source of truth locally.
-        // Supabase is synced ON TOP - never replaces local data unless it's newer.
-
         async function syncVaultToSupabase(key, data) {
             if (!user) return
-            const now = new Date().toISOString()
-            localStorage.setItem(key, JSON.stringify(data))
-            localStorage.setItem(key + '_updated_at', now)
             try {
-                const { error } = await supabaseClient.from('vault_data').upsert({
+                await supabaseClient.from('vault_data').upsert({
                     user_email: user.email,
                     data_key: key,
                     data_value: JSON.stringify(data),
-                    updated_at: now
+                    updated_at: new Date().toISOString()
                 }, { onConflict: 'user_email,data_key' })
-                if (error) console.warn('Supabase upsert error:', error.message)
             } catch(e) {
-                console.warn('Supabase sync failed, data safe in localStorage:', e.message)
+                console.warn('Supabase sync failed, data saved locally:', e)
             }
         }
 
-        async function pushAllToSupabase() {
-            if (!user) return
-            const keys = ['spotify_music_data', 'vault_contacts', 'vault_inheritors', 'vault_stories', 'vault_lifebook', 'vault_photo_captions', 'vault_secrets', 'vault_valuables']
-            let pushed = 0
-            for (const key of keys) {
-                const raw = localStorage.getItem(key)
-                if (raw && raw !== '[]' && raw !== '{}') {
-                    const ts = localStorage.getItem(key + '_updated_at') || new Date().toISOString()
-                    try {
-                        await supabaseClient.from('vault_data').upsert({
-                            user_email: user.email,
-                            data_key: key,
-                            data_value: raw,
-                            updated_at: ts
-                        }, { onConflict: 'user_email,data_key' })
-                        pushed++
-                    } catch(e) {
-                        console.warn('Push failed for', key, e.message)
-                    }
+        // Load vault data from Supabase (with localStorage fallback)
+        async function loadVaultFromSupabase(key, fallback) {
+            if (!user) return fallback
+            try {
+                const { data, error } = await supabaseClient
+                    .from('vault_data')
+                    .select('data_value')
+                    .eq('user_email', user.email)
+                    .eq('data_key', key)
+                    .single()
+                if (data && data.data_value) {
+                    const parsed = JSON.parse(data.data_value)
+                    // Also update localStorage cache
+                    localStorage.setItem(key, data.data_value)
+                    return parsed
                 }
+            } catch(e) {
+                console.warn('Supabase load failed, using localStorage:', e)
             }
-            return pushed
+            return fallback
         }
 
-        // Newest version always wins — uses updated_at timestamps
+        // Load ALL vault data for this user from Supabase on login
         async function loadAllVaultData() {
             if (!user) return
             try {
                 const { data, error } = await supabaseClient
                     .from('vault_data')
-                    .select('data_key, data_value, updated_at')
+                    .select('data_key, data_value')
                     .eq('user_email', user.email)
-
-                if (error) throw error
-
                 if (data && data.length > 0) {
-                    let fromCloud = 0, fromLocal = 0
-                    for (const row of data) {
-                        const localRaw = localStorage.getItem(row.data_key)
-                        const localTs = localStorage.getItem(row.data_key + '_updated_at')
-                        const cloudTs = row.updated_at
-                        const localEmpty = !localRaw || localRaw === '[]' || localRaw === '{}'
-                        if (localEmpty) {
-                            localStorage.setItem(row.data_key, row.data_value)
-                            localStorage.setItem(row.data_key + '_updated_at', cloudTs)
-                            fromCloud++
-                        } else if (localTs && cloudTs) {
-                            if (new Date(cloudTs) > new Date(localTs)) {
-                                localStorage.setItem(row.data_key, row.data_value)
-                                localStorage.setItem(row.data_key + '_updated_at', cloudTs)
-                                fromCloud++
-                            } else {
-                                fromLocal++
-                            }
-                        } else {
-                            localStorage.setItem(row.data_key, row.data_value)
-                            fromCloud++
-                        }
-                    }
-                    if (fromLocal > 0) await pushAllToSupabase()
-                    if (fromCloud > 0) {
-                        showNotification('☁️ Vault synced from cloud!')
-                        setSyncStatus('synced', 'Synced from cloud ✓')
-                    } else {
-                        setSyncStatus('synced', 'Synced to cloud ✓')
-                    }
-                } else {
-                    const pushed = await pushAllToSupabase()
-                    if (pushed > 0) {
-                        showNotification('☁️ Vault saved to cloud!')
-                        setSyncStatus('synced', 'Saved to cloud ✓')
-                    } else {
-                        setSyncStatus('synced', 'Ready')
-                    }
+                    data.forEach(row => {
+                        localStorage.setItem(row.data_key, row.data_value)
+                    })
+                    showNotification('☁️ Vault synced from cloud!')
                 }
             } catch(e) {
-                console.warn('Cloud sync failed, working offline:', e.message)
-                showNotification('⚠️ Working offline - data saved locally')
-                setSyncStatus('offline', 'Offline - saved locally')
-            }
-        }
-
-        function setSyncStatus(state, label) {
-            const dot = document.getElementById('sync-dot')
-            const lbl = document.getElementById('sync-label')
-            const box = document.getElementById('sync-status')
-            if (!dot || !lbl || !box) return
-            const states = {
-                synced:  { bg:'#f0fdf4', border:'#bbf7d0', color:'#16a34a', dotColor:'#16a34a' },
-                syncing: { bg:'#eff6ff', border:'#bfdbfe', color:'#2563eb', dotColor:'#2563eb' },
-                offline: { bg:'#fff7ed', border:'#fed7aa', color:'#ea580c', dotColor:'#ea580c' },
-                error:   { bg:'#fef2f2', border:'#fecaca', color:'#dc2626', dotColor:'#dc2626' },
-            }
-            const s = states[state] || states.synced
-            box.style.background = s.bg
-            box.style.border = '1px solid ' + s.border
-            box.style.color = s.color
-            dot.style.background = s.dotColor
-            lbl.textContent = label
-        }
-
-        // Manual sync button handler
-        async function manualSync() {
-            if (!user) return
-            setSyncStatus('syncing', 'Syncing...')
-            try {
-                const pushed = await pushAllToSupabase()
-                setSyncStatus('synced', 'Synced to cloud ✓')
-                showNotification('☁️ Synced ' + pushed + ' items to cloud!')
-            } catch(e) {
-                setSyncStatus('error', 'Sync failed')
-                showNotification('⚠️ Sync failed - check connection')
+                console.warn('Could not load from Supabase, using local data:', e)
             }
         }
 
@@ -3977,7 +3283,7 @@ ${userName}`
                 updateUIForLoggedIn();
                 closeLogin();
                 showSection('dashboard');
-                showNotification(authMode === 'signup' ? '🎉 Welcome to We Loved Life!' : '👋 Welcome back, ' + user.name + '!');
+                showNotification(authMode === 'signup' ? '🎉 Welcome to We Love Life!' : '👋 Welcome back, ' + user.name + '!');
 
             } catch(e) {
                 console.error('Auth error:', e)
@@ -4035,15 +3341,12 @@ ${userName}`
             
             setTimeout(() => {
                 loadContacts()
-            loadEssentials()
-            switchVaultTab('memories')
+                loadEssentials()
                 loadSavedPhotos()
                 loadStories()
                 loadLifebook()
                 loadSavedMusic()
                 loadInheritors()
-                loadSecrets()
-                loadValuables()
             }, 400);
         }
 
@@ -4095,22 +3398,24 @@ ${userName}`
             const photos = uploadedPhotos.length
             
             const totalMemories = songs + contacts + stories + lifebook + photos
-            const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val }
-            const essCount = JSON.parse(localStorage.getItem('vault_essentials') || '[]').length
-            const secretsCount = JSON.parse(localStorage.getItem('vault_secrets') || '[]').length
-            const valuablesCount = JSON.parse(localStorage.getItem('vault_valuables') || '[]').length
-            const inheritorsCount = JSON.parse(localStorage.getItem('vault_inheritors') || '[]').length
-            // Update tab counts
-            setEl('vtab-memories-count', totalMemories > 0 ? '(' + totalMemories + ')' : '')
-            setEl('vtab-contacts-count', contacts > 0 ? '(' + contacts + ')' : '')
-            setEl('vtab-essentials-count', essCount > 0 ? '(' + essCount + ')' : '')
-            setEl('vtab-legacy-count', (secretsCount + valuablesCount + inheritorsCount) > 0 ? '(' + (secretsCount + valuablesCount + inheritorsCount) + ')' : '')
-            // Keep hidden elements updated for JS that references them
-            setEl('total-memories', totalMemories)
+            document.getElementById('total-memories').textContent = totalMemories
+            
+            const storageMB = ((photos * 2) + (songs * 0.1) + (contacts * 0.001)).toFixed(2)
+            document.getElementById('storage-used').textContent = storageMB + ' MB'
+            
+            // Consistent: lifetime = 100 years, monthly = 50 years
+            const years = (user && user.plan === 'lifetime') ? '100' : '50'
+            // years-guarantee element removed
+            const setEl = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v }
             setEl('inheritors-count', inheritors)
-            setEl('contacts-stat', contacts)
-            setEl('essentials-stat', essCount)
-            setEl('storage-used', '')
+            setEl('total-memories', totalMemories)
+            // Update tab counts
+            const essCount = JSON.parse(localStorage.getItem('vault_essentials')||'[]').length
+            const legCount = inheritors + JSON.parse(localStorage.getItem('vault_secrets')||'[]').length + JSON.parse(localStorage.getItem('vault_valuables')||'[]').length
+            setEl('vtab-memories-count', totalMemories > 0 ? '('+totalMemories+')' : '')
+            setEl('vtab-contacts-count', contacts > 0 ? '('+contacts+')' : '')
+            setEl('vtab-essentials-count', essCount > 0 ? '('+essCount+')' : '')
+            setEl('vtab-legacy-count', legCount > 0 ? '('+legCount+')' : '')
         }
 
         function refreshDashboardStats() {
@@ -4390,323 +3695,6 @@ ${userName}`
         }
         // ============ END ADMIN PANEL ============
 
-        // ---- Photo Lightbox ----
-        let lightboxCurrentFile = ''
-        let lightboxCurrentUrl = ''
-
-        function openPhotoLightbox(url, filename, captionObj) {
-            lightboxCurrentFile = filename
-            lightboxCurrentUrl = url
-            const lb = document.getElementById('photo-lightbox')
-            document.getElementById('lightbox-img').src = url
-            // Reset printer panel
-            const pp = document.getElementById('printer-search-panel')
-            if (pp) { pp.style.display = 'none'; document.getElementById('printer-results').innerHTML = ''; document.getElementById('printer-location').value = '' }
-
-            // Show caption info
-            let cap = {}
-            try { cap = typeof captionObj === 'string' ? JSON.parse(captionObj.replace(/&quot;/g,'"')) : (captionObj || {}) } catch(e) {}
-            const captionEl = document.getElementById('lightbox-caption')
-            const captionBtn = document.getElementById('lightbox-caption-btn')
-            let capHtml = ''
-            if (cap.date) capHtml += `<div style="color:#fbbf24; font-size:0.9rem; margin-bottom:0.3rem;">📅 ${cap.date}</div>`
-            if (cap.who) capHtml += `<div style="color:white; font-size:1rem; font-weight:600; margin-bottom:0.3rem;">👥 ${cap.who}</div>`
-            if (cap.why) capHtml += `<div style="color:#d1d5db; font-size:0.9rem; font-style:italic;">"${cap.why}"</div>`
-            captionEl.innerHTML = capHtml
-            captionBtn.textContent = capHtml ? '✏️ Edit Caption' : '✏️ Add Caption'
-
-            lb.classList.add('lb-open')
-            document.body.style.overflow = 'hidden'
-        }
-
-        async function downloadCurrentPhotoByUrl(url, filename) {
-            try {
-                const response = await fetch(url)
-                const blob = await response.blob()
-                const a = document.createElement('a')
-                a.href = URL.createObjectURL(blob)
-                a.download = filename || 'photo.jpg'
-                document.body.appendChild(a)
-                a.click()
-                document.body.removeChild(a)
-                URL.revokeObjectURL(a.href)
-            } catch(e) { window.open(url, '_blank') }
-        }
-
-        async function downloadCurrentPhoto() {
-            if (!lightboxCurrentUrl) return
-            try {
-                const response = await fetch(lightboxCurrentUrl)
-                const blob = await response.blob()
-                const a = document.createElement('a')
-                a.href = URL.createObjectURL(blob)
-                a.download = lightboxCurrentFile || 'photo.jpg'
-                a.click()
-                URL.revokeObjectURL(a.href)
-            } catch(e) {
-                // Fallback: open in new tab
-                window.open(lightboxCurrentUrl, '_blank')
-            }
-        }
-
-        function closePhotoLightbox() {
-            document.getElementById('photo-lightbox').classList.remove('lb-open')
-            document.body.style.overflow = ''
-        }
-
-        function togglePrinterSearch() {
-            const panel = document.getElementById('printer-search-panel')
-            if (!panel) return
-            const isOpen = panel.style.display !== 'none'
-            panel.style.display = isOpen ? 'none' : 'block'
-            if (!isOpen) {
-                setTimeout(() => {
-                    const inp = document.getElementById('printer-location')
-                    if (inp) inp.focus()
-                }, 50)
-            }
-        }
-
-        function useMyLocation() {
-            if (!navigator.geolocation) { showNotification('Location not available on this device'); return }
-            const inp = document.getElementById('printer-location')
-            inp.placeholder = 'Detecting location...'
-            navigator.geolocation.getCurrentPosition(
-                pos => {
-                    fetch('https://nominatim.openstreetmap.org/reverse?lat=' + pos.coords.latitude + '&lon=' + pos.coords.longitude + '&format=json')
-                        .then(r => r.json())
-                        .then(d => {
-                            const town = (d.address||{}).town || (d.address||{}).city || (d.address||{}).village || ''
-                            const pc   = (d.address||{}).postcode || ''
-                            inp.value = [town, pc].filter(Boolean).join(' ')
-                            inp.placeholder = 'Your location...'
-                            searchPrinters()
-                        })
-                        .catch(() => { inp.placeholder = 'Enter location manually...'; showNotification('Could not auto-detect location') })
-                },
-                () => { inp.placeholder = 'Enter your location...'; showNotification('Location permission denied') }
-            )
-        }
-
-        function searchPrinters() {
-            const loc = (document.getElementById('printer-location') || {}).value || ''
-            if (!loc.trim()) { showNotification('Please enter your location first'); return }
-            const el = document.getElementById('printer-results')
-            if (!el) return
-            const enc = encodeURIComponent(loc.trim())
-            const locName = loc.trim()
-            el.innerHTML = '<div style="background:rgba(255,255,255,0.08); border-radius:8px; padding:1rem;">' +
-                '<p style="color:#d1d5db; font-size:0.82rem; margin-bottom:0.75rem;">Options near <strong style="color:white;">' + locName + '</strong>:</p>' +
-                '<div style="display:flex; flex-direction:column; gap:0.5rem;">' +
-                '<a href="https://www.google.com/maps/search/photo+printing+near+' + enc + '" target="_blank" style="background:#4285F4; color:white; padding:0.55rem 1rem; border-radius:6px; text-decoration:none; font-size:0.88rem; display:block;">📍 Local photo printers near ' + locName + ' — Google Maps</a>' +
-                '<a href="https://www.google.com/search?q=online+photo+printing+delivery+near+' + enc + '" target="_blank" style="background:#34a853; color:white; padding:0.55rem 1rem; border-radius:6px; text-decoration:none; font-size:0.88rem; display:block;">🔍 Online printing &amp; delivery near ' + locName + '</a>' +
-                '<a href="https://www.photobox.co.uk/shop/prints" target="_blank" style="background:#c0392b; color:white; padding:0.55rem 1rem; border-radius:6px; text-decoration:none; font-size:0.88rem; display:block;">🖼️ Photobox — UK nationwide photo printing</a>' +
-                '<a href="https://www.snapfish.co.uk/photo-gifts/photo-prints" target="_blank" style="background:#e67e22; color:white; padding:0.55rem 1rem; border-radius:6px; text-decoration:none; font-size:0.88rem; display:block;">📷 Snapfish — Prints delivered to your door</a>' +
-                '</div>' +
-                '<p style="color:#9ca3af; font-size:0.76rem; margin-top:0.75rem; font-style:italic;">💡 Download the photo first, then upload to your chosen printer</p>' +
-                '</div>'
-        }
-
-        function lightboxAddCaption() {
-            closePhotoLightbox()
-            openPhotoCaptionModal(lightboxCurrentFile, lightboxCurrentUrl)
-        }
-
-        // ---- Photo Captions ----
-        let currentCaptionFilename = ''
-
-        function openPhotoCaptionModal(filename, url) {
-            currentCaptionFilename = filename
-            document.getElementById('caption-modal-img').src = url
-            const captions = JSON.parse(localStorage.getItem('vault_photo_captions') || '{}')
-            const existing = captions[filename] || {}
-            document.getElementById('caption-date').value = existing.date || ''
-            document.getElementById('caption-who').value = existing.who || ''
-            document.getElementById('caption-why').value = existing.why || ''
-            document.getElementById('photo-caption-modal').classList.add('active')
-        }
-
-        function closePhotoCaptionModal() {
-            document.getElementById('photo-caption-modal').classList.remove('active')
-            currentCaptionFilename = ''
-        }
-
-        function savePhotoCaption() {
-            if (!currentCaptionFilename) return
-            const captions = JSON.parse(localStorage.getItem('vault_photo_captions') || '{}')
-            captions[currentCaptionFilename] = {
-                date: document.getElementById('caption-date').value.trim(),
-                who: document.getElementById('caption-who').value.trim(),
-                why: document.getElementById('caption-why').value.trim(),
-                savedAt: new Date().toISOString()
-            }
-            localStorage.setItem('vault_photo_captions', JSON.stringify(captions))
-            syncVaultToSupabase('vault_photo_captions', captions)
-            closePhotoCaptionModal()
-            loadSavedPhotos()
-            showNotification('📸 Caption saved!')
-        }
-
-        // ---- My Secrets ----
-        let savedSecrets = JSON.parse(localStorage.getItem('vault_secrets') || '[]')
-
-        function loadSecrets() {
-            savedSecrets = JSON.parse(localStorage.getItem('vault_secrets') || '[]')
-            renderSecrets()
-        }
-
-        function saveSecret() {
-            const title = document.getElementById('secret-title').value.trim()
-            const content = document.getElementById('secret-content').value.trim()
-            if (!title || !content) { showNotification('Please fill in both title and content'); return }
-            savedSecrets.push({ id: Date.now(), title, content, addedAt: new Date().toISOString() })
-            localStorage.setItem('vault_secrets', JSON.stringify(savedSecrets))
-            syncVaultToSupabase('vault_secrets', savedSecrets)
-            document.getElementById('secret-title').value = ''
-            document.getElementById('secret-content').value = ''
-            renderSecrets()
-            showNotification('🔒 Secret saved')
-        }
-
-        function deleteSecret(id) {
-            if (!confirm('Delete this secret permanently?')) return
-            savedSecrets = savedSecrets.filter(s => s.id !== id)
-            localStorage.setItem('vault_secrets', JSON.stringify(savedSecrets))
-            syncVaultToSupabase('vault_secrets', savedSecrets)
-            renderSecrets()
-        }
-
-        function handleSecretsConsent(choice, checkbox) {
-            // Uncheck the other box
-            if (choice === 'yes') document.getElementById('secrets-consent-no').checked = false
-            else document.getElementById('secrets-consent-yes').checked = false
-
-            const status = document.getElementById('secrets-consent-status')
-            if (choice === 'yes' && checkbox.checked) {
-                status.textContent = '🔒 Your wish has been recorded. Your secrets will be marked as sealed until after your death.'
-                status.style.color = '#dc2626'
-                // Save consent state
-                localStorage.setItem('vault_secrets_consent', 'yes')
-                syncVaultToSupabase('vault_secrets_consent', 'yes')
-            } else if (choice === 'no' && checkbox.checked) {
-                status.textContent = 'These will be stored as private notes only.'
-                status.style.color = '#6b7280'
-                localStorage.setItem('vault_secrets_consent', 'no')
-                syncVaultToSupabase('vault_secrets_consent', 'no')
-            } else {
-                status.textContent = ''
-                localStorage.removeItem('vault_secrets_consent')
-            }
-        }
-
-        function renderSecrets() {
-            const list = document.getElementById('secrets-list')
-            if (!list) return
-            // Set user name in consent panel
-            const nameEl = document.getElementById('secrets-user-name')
-            const inlineEl = document.getElementById('secrets-name-inline')
-            const displayName = user ? (user.name || user.email) : ''
-            if (nameEl) nameEl.textContent = displayName
-            if (inlineEl) inlineEl.textContent = displayName
-            // Restore saved consent
-            const savedConsent = localStorage.getItem('vault_secrets_consent')
-            if (savedConsent === 'yes') {
-                const yesBox = document.getElementById('secrets-consent-yes')
-                if (yesBox) { yesBox.checked = true; document.getElementById('secrets-consent-status').textContent = '🔒 Your wish has been recorded.'; document.getElementById('secrets-consent-status').style.color = '#dc2626' }
-            } else if (savedConsent === 'no') {
-                const noBox = document.getElementById('secrets-consent-no')
-                if (noBox) { noBox.checked = true; document.getElementById('secrets-consent-status').textContent = 'Stored as private notes only.'; document.getElementById('secrets-consent-status').style.color = '#6b7280' }
-            }
-            if (savedSecrets.length === 0) {
-                list.innerHTML = '<p style="color:#9ca3af; text-align:center; padding:1rem; font-style:italic;">No secrets added yet.</p>'
-                document.getElementById('secrets-count-header').textContent = 'Only to be opened after my death'
-                return
-            }
-            document.getElementById('secrets-count-header').textContent = savedSecrets.length + ' secret' + (savedSecrets.length !== 1 ? 's' : '') + ' — only open after my death'
-            list.innerHTML = savedSecrets.map(s => `
-                <div style="background:white; border-radius:8px; padding:1rem; border:1px solid #fecaca; position:relative;">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div style="flex:1;">
-                            <div style="font-weight:700; color:#7f1d1d; margin-bottom:0.5rem;">🔒 ${s.title}</div>
-                            <div style="color:#374151; font-size:0.9rem; line-height:1.6; white-space:pre-wrap;">${s.content}</div>
-                            <div style="color:#d1d5db; font-size:0.75rem; margin-top:0.5rem;">Added ${new Date(s.addedAt).toLocaleDateString()}</div>
-                        </div>
-                        <button onclick="deleteSecret(${s.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; flex-shrink:0; margin-left:0.5rem;">🗑️</button>
-                    </div>
-                </div>
-            `).join('')
-        }
-
-        // ---- My Valuables ----
-        let savedValuables = JSON.parse(localStorage.getItem('vault_valuables') || '[]')
-
-        function loadValuables() {
-            savedValuables = JSON.parse(localStorage.getItem('vault_valuables') || '[]')
-            renderValuables()
-        }
-
-        function saveValuable() {
-            const name = document.getElementById('valuable-name').value.trim()
-            if (!name) { showNotification('Please enter what the valuable is'); return }
-            savedValuables.push({
-                id: Date.now(),
-                name,
-                category: document.getElementById('valuable-category').value,
-                value: document.getElementById('valuable-value').value.trim(),
-                location: document.getElementById('valuable-location').value.trim(),
-                notes: document.getElementById('valuable-notes').value.trim(),
-                addedAt: new Date().toISOString()
-            })
-            localStorage.setItem('vault_valuables', JSON.stringify(savedValuables))
-            syncVaultToSupabase('vault_valuables', savedValuables)
-            document.getElementById('valuable-name').value = ''
-            document.getElementById('valuable-category').value = ''
-            document.getElementById('valuable-value').value = ''
-            document.getElementById('valuable-location').value = ''
-            document.getElementById('valuable-notes').value = ''
-            renderValuables()
-            showNotification('💎 Valuable saved')
-        }
-
-        function deleteValuable(id) {
-            if (!confirm('Remove this valuable?')) return
-            savedValuables = savedValuables.filter(v => v.id !== id)
-            localStorage.setItem('vault_valuables', JSON.stringify(savedValuables))
-            syncVaultToSupabase('vault_valuables', savedValuables)
-            renderValuables()
-        }
-
-        function renderValuables() {
-            const list = document.getElementById('valuables-list')
-            if (!list) return
-            if (savedValuables.length === 0) {
-                list.innerHTML = '<p style="color:#9ca3af; text-align:center; padding:1rem; font-style:italic;">No valuables added yet.</p>'
-                document.getElementById('valuables-count-header').textContent = 'Record what you own, where to find it, and what it\'s worth'
-                return
-            }
-            const total = savedValuables.length
-            document.getElementById('valuables-count-header').textContent = total + ' item' + (total !== 1 ? 's' : '') + ' recorded'
-            const catEmoji = { 'Jewellery':'💍','Art':'🎨','Property':'🏠','Investments':'📈','Vehicles':'🚗','Cash':'💷','Sentimental':'❤️','Other':'📦','':"📦" }
-            list.innerHTML = savedValuables.map(v => `
-                <div style="background:white; border-radius:8px; padding:1rem; border:1px solid #fde68a;">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div style="flex:1;">
-                            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; flex-wrap:wrap;">
-                                <span style="font-size:1.2rem;">${catEmoji[v.category] || '📦'}</span>
-                                <span style="font-weight:700; color:#92400e; font-size:1rem;">${v.name}</span>
-                                ${v.category ? `<span style="background:#fef3c7; color:#92400e; padding:0.15rem 0.5rem; border-radius:4px; font-size:0.78rem;">${v.category}</span>` : ''}
-                                ${v.value ? `<span style="background:#ecfdf5; color:#065f46; padding:0.15rem 0.5rem; border-radius:4px; font-size:0.78rem; font-weight:600;">${v.value}</span>` : ''}
-                            </div>
-                            ${v.location ? `<div style="color:#6b7280; font-size:0.85rem; margin-bottom:0.3rem;">📍 <strong>Location:</strong> ${v.location}</div>` : ''}
-                            ${v.notes ? `<div style="color:#6b7280; font-size:0.85rem; font-style:italic; line-height:1.5;">${v.notes}</div>` : ''}
-                            <div style="color:#d1d5db; font-size:0.75rem; margin-top:0.4rem;">Added ${new Date(v.addedAt).toLocaleDateString()}</div>
-                        </div>
-                        <button onclick="deleteValuable(${v.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; flex-shrink:0; margin-left:0.5rem;">🗑️</button>
-                    </div>
-                </div>
-            `).join('')
-        }
-
         function showNotification(message) {
             const notification = document.getElementById('notification');
             notification.textContent = message;
@@ -4716,70 +3704,86 @@ ${userName}`
                 notification.classList.remove('active');
             }, 3000);
         }
-    </script>
+    
+        // ===== ESSENTIALS =====
+        let savedEssentials = []
 
-    <!-- Login Modal -->
-    <div id="login-modal" style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.5); overflow-y:auto;">
-        <div style="max-width:460px; margin:3rem auto; background:white; border-radius:16px; padding:2.5rem; box-shadow:0 20px 60px rgba(0,0,0,0.3); position:relative;">
-            <button onclick="closeLogin()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:1.5rem; color:#9ca3af; cursor:pointer;">✕</button>
-            
-            <div style="text-align:center; margin-bottom:1.5rem;">
-                <div style="font-size:2rem; margin-bottom:0.5rem;">🏛️</div>
-                <h2 id="login-modal-title" style="color:#1e3a8a; font-size:1.6rem; margin-bottom:0.3rem;">Welcome Back</h2>
-                <p id="login-modal-subtitle" style="color:#6b7280; font-size:0.9rem;">Log in to access your vault.</p>
-            </div>
+        function loadEssentials() {
+            savedEssentials = JSON.parse(localStorage.getItem('vault_essentials') || '[]')
+            renderEssentials()
+        }
 
-            <div id="login-plan-badge" style="display:none; background:#fef3c7; border:1px solid #fde68a; border-radius:8px; padding:0.6rem 1rem; text-align:center; margin-bottom:1rem; font-size:0.85rem; color:#92400e;">
-                🎁 <span id="login-plan-label">Free Founding Member</span>
-            </div>
+        function renderEssentials() {
+            const cats = ['finance','access','digital','docs','wishes']
+            cats.forEach(function(cat) {
+                const list = document.getElementById('essentials-' + cat + '-list')
+                const empty = document.getElementById('essentials-' + cat + '-empty')
+                if (!list) return
+                const entries = savedEssentials.filter(e => e.category === cat)
+                if (entries.length === 0) {
+                    list.innerHTML = ''
+                    if (empty) empty.style.display = 'block'
+                    return
+                }
+                if (empty) empty.style.display = 'none'
+                list.innerHTML = entries.map(function(e) {
+                    return '<div style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:1rem;margin-bottom:0.75rem;">' +
+                        '<div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
+                        '<strong style="color:#1e3a8a;font-size:0.95rem;">' + e.heading + '</strong>' +
+                        '<button onclick="deleteEssential(' + e.id + ')" style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:1rem;padding:0 0.25rem;">🗑️</button>' +
+                        '</div>' +
+                        '<pre style="margin:0.5rem 0 0;color:#374151;font-size:0.85rem;white-space:pre-wrap;font-family:inherit;">' + e.detail + '</pre>' +
+                        (e.image ? '<img src="' + e.image + '" style="max-width:100%;border-radius:6px;margin-top:0.5rem;max-height:200px;object-fit:cover;">' : '') +
+                        '<div style="color:#9ca3af;font-size:0.75rem;margin-top:0.5rem;">' + new Date(e.addedAt).toLocaleDateString() + '</div>' +
+                        '</div>'
+                }).join('')
+            })
+            // Update essentials count in tab
+            const ec = document.getElementById('vtab-essentials-count')
+            if (ec) ec.textContent = savedEssentials.length > 0 ? '(' + savedEssentials.length + ')' : ''
+        }
 
-            <div style="background:#fefce8; border:1px solid #fde68a; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1.25rem; font-size:0.82rem; color:#92400e;">
-                ✏️ <strong>Beta Testing:</strong> Your data is saved to this browser only. Don't clear your browser cache while testing.
-            </div>
+        function deleteEssential(id) {
+            savedEssentials = savedEssentials.filter(e => e.id !== id)
+            localStorage.setItem('vault_essentials', JSON.stringify(savedEssentials))
+            renderEssentials()
+        }
 
-            <!-- Auth mode tabs -->
-            <div style="display:flex; border-radius:8px; overflow:hidden; border:1px solid #e5e7eb; margin-bottom:1.5rem;">
-                <button id="tab-signup" onclick="switchAuthTab('signup')"
-                    style="flex:1; padding:0.65rem; background:#f9fafb; border:none; cursor:pointer; font-size:0.9rem; color:#6b7280; font-weight:500;">
-                    Sign Up
-                </button>
-                <button id="tab-login" onclick="switchAuthTab('login')"
-                    style="flex:1; padding:0.65rem; background:#1e3a8a; border:none; cursor:pointer; font-size:0.9rem; color:white; font-weight:600;">
-                    Log In
-                </button>
-            </div>
+        // ===== VAULT TAB SWITCHING =====
+        var currentVaultTab = 'memories'
+        var currentSubTabs = {}
 
-            <form id="login-form" onsubmit="login(event)">
-                <div id="fullname-row" style="display:none; margin-bottom:1rem;">
-                    <label style="font-size:0.85rem; font-weight:600; color:#374151; display:block; margin-bottom:0.4rem;">Full Name</label>
-                    <input id="fullname" type="text" placeholder="Your name"
-                        style="width:100%; padding:0.75rem; border:2px solid #e5e7eb; border-radius:8px; font-size:0.95rem; box-sizing:border-box;">
-                </div>
-                <div style="margin-bottom:1rem;">
-                    <label style="font-size:0.85rem; font-weight:600; color:#374151; display:block; margin-bottom:0.4rem;">Email</label>
-                    <input id="email" type="email" placeholder="your@email.com" required
-                        style="width:100%; padding:0.75rem; border:2px solid #e5e7eb; border-radius:8px; font-size:0.95rem; box-sizing:border-box;">
-                </div>
-                <div style="margin-bottom:1.25rem;">
-                    <label style="font-size:0.85rem; font-weight:600; color:#374151; display:block; margin-bottom:0.4rem;">Password</label>
-                    <input id="password" type="password" placeholder="••••••••••" required
-                        style="width:100%; padding:0.75rem; border:2px solid #e5e7eb; border-radius:8px; font-size:0.95rem; box-sizing:border-box;">
-                    <p id="password-hint" style="display:none; font-size:0.78rem; color:#9ca3af; margin-top:0.3rem;">Minimum 8 characters</p>
-                </div>
+        function switchVaultTab(tab) {
+            currentVaultTab = tab
+            var tabs = ['memories','contacts','essentials','legacy']
+            tabs.forEach(function(t) {
+                var content = document.getElementById('vtabcontent-' + t)
+                var btn = document.getElementById('vtab-' + t)
+                if (content) content.style.display = t === tab ? 'block' : 'none'
+                if (btn) {
+                    btn.style.borderBottomColor = t === tab ? '#3b82f6' : 'transparent'
+                    btn.style.color = t === tab ? '#1e3a8a' : '#6b7280'
+                    btn.style.fontWeight = t === tab ? '700' : '600'
+                }
+            })
+            window.scrollTo({top:0, behavior:'smooth'})
+        }
 
-                <div id="login-error" style="display:none; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1rem; color:#dc2626; font-size:0.85rem;"></div>
-
-                <button id="login-submit-btn" type="submit"
-                    style="width:100%; padding:0.85rem; background:#1e3a8a; color:white; border:none; border-radius:8px; font-size:1rem; font-weight:700; cursor:pointer; margin-bottom:0.75rem;">
-                    Log In
-                </button>
-                <button type="button" onclick="closeLogin()"
-                    style="width:100%; padding:0.75rem; background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; border-radius:8px; font-size:0.9rem; cursor:pointer;">
-                    Cancel
-                </button>
-            </form>
-        </div>
-    </div>
-
+        function switchSubTab(parent, sub) {
+            currentSubTabs[parent] = sub
+            var parentEl = document.getElementById('vtabcontent-' + parent)
+            if (!parentEl) return
+            parentEl.querySelectorAll('[id^="vstabcontent-' + parent + '-"]').forEach(function(el) {
+                el.style.display = el.id === 'vstabcontent-'+parent+'-'+sub ? 'block' : 'none'
+            })
+            parentEl.querySelectorAll('[id^="vstab-' + parent + '-"]').forEach(function(btn) {
+                var active = btn.id === 'vstab-'+parent+'-'+sub
+                btn.style.borderBottomColor = active ? '#3b82f6' : 'transparent'
+                btn.style.color = active ? '#1e3a8a' : '#6b7280'
+                btn.style.fontWeight = active ? '700' : '500'
+            })
+        }
+</script>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.9</div>
 </body>
 </html>
