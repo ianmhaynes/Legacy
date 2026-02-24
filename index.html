@@ -1654,25 +1654,32 @@
 
                     const div = document.createElement('div')
                     div.style = 'aspect-ratio:1; border-radius:8px; overflow:hidden; position:relative; cursor:pointer; background:#f3f4f6;'
+                    div.dataset.url = urlData.publicUrl
+                    div.dataset.name = file.name
+                    div.dataset.caption = JSON.stringify(caption)
+                    div.addEventListener('click', function(e) {
+                        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return
+                        const cap = JSON.parse(this.dataset.caption || '{}')
+                        openPhotoLightbox(this.dataset.url, this.dataset.name, cap)
+                    })
                     div.innerHTML = `
-                        <img src="${urlData.publicUrl}" style="width:100%; height:100%; object-fit:cover;" 
-                             onclick="openPhotoLightbox('${urlData.publicUrl}', '${file.name.replace(/'/g,"\\'")}', ${JSON.stringify(caption).replace(/"/g,'&quot;')})"
+                        <img src="${urlData.publicUrl}" style="width:100%; height:100%; object-fit:cover; display:block; pointer-events:none;"
                              onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📸</text></svg>'" />
                         ${hasCaption ? `<div style="position:absolute; top:5px; right:5px; font-size:1.1rem; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5)); pointer-events:none;">❤️</div>` : ''}
-                        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.55); opacity:0; transition:opacity 0.2s; display:flex; flex-direction:column; justify-content:flex-end; padding:0.5rem;"
+                        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.55); opacity:0; transition:opacity 0.2s; display:flex; flex-direction:column; justify-content:flex-end; padding:0.5rem; pointer-events:none;"
                              onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">
-                            ${caption.date ? `<div style="color:#fbbf24; font-size:0.7rem; margin-bottom:0.15rem;">📅 ${caption.date}</div>` : ''}
-                            ${caption.who ? `<div style="color:white; font-size:0.72rem; font-weight:600; margin-bottom:0.15rem;">👥 ${caption.who}</div>` : ''}
-                            ${caption.why ? `<div style="color:#d1d5db; font-size:0.68rem; font-style:italic; margin-bottom:0.3rem;">"${caption.why}"</div>` : ''}
-                            <div style="display:flex; gap:0.3rem;">
-                                <button onclick="event.stopPropagation(); openPhotoCaptionModal('${file.name}', '${urlData.publicUrl}')" 
+                            ${caption.date ? `<div style="color:#fbbf24; font-size:0.7rem; margin-bottom:0.15rem; pointer-events:none;">📅 ${caption.date}</div>` : ''}
+                            ${caption.who ? `<div style="color:white; font-size:0.72rem; font-weight:600; margin-bottom:0.15rem; pointer-events:none;">👥 ${caption.who}</div>` : ''}
+                            ${caption.why ? `<div style="color:#d1d5db; font-size:0.68rem; font-style:italic; margin-bottom:0.3rem; pointer-events:none;">"${caption.why}"</div>` : ''}
+                            <div style="display:flex; gap:0.3rem; pointer-events:auto;">
+                                <button onclick="event.stopPropagation(); openPhotoCaptionModal('${file.name}', '${urlData.publicUrl}')"
                                     style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:white; padding:0.2rem 0.4rem; border-radius:4px; font-size:0.68rem; cursor:pointer; flex:1;">
                                     ✏️ ${hasCaption ? 'Edit' : 'Caption'}
                                 </button>
-                                <a href="${urlData.publicUrl}" download="${file.name}" onclick="event.stopPropagation()"
-                                    style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:white; padding:0.2rem 0.4rem; border-radius:4px; font-size:0.68rem; cursor:pointer; text-decoration:none; display:flex; align-items:center;">
+                                <button onclick="event.stopPropagation(); downloadCurrentPhotoByUrl('${urlData.publicUrl}','${file.name}')"
+                                    style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:white; padding:0.2rem 0.4rem; border-radius:4px; font-size:0.68rem; cursor:pointer;">
                                     ⬇️
-                                </a>
+                                </button>
                             </div>
                         </div>
                     `
@@ -2100,6 +2107,15 @@
             }
         }
 
+        function updateFixedCollapseButtons() {
+            const photosOpen = document.getElementById('photos-body') && document.getElementById('photos-body').style.display !== 'none'
+            const contactsOpen = document.getElementById('contacts-body') && document.getElementById('contacts-body').style.display !== 'none'
+            const fcP = document.getElementById('fixed-collapse-photos')
+            const fcC = document.getElementById('fixed-collapse-contacts')
+            if (fcP) fcP.style.display = photosOpen ? 'block' : 'none'
+            if (fcC) fcC.style.display = contactsOpen ? 'block' : 'none'
+        }
+
         function toggleSection(bodyId, arrowId) {
             const body = document.getElementById(bodyId)
             const arrow = document.getElementById(arrowId)
@@ -2111,6 +2127,7 @@
                 body.style.display = 'none'
                 if (arrow) arrow.textContent = '▶'
             }
+            updateFixedCollapseButtons()
         }
 
         // Inheritors Management
@@ -4375,6 +4392,20 @@ ${userName}`
             document.body.style.overflow = 'hidden'
         }
 
+        async function downloadCurrentPhotoByUrl(url, filename) {
+            try {
+                const response = await fetch(url)
+                const blob = await response.blob()
+                const a = document.createElement('a')
+                a.href = URL.createObjectURL(blob)
+                a.download = filename || 'photo.jpg'
+                document.body.appendChild(a)
+                a.click()
+                document.body.removeChild(a)
+                URL.revokeObjectURL(a.href)
+            } catch(e) { window.open(url, '_blank') }
+        }
+
         async function downloadCurrentPhoto() {
             if (!lightboxCurrentUrl) return
             try {
@@ -4606,5 +4637,18 @@ ${userName}`
             }, 3000);
         }
     </script>
+    <!-- Fixed collapse buttons - always visible when sections open -->
+    <div id="fixed-collapse-photos" style="display:none; position:fixed; bottom:5rem; right:1.5rem; z-index:500;">
+        <button onclick="toggleSection('photos-body','photos-arrow'); updateFixedCollapseButtons()"
+            style="background:#3b82f6; color:white; border:none; padding:0.6rem 1.2rem; border-radius:980px; font-size:0.88rem; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(59,130,246,0.5); white-space:nowrap;">
+            ▲ Collapse Photos
+        </button>
+    </div>
+    <div id="fixed-collapse-contacts" style="display:none; position:fixed; bottom:5rem; right:1.5rem; z-index:500;">
+        <button onclick="toggleSection('contacts-body','contacts-arrow'); updateFixedCollapseButtons()"
+            style="background:#8b5cf6; color:white; border:none; padding:0.6rem 1.2rem; border-radius:980px; font-size:0.88rem; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(139,92,246,0.5); white-space:nowrap;">
+            ▲ Collapse Contacts
+        </button>
+    </div>
 </body>
 </html>
