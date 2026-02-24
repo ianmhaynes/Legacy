@@ -1739,55 +1739,76 @@
             }, 500)
         }
 
-        // tracks the confirmed custom category name
-        let _confirmedCustomCategory = ''
+        // Category pill button system
+        function selectCategory(btn, cat) {
+            // Deselect all
+            document.querySelectorAll('.cat-btn').forEach(b => {
+                b.style.background = 'white'
+                b.style.borderColor = '#e5e7eb'
+                b.style.color = '#374151'
+                b.style.fontWeight = 'normal'
+            })
+            // Hide custom input
+            document.getElementById('custom-cat-row').style.display = 'none'
+            document.getElementById('contact-category-custom').value = ''
+            // Select this button
+            btn.style.background = '#7c3aed'
+            btn.style.borderColor = '#7c3aed'
+            btn.style.color = 'white'
+            btn.style.fontWeight = '600'
+            // Set hidden input
+            document.getElementById('contact-category').value = cat
+        }
 
-        function handleCategoryChange(sel) {
-            const panel = document.getElementById('custom-category-panel')
-            const badge = document.getElementById('category-confirmed-badge')
-            if (sel.value === '__custom__') {
-                panel.style.display = 'block'
-                badge.style.display = 'none'
-                _confirmedCustomCategory = ''
-                setTimeout(() => document.getElementById('contact-category-custom').focus(), 50)
-            } else {
-                panel.style.display = 'none'
-                badge.style.display = 'none'
-                _confirmedCustomCategory = ''
-            }
+        function showCustomCatInput() {
+            // Deselect all standard buttons
+            document.querySelectorAll('.cat-btn').forEach(b => {
+                b.style.background = 'white'
+                b.style.borderColor = '#e5e7eb'
+                b.style.color = '#374151'
+                b.style.fontWeight = 'normal'
+            })
+            document.getElementById('cat-btn-custom').style.background = '#ede9fe'
+            document.getElementById('cat-btn-custom').style.borderColor = '#7c3aed'
+            // Show input row
+            const row = document.getElementById('custom-cat-row')
+            row.style.display = 'flex'
+            document.getElementById('contact-category').value = ''
+            setTimeout(() => document.getElementById('contact-category-custom').focus(), 50)
+        }
+
+        function hideCustomCatInput() {
+            document.getElementById('custom-cat-row').style.display = 'none'
+            document.getElementById('contact-category-custom').value = ''
+            document.getElementById('contact-category').value = ''
+            document.getElementById('cat-btn-custom').style.background = '#faf5ff'
+            document.getElementById('cat-btn-custom').style.borderColor = '#8b5cf6'
+        }
+
+        function previewCustomCat(val) {
+            document.getElementById('contact-category').value = val
         }
 
         function confirmCustomCategory() {
             const val = document.getElementById('contact-category-custom').value.trim()
             if (!val) { showNotification('Please type a category name'); return }
-            _confirmedCustomCategory = val
-            document.getElementById('custom-category-panel').style.display = 'none'
-            const badge = document.getElementById('category-confirmed-badge')
-            document.getElementById('category-confirmed-name').textContent = val
-            badge.style.display = 'block'
-            showNotification('✅ Category "' + val + '" ready to use')
-        }
-
-        function cancelCustomCategory() {
-            document.getElementById('custom-category-panel').style.display = 'none'
-            document.getElementById('contact-category').value = ''
-            document.getElementById('contact-category-custom').value = ''
-            _confirmedCustomCategory = ''
-        }
-
-        function clearCustomCategory() {
-            document.getElementById('category-confirmed-badge').style.display = 'none'
-            document.getElementById('contact-category').value = ''
-            document.getElementById('contact-category-custom').value = ''
-            _confirmedCustomCategory = ''
+            document.getElementById('contact-category').value = val
+            document.getElementById('custom-cat-row').style.display = 'none'
+            // Style the custom button as selected
+            const btn = document.getElementById('cat-btn-custom')
+            btn.textContent = '✓ ' + val
+            btn.style.background = '#7c3aed'
+            btn.style.borderColor = '#7c3aed'
+            btn.style.color = 'white'
+            btn.style.fontWeight = '600'
+            showNotification('✅ Category "' + val + '" ready')
         }
 
         function saveContact() {
             const name = document.getElementById('contact-name').value.trim()
             if (!name) { showNotification('Please enter a name!'); return }
 
-            const catSel = document.getElementById('contact-category').value
-            const category = catSel === '__custom__' ? _confirmedCustomCategory : catSel
+            const category = document.getElementById('contact-category').value
 
             const contact = {
                 id: Date.now(),
@@ -1812,9 +1833,12 @@
             document.getElementById('contact-email').value = ''
             document.getElementById('contact-category').value = ''
             document.getElementById('contact-category-custom').value = ''
-            document.getElementById('custom-category-panel').style.display = 'none'
-            document.getElementById('category-confirmed-badge').style.display = 'none'
-            _confirmedCustomCategory = ''
+            document.getElementById('custom-cat-row').style.display = 'none'
+            document.getElementById('cat-btn-custom').textContent = '✏️ Custom...'
+            document.getElementById('cat-btn-custom').style.background = '#faf5ff'
+            document.getElementById('cat-btn-custom').style.borderColor = '#8b5cf6'
+            document.getElementById('cat-btn-custom').style.color = '#7c3aed'
+            document.querySelectorAll('.cat-btn').forEach(b => { b.style.background='white'; b.style.borderColor='#e5e7eb'; b.style.color='#374151'; b.style.fontWeight='normal' })
             document.getElementById('contact-relation').value = ''
             document.getElementById('contact-note').value = ''
             document.getElementById('add-contact-form').style.display = 'none'
@@ -2706,7 +2730,7 @@ ${userName}`
                     </div>
                     <div id="photos-body" style="padding:0 1.5rem 1.5rem; display:none;">
 
-                    <div style="position:sticky; top:44px; z-index:50; text-align:right; margin-bottom:0.75rem;">
+                    <div style="text-align:right; margin-bottom:0.75rem;">
                         <button onclick="toggleSection('photos-body','photos-arrow')" style="background:#3b82f6; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; font-size:0.85rem; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(59,130,246,0.4);">▲ Collapse Photos</button>
                     </div>
 
@@ -2733,6 +2757,9 @@ ${userName}`
 
                     <p id="photo-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;">No photos uploaded yet</p>
                     </div>
+                    <div style="text-align:center; padding-top:1rem; border-top:1px solid #e5e7eb; margin-top:1rem;">
+                        <button onclick="toggleSection('photos-body','photos-arrow')" style="background:#3b82f6; color:white; border:none; padding:0.5rem 1.5rem; border-radius:6px; font-size:0.85rem; font-weight:600; cursor:pointer;">▲ Collapse Photos</button>
+                    </div>
                 </div>
 
                 <!-- Contacts Card -->
@@ -2757,7 +2784,7 @@ ${userName}`
                     </div>
                     <div id="contacts-body" style="padding:0 1.5rem 1.5rem; display:none;">
 
-                    <div style="position:sticky; top:44px; z-index:50; text-align:right; margin-bottom:0.75rem;">
+                    <div style="text-align:right; margin-bottom:0.75rem;">
                         <button onclick="toggleSection('contacts-body','contacts-arrow')" style="background:#8b5cf6; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; font-size:0.85rem; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(139,92,246,0.4);">▲ Collapse Contacts</button>
                     </div>
 
@@ -2803,37 +2830,35 @@ ${userName}`
 
                     <div id="add-contact-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
                         <h4 style="color:#1e3a8a; margin-bottom:1rem;">Add a Contact</h4>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.5rem;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
                             <input id="contact-name" placeholder="Full Name *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
                             <input id="contact-phone" placeholder="Phone Number" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
                             <input id="contact-email" placeholder="Email Address" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                            <select id="contact-category" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; background:white;" onchange="handleCategoryChange(this)">
-                                <option value="">Select category...</option>
-                                <option value="Family">👨‍👩‍👧‍👦 Family</option>
-                                <option value="Friends">👫 Friends</option>
-                                <option value="Business">💼 Business</option>
-                                <option value="Romantic">💕 Romantic</option>
-                                <option value="Disliked">😬 Disliked</option>
-                                <option value="Others">⭐ Others</option>
-                                <option disabled style="border-top:1px solid #e5e7eb; color:#9ca3af;">──────────────</option>
-                                <option value="__custom__">✏️ Create new category...</option>
-                            </select>
-                            <input id="contact-relation" placeholder="Relationship (e.g. Sister, Best Friend)" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; grid-column:span 2;">
+                            <input id="contact-relation" placeholder="Relationship (e.g. Sister, Best Friend)" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
                         </div>
-                        <!-- Custom category creation panel — OUTSIDE grid so it renders full width -->
-                        <div id="custom-category-panel" style="display:none; margin-bottom:0.75rem; background:#f5f3ff; border:1px solid #c4b5fd; border-radius:8px; padding:0.75rem;">
-                            <p style="color:#5b21b6; font-size:0.85rem; font-weight:600; margin-bottom:0.5rem;">✏️ Name your new category:</p>
-                            <div style="display:flex; gap:0.4rem; align-items:center;">
-                                <input id="contact-category-custom" placeholder="e.g. Watch Contacts, Golf Club, School..."
-                                    style="flex:1; padding:0.55rem 0.7rem; border:1px solid #c4b5fd; border-radius:6px; font-size:0.9rem;"
-                                    onkeydown="if(event.key==='Enter'){event.preventDefault();confirmCustomCategory()}">
-                                <button type="button" onclick="confirmCustomCategory()" style="background:#7c3aed; color:white; border:none; padding:0.55rem 1rem; border-radius:6px; font-size:0.9rem; font-weight:600; cursor:pointer; white-space:nowrap;">✓ Use it</button>
-                                <button type="button" onclick="cancelCustomCategory()" style="background:#f3f4f6; color:#6b7280; border:1px solid #e5e7eb; padding:0.55rem 0.7rem; border-radius:6px; font-size:0.85rem; cursor:pointer;">✕</button>
+
+                        <!-- CATEGORY SELECTOR - always fully visible, no hide/show tricks -->
+                        <div style="margin-bottom:0.75rem;">
+                            <label style="display:block; font-size:0.85rem; font-weight:600; color:#374151; margin-bottom:0.4rem;">Category</label>
+                            <div style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.5rem;" id="cat-btn-row">
+                                <button type="button" onclick="selectCategory(this,'Family')"    class="cat-btn" style="padding:0.4rem 0.8rem; border:2px solid #e5e7eb; border-radius:980px; font-size:0.82rem; background:white; cursor:pointer;">👨‍👩‍👧‍👦 Family</button>
+                                <button type="button" onclick="selectCategory(this,'Friends')"   class="cat-btn" style="padding:0.4rem 0.8rem; border:2px solid #e5e7eb; border-radius:980px; font-size:0.82rem; background:white; cursor:pointer;">👫 Friends</button>
+                                <button type="button" onclick="selectCategory(this,'Business')"  class="cat-btn" style="padding:0.4rem 0.8rem; border:2px solid #e5e7eb; border-radius:980px; font-size:0.82rem; background:white; cursor:pointer;">💼 Business</button>
+                                <button type="button" onclick="selectCategory(this,'Romantic')"  class="cat-btn" style="padding:0.4rem 0.8rem; border:2px solid #e5e7eb; border-radius:980px; font-size:0.82rem; background:white; cursor:pointer;">💕 Romantic</button>
+                                <button type="button" onclick="selectCategory(this,'Disliked')"  class="cat-btn" style="padding:0.4rem 0.8rem; border:2px solid #e5e7eb; border-radius:980px; font-size:0.82rem; background:white; cursor:pointer;">😬 Disliked</button>
+                                <button type="button" onclick="selectCategory(this,'Others')"    class="cat-btn" style="padding:0.4rem 0.8rem; border:2px solid #e5e7eb; border-radius:980px; font-size:0.82rem; background:white; cursor:pointer;">⭐ Others</button>
+                                <button type="button" onclick="showCustomCatInput()" id="cat-btn-custom" style="padding:0.4rem 0.8rem; border:2px dashed #8b5cf6; border-radius:980px; font-size:0.82rem; background:#faf5ff; cursor:pointer; color:#7c3aed;">✏️ Custom...</button>
                             </div>
-                        </div>
-                        <div id="category-confirmed-badge" style="display:none; margin-bottom:0.75rem; padding:0.4rem 0.6rem; background:#ede9fe; border-radius:6px;">
-                            <span style="color:#5b21b6; font-size:0.85rem; font-weight:600;">✓ Category: <span id="category-confirmed-name" style="font-style:italic;"></span></span>
-                            <button onclick="clearCustomCategory()" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:0.82rem; margin-left:0.5rem; text-decoration:underline;">Change</button>
+                            <!-- Custom category input — always in DOM, shown/hidden cleanly -->
+                            <div id="custom-cat-row" style="display:none; align-items:center; gap:0.4rem; background:#f5f3ff; border:1px solid #c4b5fd; border-radius:8px; padding:0.5rem 0.6rem;">
+                                <input id="contact-category-custom" placeholder="Name your category (e.g. Watch Contacts)" 
+                                    style="flex:1; padding:0.45rem 0.6rem; border:1px solid #c4b5fd; border-radius:6px; font-size:0.9rem; min-width:0;"
+                                    oninput="previewCustomCat(this.value)"
+                                    onkeydown="if(event.key==='Enter'){event.preventDefault();confirmCustomCategory()}">
+                                <button type="button" onclick="confirmCustomCategory()" style="background:#7c3aed; color:white; border:none; padding:0.45rem 0.9rem; border-radius:6px; font-size:0.88rem; font-weight:700; cursor:pointer; white-space:nowrap; flex-shrink:0;">✓ Use</button>
+                                <button type="button" onclick="hideCustomCatInput()" style="background:none; border:1px solid #e5e7eb; color:#9ca3af; padding:0.45rem 0.5rem; border-radius:6px; font-size:0.88rem; cursor:pointer; flex-shrink:0;">✕</button>
+                            </div>
+                            <input type="hidden" id="contact-category" value="">
                         </div>
                         <textarea id="contact-note" placeholder="Why are they meaningful to you? Share a memory or story..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:80px; resize:vertical;"></textarea>
                         <div style="display:flex; gap:0.5rem;">
@@ -2857,6 +2882,9 @@ ${userName}`
 
                     <div id="contacts-list" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
                     <p id="contacts-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;"></p>
+                    </div>
+                    <div style="text-align:center; padding-top:1rem; border-top:1px solid #e5e7eb; margin-top:1rem;">
+                        <button onclick="toggleSection('contacts-body','contacts-arrow')" style="background:#8b5cf6; color:white; border:none; padding:0.5rem 1.5rem; border-radius:6px; font-size:0.85rem; font-weight:600; cursor:pointer;">▲ Collapse Contacts</button>
                     </div>
                 </div>
 
@@ -3474,7 +3502,7 @@ ${userName}`
 
     
     <!-- Photo Lightbox Modal -->
-    <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.93); z-index:9999; align-items:flex-start; justify-content:center; padding:1rem; overflow-y:auto;" onclick="closePhotoLightbox()">
+    <div id="photo-lightbox" style="position:fixed; inset:0; background:rgba(0,0,0,0.93); z-index:9999; padding:1rem; overflow-y:auto;" onclick="closePhotoLightbox()">
         <div style="max-width:860px; width:100%; margin:auto; position:relative;" onclick="event.stopPropagation()">
             <!-- Close -->
             <button onclick="closePhotoLightbox()" style="position:absolute; top:-2.5rem; right:0; background:none; border:none; color:white; font-size:2rem; cursor:pointer; line-height:1; z-index:10;">✕</button>
