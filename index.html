@@ -3934,8 +3934,15 @@
                 contact.category = category
                 localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
                 syncVaultToSupabase('vault_contacts', savedContacts)
-                renderContacts()
+                // Stay on whichever filter is currently active
+                const strip = document.getElementById('contacts-cat-strip')
+                const activeCat = strip ? strip.dataset.active : 'All'
                 renderCategoryStrip()
+                if (!activeCat || activeCat === 'All') {
+                    renderContacts()
+                } else {
+                    filterContactsByCategory(activeCat)
+                }
                 showNotification('✅ Moved to ' + category)
             }
         }
