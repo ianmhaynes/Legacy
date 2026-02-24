@@ -2042,10 +2042,10 @@
                         ${c.note ? `<div style="color:#6b7280; font-size:0.85rem; margin-top:0.4rem; font-style:italic; line-height:1.4;">"${c.note}"</div>` : ''}
                         <div style="margin-top:0.5rem; display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
                             <span style="color:#9ca3af; font-size:0.78rem;">${c.category ? '📂 ' + c.category + ' — move to:' : 'Move to:'}</span>
-                            ${['Family','Friends','Business','Romantic','Disliked','Others'].filter(cat => cat !== c.category).map(cat =>
-                                `<button onclick="assignContactCategory(${c.id},'${cat}')" style="padding:0.15rem 0.5rem; border:1px solid #e5e7eb; border-radius:4px; font-size:0.75rem; background:#f9fafb; cursor:pointer; color:#374151;">${categoryEmoji[cat] || ''} ${cat}</button>`
+                            ${[...new Set([...['Family','Friends','Business','Romantic','Disliked','Others'], ...savedContacts.map(x=>x.category).filter(x=>x && !['Family','Friends','Business','Romantic','Disliked','Others'].includes(x))])].filter(cat => cat !== c.category).map(cat =>
+                                `<button onclick="assignContactCategory(${c.id},'${cat}')" style="padding:0.15rem 0.5rem; border:1px solid ${['Family','Friends','Business','Romantic','Disliked','Others'].includes(cat) ? '#e5e7eb' : '#c4b5fd'}; border-radius:4px; font-size:0.75rem; background:${['Family','Friends','Business','Romantic','Disliked','Others'].includes(cat) ? '#f9fafb' : '#faf5ff'}; cursor:pointer; color:${['Family','Friends','Business','Romantic','Disliked','Others'].includes(cat) ? '#374151' : '#7c3aed'};">${categoryEmoji[cat] || '📋'} ${cat}</button>`
                             ).join('')}
-                            <button onclick="promptCustomCategory(${c.id})" style="padding:0.15rem 0.5rem; border:1px dashed #8b5cf6; border-radius:4px; font-size:0.75rem; background:#faf5ff; cursor:pointer; color:#7c3aed;">✏️ Custom</button>
+                            <button onclick="promptCustomCategory(${c.id})" style="padding:0.15rem 0.5rem; border:1px dashed #8b5cf6; border-radius:4px; font-size:0.75rem; background:#faf5ff; cursor:pointer; color:#7c3aed;">✏️ New</button>
                         </div>
                         <div style="color:#d1d5db; font-size:0.75rem; margin-top:0.3rem;">Added ${new Date(c.addedAt).toLocaleDateString()}</div>
                     </div>
@@ -2473,7 +2473,7 @@ ${userName}`
     </nav>
 
     <!-- Notification -->
-    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v3.4</div>
+    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v3.5</div>
     <div id="notification" class="notification"></div>
 
     <!-- Home Section -->
