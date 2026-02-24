@@ -1297,6 +1297,11 @@
             header.style.display = 'block'
             if (count) count.textContent = `${savedSongs.length} song${savedSongs.length !== 1 ? 's' : ''} saved`
 
+            // Auto-show the list if songs exist
+            list.style.display = 'block'
+            const toggleText = document.getElementById('toggle-text')
+            if (toggleText) toggleText.textContent = 'Hide My Songs'
+
             list.innerHTML = `
                 <div style="background:white; border-radius:10px; border:1px solid #e5e7eb; max-height:500px; overflow-y:auto;">
                     ${savedSongs.map((song, index) => `
@@ -3811,6 +3816,12 @@
                     btn.style.fontWeight = t === tab ? '700' : '600'
                 }
             })
+            // Restore active sub-tab for this section
+            const subDefaults = { memories:'music', essentials:'finance', legacy:'inheritors' }
+            if (subDefaults[tab]) {
+                const activeSub = (currentSubTabs && currentSubTabs[tab]) || subDefaults[tab]
+                switchSubTab(tab, activeSub)
+            }
             window.scrollTo({top:0, behavior:'smooth'})
         }
 
@@ -3836,25 +3847,31 @@
         function renderCategoryStrip() {
             const strip = document.getElementById('contacts-cat-strip')
             if (!strip) return
-            // Build category counts
-            const counts = { 'All': savedContacts.length }
+            // Count per category
+            const counts = {}
+            let uncatCount = 0
             savedContacts.forEach(c => {
                 const cat = c.category || ''
-                if (!counts[cat]) counts[cat] = 0
-                counts[cat]++
+                if (!cat) { uncatCount++; return }
+                counts[cat] = (counts[cat] || 0) + 1
             })
-            // All standard + any custom cats found in data
             const stdCats = ['Family','Friends','Business','Romantic','Disliked','Others']
             const customCats = [...new Set(savedContacts.map(c => c.category).filter(c => c && !stdCats.includes(c)))]
             const allCats = ['All', ...stdCats, ...customCats]
+            if (uncatCount > 0) allCats.push('Uncategorised')
             
             const activeCat = strip.dataset.active || 'All'
-            strip.innerHTML = allCats.filter(cat => cat === 'All' || counts[cat]).map(cat => {
-                const n = counts[cat] || 0
+            strip.innerHTML = allCats.filter(cat => {
+                if (cat === 'All') return true
+                if (cat === 'Uncategorised') return uncatCount > 0
+                return (counts[cat] || 0) > 0
+            }).map(cat => {
+                const n = cat === 'All' ? savedContacts.length : cat === 'Uncategorised' ? uncatCount : (counts[cat] || 0)
                 const isActive = cat === activeCat
+                const emoji = cat === 'Uncategorised' ? '❓' : (categoryEmoji[cat] || '📋')
                 return `<button onclick="filterContactsByCategory('${cat}')" 
                     style="padding:0.3rem 0.75rem; border-radius:980px; border:1px solid ${isActive ? '#3b82f6' : '#e5e7eb'}; background:${isActive ? '#3b82f6' : 'white'}; color:${isActive ? 'white' : '#374151'}; font-size:0.8rem; cursor:pointer; white-space:nowrap; font-weight:${isActive ? '600' : '400'};">
-                    ${categoryEmoji[cat] || '📋'} ${cat}${cat !== 'All' ? ' ('+n+')' : ' ('+savedContacts.length+')'}
+                    ${emoji} ${cat} (${n})
                 </button>`
             }).join('')
         }
@@ -3868,7 +3885,10 @@
             } else {
                 const list = document.getElementById('contacts-list')
                 if (!list) return
-                const filtered = savedContacts.filter(c => (c.category || '') === cat || (!c.category && cat === 'Others'))
+                const filtered = savedContacts.filter(c => {
+                    if (cat === 'Uncategorised') return !c.category || c.category === ''
+                    return (c.category || '') === cat
+                })
                 const sorted = [...filtered].sort((a,b) => a.name.localeCompare(b.name))
                 if (sorted.length === 0) {
                     list.innerHTML = '<p style="color:#9ca3af; text-align:center; padding:1.5rem;">No contacts in this category.</p>'
@@ -3986,7 +4006,7 @@
             if(empty) empty.style.display='none'
             list.innerHTML = savedValuables.map(v => `<div style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:1rem;margin-bottom:0.75rem;">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                    <strong style="color:#d97706;">💎 ${v.title}</strong>
+                    <strong style="color:#d97706;">💎 ${v.title || v.name || 'Untitled'}</strong>
                     <button onclick="deleteValuable(${v.id})" style="background:none;border:none;color:#9ca3af;cursor:pointer;">🗑️</button>
                 </div>
                 ${v.detail ? '<p style="margin:0.5rem 0 0;color:#374151;font-size:0.85rem;">'+v.detail+'</p>' : ''}
@@ -4177,7 +4197,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.18</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.19</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; align-items:center; justify-content:center; padding:1rem;" onclick="closePhotoLightbox()">
