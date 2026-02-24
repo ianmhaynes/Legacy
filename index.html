@@ -2654,7 +2654,7 @@ ${userName}`
     </nav>
 
     <!-- Notification -->
-    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.4</div>
+    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.5</div>
     <div id="notification" class="notification"></div>
 
     <!-- Home Section -->
@@ -2846,55 +2846,38 @@ ${userName}`
                 </div>
             </div>
 
-            <!-- Sticky header: stats + sync + search + tabs -->
-            <div style="position:sticky; top:60px; background:white; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin:0 -1rem; padding:0.5rem 1rem 0;">
+            <!-- Sticky header: search + sync + tabs with counts -->
+            <div style="position:sticky; top:60px; background:white; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin:0 -1rem; padding:0.6rem 1rem 0;">
 
-                <!-- Stats + sync row -->
-                <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; margin-bottom:0.5rem;">
-                    <div style="display:flex; align-items:center; gap:0.35rem; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; padding:0.3rem 0.6rem;">
-                        <span>📸</span><span style="font-weight:700; color:#1e3a8a; font-size:0.9rem;" id="total-memories">0</span><span style="color:#9ca3af; font-size:0.7rem;">mem</span>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:0.35rem; background:#f5f3ff; border:1px solid #ddd6fe; border-radius:6px; padding:0.3rem 0.6rem;">
-                        <span>👥</span><span style="font-weight:700; color:#1e3a8a; font-size:0.9rem;" id="contacts-stat">0</span><span style="color:#9ca3af; font-size:0.7rem;">contacts</span>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:0.35rem; background:#fef9c3; border:1px solid #fde68a; border-radius:6px; padding:0.3rem 0.6rem;">
-                        <span>🗝️</span><span style="font-weight:700; color:#1e3a8a; font-size:0.9rem;" id="essentials-stat">0</span><span style="color:#9ca3af; font-size:0.7rem;">essentials</span>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:0.35rem; background:#fdf2f8; border:1px solid #fbcfe8; border-radius:6px; padding:0.3rem 0.6rem;">
-                        <span>🏛️</span><span style="font-weight:700; color:#1e3a8a; font-size:0.9rem;" id="inheritors-count">0</span><span style="color:#9ca3af; font-size:0.7rem;">inheritors</span>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:0.35rem; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; padding:0.3rem 0.6rem;">
-                        <span>💾</span><span style="font-weight:700; color:#1e3a8a; font-size:0.9rem;" id="storage-used">0</span><span style="color:#9ca3af; font-size:0.7rem;">storage</span>
-                    </div>
-                    <div style="flex:1; min-width:150px;">
-                        <input id="vault-search" placeholder="🔍 Search..." 
-                            style="width:100%; padding:0.3rem 0.75rem; border:1px solid #e5e7eb; border-radius:980px; font-size:0.85rem; box-sizing:border-box;"
-                            oninput="searchVault(this.value)">
-                    </div>
-                    <div id="sync-status" style="display:inline-flex; align-items:center; gap:0.3rem; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:980px; padding:0.3rem 0.7rem; font-size:0.78rem; color:#16a34a;">
+                <!-- Search + sync row -->
+                <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.6rem;">
+                    <input id="vault-search" placeholder="🔍 Search vault..."
+                        style="flex:1; padding:0.4rem 0.9rem; border:1px solid #e5e7eb; border-radius:980px; font-size:0.85rem; outline:none;"
+                        oninput="searchVault(this.value)">
+                    <div id="sync-status" style="display:inline-flex; align-items:center; gap:0.3rem; font-size:0.78rem; color:#16a34a; white-space:nowrap;">
                         <span id="sync-dot" style="width:6px; height:6px; border-radius:50%; background:#16a34a; display:inline-block;"></span>
-                        <span id="sync-label">Ready</span>
+                        <span id="sync-label">Synced</span>
                     </div>
-                    <button onclick="manualSync()" style="background:#3730a3; color:white; border:none; border-radius:980px; padding:0.3rem 0.75rem; font-size:0.78rem; cursor:pointer; white-space:nowrap;">☁️ Sync</button>
+                    <button onclick="manualSync()" style="background:#3730a3; color:white; border:none; border-radius:980px; padding:0.35rem 0.85rem; font-size:0.78rem; cursor:pointer; white-space:nowrap;">☁️ Sync</button>
                 </div>
 
-                <!-- Tabs -->
+                <!-- Tabs with live counts -->
                 <div id="vault-tabs" style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; overflow-x:auto;">
                 <button onclick="switchVaultTab('memories')" id="vtab-memories"
-                    style="padding:0.75rem 1.25rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.95rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                    📸 Memories
+                    style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.88rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                    📸 Memories <span id="vtab-memories-count" style="font-size:0.75rem; color:#6b7280; font-weight:400;"></span>
                 </button>
                 <button onclick="switchVaultTab('contacts')" id="vtab-contacts"
-                    style="padding:0.75rem 1.25rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.95rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                    👥 Contacts
+                    style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                    👥 Contacts <span id="vtab-contacts-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                 </button>
                 <button onclick="switchVaultTab('essentials')" id="vtab-essentials"
-                    style="padding:0.75rem 1.25rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.95rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                    🗝️ Essentials
+                    style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                    🗝️ Essentials <span id="vtab-essentials-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                 </button>
                 <button onclick="switchVaultTab('legacy')" id="vtab-legacy"
-                    style="padding:0.75rem 1.25rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.95rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                    🏛️ Legacy
+                    style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                    🏛️ Legacy <span id="vtab-legacy-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                 </button>
                 </div>
             </div><!-- /sticky header -->
@@ -4416,15 +4399,21 @@ ${userName}`
             
             const totalMemories = songs + contacts + stories + lifebook + photos
             const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val }
+            const essCount = JSON.parse(localStorage.getItem('vault_essentials') || '[]').length
+            const secretsCount = JSON.parse(localStorage.getItem('vault_secrets') || '[]').length
+            const valuablesCount = JSON.parse(localStorage.getItem('vault_valuables') || '[]').length
+            const inheritorsCount = JSON.parse(localStorage.getItem('vault_inheritors') || '[]').length
+            // Update tab counts
+            setEl('vtab-memories-count', totalMemories > 0 ? '(' + totalMemories + ')' : '')
+            setEl('vtab-contacts-count', contacts > 0 ? '(' + contacts + ')' : '')
+            setEl('vtab-essentials-count', essCount > 0 ? '(' + essCount + ')' : '')
+            setEl('vtab-legacy-count', (secretsCount + valuablesCount + inheritorsCount) > 0 ? '(' + (secretsCount + valuablesCount + inheritorsCount) + ')' : '')
+            // Keep hidden elements updated for JS that references them
             setEl('total-memories', totalMemories)
-            
-            const storageMB = ((photos * 2) + (songs * 0.1) + (contacts * 0.001)).toFixed(2)
-            setEl('storage-used', storageMB + ' MB')
             setEl('inheritors-count', inheritors)
             setEl('contacts-stat', contacts)
-            const essCount = JSON.parse(localStorage.getItem('vault_essentials') || '[]').length
             setEl('essentials-stat', essCount)
-            // years-guarantee removed from new UI
+            setEl('storage-used', '')
         }
 
         function refreshDashboardStats() {
@@ -5031,37 +5020,6 @@ ${userName}`
             }, 3000);
         }
     </script>
-    <!-- Fixed collapse buttons -->
-    <div id="fixed-collapse-photos" style="display:none; position:fixed; bottom:80px; right:20px; z-index:9998;">
-        <button id="fcb-photos"
-            style="background:#3b82f6; color:white; border:none; padding:10px 20px; border-radius:50px; font-size:14px; font-weight:bold; cursor:pointer; box-shadow:0 4px 16px rgba(59,130,246,0.6);">
-            ▲ Collapse Photos
-        </button>
-    </div>
-    <div id="fixed-collapse-contacts" style="display:none; position:fixed; bottom:80px; right:20px; z-index:9998;">
-        <button id="fcb-contacts"
-            style="background:#8b5cf6; color:white; border:none; padding:10px 20px; border-radius:50px; font-size:14px; font-weight:bold; cursor:pointer; box-shadow:0 4px 16px rgba(139,92,246,0.6);">
-            ▲ Collapse Contacts
-        </button>
-    </div>
-    <script>
-    // Wire up fixed collapse buttons after DOM ready
-    document.addEventListener('DOMContentLoaded', function() {
-        var fcbP = document.getElementById('fcb-photos')
-        var fcbC = document.getElementById('fcb-contacts')
-        if (fcbP) fcbP.addEventListener('click', function() {
-            var b = document.getElementById('photos-body')
-            var a = document.getElementById('photos-arrow')
-            if (b) { b.style.display = 'none'; if(a) a.textContent = '▶' }
-            document.getElementById('fixed-collapse-photos').style.display = 'none'
-        })
-        if (fcbC) fcbC.addEventListener('click', function() {
-            var b = document.getElementById('contacts-body')
-            var a = document.getElementById('contacts-arrow')
-            if (b) { b.style.display = 'none'; if(a) a.textContent = '▶' }
-            document.getElementById('fixed-collapse-contacts').style.display = 'none'
-        })
-    })
-    </script>
+
 </body>
 </html>
