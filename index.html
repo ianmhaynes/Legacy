@@ -1782,7 +1782,7 @@
                 }
                 box.style.display = 'block'
                 var inp = document.getElementById('custom-cat-input')
-                if (inp) setTimeout(function(){ inp.focus() }, 50)
+                if (inp) setTimeout(function(){ inp.focus(); box.scrollIntoView({behavior:'smooth', block:'nearest'}) }, 80)
             } else {
                 box.style.display = 'none'
             }
@@ -2473,7 +2473,7 @@ ${userName}`
     </nav>
 
     <!-- Notification -->
-    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v2.9</div>
+    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v3.0</div>
     <div id="notification" class="notification"></div>
 
     <!-- Home Section -->
@@ -2881,13 +2881,14 @@ ${userName}`
                                 <button type="button" onclick="selCat(this,'Others')"    data-cat="Others"   style="padding:0.4rem 0.9rem;border:2px solid #e5e7eb;border-radius:50px;font-size:0.82rem;background:white;cursor:pointer;">⭐ Others</button>
                                 <button type="button" id="btn-custom-cat" onclick="toggleCustomCat()" style="padding:0.4rem 0.9rem;border:2px dashed #8b5cf6;border-radius:50px;font-size:0.82rem;background:#faf5ff;cursor:pointer;color:#7c3aed;">✏️ Custom...</button>
                             </div>
-                            <div id="custom-cat-box" style="display:none;margin-top:0.5rem;padding:0.6rem;background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;">
-                                <p style="margin:0 0 0.4rem;font-size:0.82rem;color:#5b21b6;font-weight:600;">Type your custom category name:</p>
-                                <div style="display:flex;gap:0.4rem;">
-                                    <input id="custom-cat-input" type="text" placeholder="e.g. Watch Contacts, Golf Club..."
-                                        style="flex:1;padding:0.4rem 0.6rem;border:1px solid #c4b5fd;border-radius:6px;font-size:0.9rem;">
-                                    <button type="button" onclick="applyCustomCat()" style="background:#7c3aed;color:white;border:none;padding:0.4rem 0.9rem;border-radius:6px;font-size:0.9rem;font-weight:bold;cursor:pointer;">✓ Use</button>
-                                    <button type="button" onclick="closeCustomCat()" style="background:#f3f4f6;color:#6b7280;border:1px solid #ddd;padding:0.4rem 0.6rem;border-radius:6px;font-size:0.9rem;cursor:pointer;">✕</button>
+                            <div id="custom-cat-box" style="display:none;margin-top:0.6rem;padding:0.75rem;background:#f5f3ff;border:2px solid #7c3aed;border-radius:8px;position:relative;z-index:10;">
+                                <p style="margin:0 0 0.5rem;font-size:0.85rem;color:#5b21b6;font-weight:700;">✏️ Name your custom category:</p>
+                                <div style="display:flex;gap:0.4rem;align-items:center;">
+                                    <input id="custom-cat-input" type="text" placeholder="e.g. Watch Contacts, Golf Club, School..."
+                                        style="flex:1;padding:0.5rem 0.7rem;border:2px solid #c4b5fd;border-radius:6px;font-size:0.95rem;outline:none;"
+                                        onkeydown="if(event.key==='Enter'){event.preventDefault();applyCustomCat()}">
+                                    <button type="button" onclick="applyCustomCat()" style="background:#7c3aed;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;font-size:0.95rem;font-weight:bold;cursor:pointer;white-space:nowrap;">✓ Use</button>
+                                    <button type="button" onclick="closeCustomCat()" style="background:#f3f4f6;color:#6b7280;border:1px solid #ddd;padding:0.5rem 0.7rem;border-radius:6px;font-size:0.95rem;cursor:pointer;">✕</button>
                                 </div>
                             </div>
                             <input type="hidden" id="contact-category" value="">
