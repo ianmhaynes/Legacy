@@ -2652,7 +2652,7 @@ ${userName}`
     </nav>
 
     <!-- Notification -->
-    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.2</div>
+    <div id="version-badge" style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.3</div>
     <div id="notification" class="notification"></div>
 
     <!-- Home Section -->
@@ -4414,15 +4414,16 @@ ${userName}`
             const photos = uploadedPhotos.length
             
             const totalMemories = songs + contacts + stories + lifebook + photos
-            document.getElementById('total-memories').textContent = totalMemories
+            const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val }
+            setEl('total-memories', totalMemories)
             
             const storageMB = ((photos * 2) + (songs * 0.1) + (contacts * 0.001)).toFixed(2)
-            document.getElementById('storage-used').textContent = storageMB + ' MB'
-            
-            // Consistent: lifetime = 100 years, monthly = 50 years
-            const years = (user && user.plan === 'lifetime') ? '100' : '50'
-            document.getElementById('years-guarantee').textContent = years
-            document.getElementById('inheritors-count').textContent = inheritors
+            setEl('storage-used', storageMB + ' MB')
+            setEl('inheritors-count', inheritors)
+            setEl('contacts-stat', contacts)
+            const essCount = JSON.parse(localStorage.getItem('vault_essentials') || '[]').length
+            setEl('essentials-stat', essCount)
+            // years-guarantee removed from new UI
         }
 
         function refreshDashboardStats() {
