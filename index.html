@@ -1306,8 +1306,31 @@
                             <div style="flex:1; min-width:0;">
                                 <div style="font-weight:600; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${song.name}</div>
                                 <div style="color:#6b7280; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${song.artist} • ${song.album}</div>
+                                ${song.why ? `<div style="color:#7c3aed; font-size:0.78rem; margin-top:0.2rem; font-style:italic;">💜 ${song.why}${song.period ? ' · '+song.period : ''}</div>` : ''}
                             </div>
-                            <button onclick="removeSong('${song.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem;" title="Remove">🗑️</button>
+                            <div style="display:flex; gap:0.4rem; flex-shrink:0;">
+                                <button onclick="openSongMemory('${song.id}')" style="background:#ede9fe; color:#7c3aed; border:none; padding:0.3rem 0.6rem; border-radius:6px; font-size:0.85rem;" title="Add Memory">✏️</button>
+                                <button onclick="removeSong('${song.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem;" title="Remove">🗑️</button>
+                            </div>
+                        </div>
+                        <!-- Memory Form -->
+                        <div id="song-memory-${song.id}" class="song-memory-form" style="display:none; background:#f9f7ff; border-top:1px solid #ede9fe; padding:1rem; flex-direction:column; gap:0.75rem;">
+                            <p style="color:#7c3aed; font-weight:600; font-size:0.9rem; margin:0;">✏️ Memory for "${song.name}"</p>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+                                <div>
+                                    <label style="display:block; font-size:0.8rem; color:#6b7280; margin-bottom:0.25rem;">Why did you love it?</label>
+                                    <input id="song-why-${song.id}" value="${song.why || ''}" placeholder="e.g. It was our wedding song..." style="width:100%; padding:0.5rem; border:1px solid #ddd6fe; border-radius:6px; font-size:0.9rem; box-sizing:border-box;">
+                                </div>
+                                <div>
+                                    <label style="display:block; font-size:0.8rem; color:#6b7280; margin-bottom:0.25rem;">What period of your life?</label>
+                                    <input id="song-period-${song.id}" value="${song.period || ''}" placeholder="e.g. University, Summer of 85..." style="width:100%; padding:0.5rem; border:1px solid #ddd6fe; border-radius:6px; font-size:0.9rem; box-sizing:border-box;">
+                                </div>
+                            </div>
+                            <textarea id="song-meaning-${song.id}" placeholder="What does this song mean to you?" style="width:100%; padding:0.5rem; border:1px solid #ddd6fe; border-radius:6px; font-size:0.9rem; height:70px; resize:vertical; font-family:inherit; box-sizing:border-box;">${song.meaning || ''}</textarea>
+                            <div style="display:flex; gap:0.5rem;">
+                                <button onclick="saveSongMemory('${song.id}')" style="background:#7c3aed; color:white; border:none; padding:0.4rem 0.9rem; border-radius:6px; cursor:pointer; font-size:0.85rem;">Save Memory</button>
+                                <button onclick="document.getElementById('song-memory-${song.id}').style.display='none'" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.4rem 0.9rem; border-radius:6px; cursor:pointer; font-size:0.85rem;">Cancel</button>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
@@ -1525,6 +1548,7 @@
         }
 
         async function loadSavedPhotos() {
+            photoCaptions = JSON.parse(localStorage.getItem('vault_photo_captions') || '{}')
             const grid = document.getElementById('photo-grid')
             const photoCount = document.getElementById('photo-count')
             const currentUser = JSON.parse(localStorage.getItem('user') || 'null')
@@ -1551,14 +1575,19 @@
 
                     uploadedPhotos.push({ name: file.name, url: urlData.publicUrl })
 
+                    const cap = photoCaptions[file.name] || {}
+                    const capJson = JSON.stringify(cap).replace(/"/g,'&quot;')
                     const div = document.createElement('div')
-                    div.style = 'aspect-ratio:1; border-radius:8px; overflow:hidden; position:relative; cursor:pointer;'
+                    div.style.cssText = 'aspect-ratio:1; border-radius:8px; overflow:hidden; position:relative; cursor:pointer;'
+                    div.onclick = () => openPhotoLightbox(urlData.publicUrl, file.name, cap)
                     div.innerHTML = `
                         <img src="${urlData.publicUrl}" style="width:100%; height:100%; object-fit:cover;" 
                              onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📸</text></svg>'" />
-                        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.4); opacity:0; transition:opacity 0.2s; display:flex; align-items:center; justify-content:center;"
+                        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.4); opacity:0; transition:opacity 0.2s; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding:0.4rem;"
                              onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">
-                            <span style="color:white; font-size:0.75rem; text-align:center; padding:0.25rem;">${file.name.substring(0,20)}</span>
+                            ${cap.who ? `<span style="color:white; font-size:0.72rem; text-align:center; font-weight:600;">${cap.who.substring(0,30)}</span>` : ''}
+                            ${cap.date ? `<span style="color:#fbbf24; font-size:0.68rem;">${cap.date.substring(0,20)}</span>` : ''}
+                            ${!cap.who && !cap.date ? `<span style="color:white; font-size:0.72rem;">📸 Click to view</span>` : ''}
                         </div>
                     `
                     grid.appendChild(div)
@@ -3969,7 +3998,231 @@
             </div>`).join('')
         }
         function deleteValuable(id) { savedValuables = savedValuables.filter(v=>v.id!==id); localStorage.setItem('vault_valuables',JSON.stringify(savedValuables)); renderValuables(); showNotification('Deleted') }
+
+        // ===== PHOTO LIGHTBOX =====
+        let lightboxCurrentFile = ''
+        let lightboxCurrentUrl = ''
+        let lightboxCurrentFilename = ''
+
+        function openPhotoLightbox(url, filename, captionJson) {
+            lightboxCurrentFile = filename
+            lightboxCurrentUrl = url
+            lightboxCurrentFilename = filename
+            const lb = document.getElementById('photo-lightbox')
+            document.getElementById('lightbox-img').src = url
+
+            let cap = {}
+            try { cap = typeof captionJson === 'string' ? JSON.parse(captionJson.replace(/&quot;/g,'"')) : (captionJson || {}) } catch(e) {}
+            const captionEl = document.getElementById('lightbox-caption')
+            const captionBtn = document.getElementById('lightbox-caption-btn')
+            let capHtml = ''
+            if (cap.date) capHtml += `<div style="color:#fbbf24; font-size:0.9rem; margin-bottom:0.3rem;">📅 ${cap.date}</div>`
+            if (cap.who) capHtml += `<div style="color:white; font-size:1rem; font-weight:600; margin-bottom:0.3rem;">👥 ${cap.who}</div>`
+            if (cap.why) capHtml += `<div style="color:#d1d5db; font-size:0.9rem; font-style:italic;">"${cap.why}"</div>`
+            captionEl.innerHTML = capHtml
+            captionBtn.textContent = capHtml ? '✏️ Edit Caption' : '✏️ Add Caption'
+
+            lb.style.display = 'flex'
+            document.body.style.overflow = 'hidden'
+        }
+
+        function closePhotoLightbox() {
+            const lb = document.getElementById('photo-lightbox')
+            lb.style.display = 'none'
+            document.body.style.overflow = ''
+        }
+
+        function lightboxAddCaption() {
+            closePhotoLightbox()
+            openPhotoCaptionModal(lightboxCurrentUrl, lightboxCurrentFilename)
+        }
+
+        async function downloadCurrentPhoto() {
+            if (!lightboxCurrentUrl) return
+            try {
+                const response = await fetch(lightboxCurrentUrl)
+                const blob = await response.blob()
+                const a = document.createElement('a')
+                a.href = URL.createObjectURL(blob)
+                a.download = lightboxCurrentFilename || 'photo.jpg'
+                a.click()
+                URL.revokeObjectURL(a.href)
+            } catch(e) {
+                window.open(lightboxCurrentUrl, '_blank')
+            }
+        }
+
+        // ===== PHOTO CAPTIONS =====
+        let captionTargetFilename = ''
+        let photoCaptions = JSON.parse(localStorage.getItem('vault_photo_captions') || '{}')
+
+        function openPhotoCaptionModal(url, filename) {
+            captionTargetFilename = filename
+            const modal = document.getElementById('photo-caption-modal')
+            const img = document.getElementById('caption-modal-img')
+            if (img) img.src = url
+            const cap = photoCaptions[filename] || {}
+            const dateEl = document.getElementById('caption-date')
+            const whoEl = document.getElementById('caption-who')
+            const whyEl = document.getElementById('caption-why')
+            if (dateEl) dateEl.value = cap.date || ''
+            if (whoEl) whoEl.value = cap.who || ''
+            if (whyEl) whyEl.value = cap.why || ''
+            if (modal) { modal.style.display = 'flex'; modal.style.alignItems = 'center'; modal.style.justifyContent = 'center' }
+        }
+
+        function closePhotoCaptionModal() {
+            const modal = document.getElementById('photo-caption-modal')
+            if (modal) modal.style.display = 'none'
+        }
+
+        function savePhotoCaption() {
+            const date = document.getElementById('caption-date')?.value.trim() || ''
+            const who = document.getElementById('caption-who')?.value.trim() || ''
+            const why = document.getElementById('caption-why')?.value.trim() || ''
+            if (!date && !who && !why) { showNotification('Please fill in at least one field'); return }
+            photoCaptions[captionTargetFilename] = { date, who, why }
+            localStorage.setItem('vault_photo_captions', JSON.stringify(photoCaptions))
+            syncVaultToSupabase('vault_photo_captions', photoCaptions)
+            closePhotoCaptionModal()
+            loadSavedPhotos()
+            showNotification('📸 Caption saved!')
+        }
+
+        // ===== SONG MEMORIES =====
+        function openSongMemory(id) {
+            document.querySelectorAll('.song-memory-form').forEach(f => f.style.display = 'none')
+            const form = document.getElementById('song-memory-' + id)
+            if (form) {
+                form.style.display = 'flex'
+                form.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+            }
+        }
+
+        function saveSongMemory(id) {
+            const why = document.getElementById('song-why-' + id)?.value.trim() || ''
+            const period = document.getElementById('song-period-' + id)?.value.trim() || ''
+            const meaning = document.getElementById('song-meaning-' + id)?.value.trim() || ''
+            const song = savedSongs.find(s => s.id == id)
+            if (song) {
+                song.why = why
+                song.period = period
+                song.meaning = meaning
+                localStorage.setItem('spotify_music_data', JSON.stringify(savedSongs))
+                syncVaultToSupabase('spotify_music_data', savedSongs)
+                document.getElementById('song-memory-' + id).style.display = 'none'
+                updateSavedSongsDisplay()
+                showNotification('💾 Memory saved for "' + song.name + '"')
+            }
+        }
+
+        // ===== VCF/CSV IMPORT =====
+        function handleContactsUpload(input) {
+            const file = input.files[0]
+            if (!file) return
+            const reader = new FileReader()
+            reader.onload = function(e) {
+                const text = e.target.result
+                let parsed = []
+                if (file.name.toLowerCase().endsWith('.vcf')) {
+                    parsed = parseVCF(text)
+                } else if (file.name.toLowerCase().endsWith('.csv')) {
+                    parsed = parseCSV(text)
+                }
+                if (parsed.length === 0) { showNotification('No contacts found in file'); return }
+                savedContacts = [...savedContacts, ...parsed]
+                localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
+                syncVaultToSupabase('vault_contacts', savedContacts)
+                renderContacts()
+                renderCategoryStrip()
+                showNotification('👥 ' + parsed.length + ' contacts imported!')
+                input.value = ''
+            }
+            reader.readAsText(file)
+        }
+
+        function parseVCF(text) {
+            const contacts = []
+            const cards = text.split(/BEGIN:VCARD/i).slice(1)
+            cards.forEach(card => {
+                const getName = (s) => {
+                    const m = s.match(/FN:(.+)/i)
+                    return m ? m[1].trim() : ''
+                }
+                const getPhone = (s) => {
+                    const m = s.match(/TEL[^:]*:(.+)/i)
+                    return m ? m[1].trim() : ''
+                }
+                const getEmail = (s) => {
+                    const m = s.match(/EMAIL[^:]*:(.+)/i)
+                    return m ? m[1].trim() : ''
+                }
+                const name = getName(card)
+                if (name) {
+                    contacts.push({ id: Date.now() + Math.random(), name, phone: getPhone(card), email: getEmail(card), relation: '', note: '', addedAt: new Date().toISOString() })
+                }
+            })
+            return contacts
+        }
+
+        function parseCSV(text) {
+            const contacts = []
+            const lines = text.split('\n').filter(l => l.trim())
+            lines.forEach((line, i) => {
+                if (i === 0 && line.toLowerCase().includes('name')) return // skip header
+                const cols = line.split(',')
+                const name = (cols[0] || '').replace(/"/g, '').trim()
+                const phone = (cols[1] || '').replace(/"/g, '').trim()
+                const email = (cols[2] || '').replace(/"/g, '').trim()
+                if (name) {
+                    contacts.push({ id: Date.now() + Math.random(), name, phone, email, relation: '', note: '', addedAt: new Date().toISOString() })
+                }
+            })
+            return contacts
+        }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.11</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.12</div>
+
+    <!-- Photo Lightbox -->
+    <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; align-items:center; justify-content:center; padding:1rem;" onclick="closePhotoLightbox()">
+        <div style="max-width:900px; width:100%; position:relative;" onclick="event.stopPropagation()">
+            <button onclick="closePhotoLightbox()" style="position:absolute; top:-2.5rem; right:0; background:none; border:none; color:white; font-size:1.8rem; cursor:pointer; line-height:1;">✕</button>
+            <img id="lightbox-img" src="" style="width:100%; max-height:75vh; object-fit:contain; border-radius:8px; display:block;">
+            <div id="lightbox-caption" style="color:white; padding:1rem 0; min-height:60px;"></div>
+            <div style="display:flex; gap:0.75rem; justify-content:center;">
+                <button id="lightbox-caption-btn" onclick="lightboxAddCaption()" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; padding:0.5rem 1rem; border-radius:6px; cursor:pointer;">✏️ Add Caption</button>
+                <button onclick="downloadCurrentPhoto()" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; padding:0.5rem 1rem; border-radius:6px; cursor:pointer;">⬇️ Download</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Photo Caption Modal -->
+    <div id="photo-caption-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center; padding:1rem;">
+        <div style="background:white; border-radius:16px; padding:2rem; max-width:500px; width:100%;" onclick="event.stopPropagation()">
+            <div style="text-align:center; margin-bottom:1.5rem;">
+                <img id="caption-modal-img" src="" style="width:100%; max-height:180px; object-fit:cover; border-radius:10px; margin-bottom:1rem;">
+                <h2 style="margin-bottom:0.25rem; color:#1e3a8a;">📸 Add Caption</h2>
+                <p style="color:#6b7280; font-size:0.9rem;">Help your family remember this moment</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;">
+                <div>
+                    <label style="display:block; font-size:0.85rem; font-weight:600; color:#4b5563; margin-bottom:0.25rem;">📅 Date or period</label>
+                    <input id="caption-date" placeholder="e.g. Summer 1998, Christmas 2005..." style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.85rem; font-weight:600; color:#4b5563; margin-bottom:0.25rem;">👥 Who is in this photo?</label>
+                    <input id="caption-who" placeholder="e.g. Me, Dad and Aunt Margaret at the beach..." style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.85rem; font-weight:600; color:#4b5563; margin-bottom:0.25rem;">❤️ Why is this meaningful?</label>
+                    <textarea id="caption-why" placeholder="Tell the story behind this photo..." style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; height:80px; resize:vertical; font-family:inherit; box-sizing:border-box;"></textarea>
+                </div>
+            </div>
+            <div style="display:flex; gap:0.75rem; justify-content:flex-end;">
+                <button onclick="closePhotoCaptionModal()" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer;">Cancel</button>
+                <button onclick="savePhotoCaption()" style="background:#3b82f6; color:white; border:none; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer; font-weight:600;">Save Caption</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
