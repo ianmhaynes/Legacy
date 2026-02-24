@@ -1735,14 +1735,47 @@
             }, 500)
         }
 
+        // tracks the confirmed custom category name
+        let _confirmedCustomCategory = ''
+
         function handleCategoryChange(sel) {
-            const customInput = document.getElementById('contact-category-custom')
+            const panel = document.getElementById('custom-category-panel')
+            const badge = document.getElementById('category-confirmed-badge')
             if (sel.value === '__custom__') {
-                customInput.style.display = 'block'
-                customInput.focus()
+                panel.style.display = 'block'
+                badge.style.display = 'none'
+                _confirmedCustomCategory = ''
+                setTimeout(() => document.getElementById('contact-category-custom').focus(), 50)
             } else {
-                customInput.style.display = 'none'
+                panel.style.display = 'none'
+                badge.style.display = 'none'
+                _confirmedCustomCategory = ''
             }
+        }
+
+        function confirmCustomCategory() {
+            const val = document.getElementById('contact-category-custom').value.trim()
+            if (!val) { showNotification('Please type a category name'); return }
+            _confirmedCustomCategory = val
+            document.getElementById('custom-category-panel').style.display = 'none'
+            const badge = document.getElementById('category-confirmed-badge')
+            document.getElementById('category-confirmed-name').textContent = val
+            badge.style.display = 'block'
+            showNotification('✅ Category "' + val + '" ready to use')
+        }
+
+        function cancelCustomCategory() {
+            document.getElementById('custom-category-panel').style.display = 'none'
+            document.getElementById('contact-category').value = ''
+            document.getElementById('contact-category-custom').value = ''
+            _confirmedCustomCategory = ''
+        }
+
+        function clearCustomCategory() {
+            document.getElementById('category-confirmed-badge').style.display = 'none'
+            document.getElementById('contact-category').value = ''
+            document.getElementById('contact-category-custom').value = ''
+            _confirmedCustomCategory = ''
         }
 
         function saveContact() {
@@ -1750,8 +1783,7 @@
             if (!name) { showNotification('Please enter a name!'); return }
 
             const catSel = document.getElementById('contact-category').value
-            const catCustom = document.getElementById('contact-category-custom').value.trim()
-            const category = catSel === '__custom__' ? catCustom : catSel
+            const category = catSel === '__custom__' ? _confirmedCustomCategory : catSel
 
             const contact = {
                 id: Date.now(),
@@ -1776,7 +1808,9 @@
             document.getElementById('contact-email').value = ''
             document.getElementById('contact-category').value = ''
             document.getElementById('contact-category-custom').value = ''
-            document.getElementById('contact-category-custom').style.display = 'none'
+            document.getElementById('custom-category-panel').style.display = 'none'
+            document.getElementById('category-confirmed-badge').style.display = 'none'
+            _confirmedCustomCategory = ''
             document.getElementById('contact-relation').value = ''
             document.getElementById('contact-note').value = ''
             document.getElementById('add-contact-form').style.display = 'none'
@@ -2079,7 +2113,31 @@
                     const subject = encodeURIComponent('You have been named as my We Loved Life vault inheritor')
                     const userName = user ? user.name || user.email : 'Someone you know'
                     const body = encodeURIComponent(
-                        `Hi ${name},\n\n${userName} has added you as an inheritor to their We Loved Life digital vault.\n\nWe Loved Life is a personal legacy vault that preserves memories, music, photos, life stories, and more for future generations.\n\nWhen the time comes, you will be given login access to their vault so their memories are never lost.\n\nNo action is needed from you right now — this is simply to let you know you've been chosen.\n\nWith love,\n${userName}`
+`Hi ${name},
+
+${userName} has chosen you as a trusted inheritor of their We Loved Life digital vault.
+
+ABOUT WE LOVED LIFE
+We Loved Life (www.welovedlife.com) is a personal legacy vault — a place where people preserve the memories, stories, music, photos, and contacts that shaped their life, so that future generations can truly understand who they were.
+
+Inside ${userName}'s vault you will find:
+• Their most meaningful songs and the memories behind them
+• Photos with personal captions and stories
+• A handwritten Life Book — their autobiography in their own words
+• Life stories and personal reflections
+• Important contacts and the people who mattered to them
+• Valuables and where to find them
+• Private secrets, sealed until the time is right
+
+ACCESSING THE VAULT
+When the time comes, please visit www.welovedlife.com and log in using ${userName}'s registered email address.
+
+To obtain the password, please seek it from Ian, who has been entrusted to provide access when appropriate.
+
+No action is needed from you right now. This email is simply to let you know you have been chosen and trusted with this responsibility.
+
+With love,
+${userName}`
                     )
                     window.location.href = `mailto:${email}?subject=${subject}&body=${body}`
                 }
@@ -2621,6 +2679,10 @@
                     </div>
                     <div id="photos-body" style="padding:0 1.5rem 1.5rem; display:none;">
 
+                    <div style="position:sticky; top:44px; z-index:50; text-align:right; margin-bottom:0.75rem;">
+                        <button onclick="toggleSection('photos-body','photos-arrow')" style="background:#3b82f6; color:white; border:none; padding:0.4rem 1rem; border-radius:6px; font-size:0.82rem; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.15);">▲ Collapse Photos</button>
+                    </div>
+
                     <input type="file" id="photo-upload-input" multiple accept="image/*" style="display:none;" onchange="handlePhotoUpload(this.files)">
 
                     <label for="photo-upload-input" id="drop-zone" 
@@ -2667,6 +2729,10 @@
                         </div>
                     </div>
                     <div id="contacts-body" style="padding:0 1.5rem 1.5rem; display:none;">
+
+                    <div style="position:sticky; top:44px; z-index:50; text-align:right; margin-bottom:0.75rem;">
+                        <button onclick="toggleSection('contacts-body','contacts-arrow')" style="background:#8b5cf6; color:white; border:none; padding:0.4rem 1rem; border-radius:6px; font-size:0.82rem; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.15);">▲ Collapse Contacts</button>
+                    </div>
 
                     <!-- Export Instructions -->
                     <div id="export-instructions" style="background:#eff6ff; border:1px solid #3b82f6; border-radius:8px; padding:1.25rem; margin-bottom:1.5rem;">
@@ -2722,10 +2788,25 @@
                                 <option value="Romantic">💕 Romantic</option>
                                 <option value="Disliked">😬 Disliked</option>
                                 <option value="Others">⭐ Others</option>
+                                <option disabled style="border-top:1px solid #e5e7eb; color:#9ca3af;">──────────────</option>
                                 <option value="__custom__">✏️ Create new category...</option>
                             </select>
-                            <input id="contact-category-custom" placeholder="Type your custom category..." 
-                                style="display:none; padding:0.5rem; border:1px solid #8b5cf6; border-radius:6px; font-size:0.9rem; margin-top:0.4rem; width:100%;">
+                            <!-- Custom category creation panel -->
+                            <div id="custom-category-panel" style="display:none; margin-top:0.5rem; background:#f5f3ff; border:1px solid #c4b5fd; border-radius:8px; padding:0.75rem;">
+                                <p style="color:#5b21b6; font-size:0.82rem; font-weight:600; margin-bottom:0.4rem;">Create a new category:</p>
+                                <div style="display:flex; gap:0.4rem; align-items:center;">
+                                    <input id="contact-category-custom" placeholder="e.g. Watch Contacts, Golf Club, School..." 
+                                        style="flex:1; padding:0.5rem; border:1px solid #c4b5fd; border-radius:6px; font-size:0.9rem;"
+                                        onkeydown="if(event.key==='Enter'){event.preventDefault();confirmCustomCategory()}">
+                                    <button type="button" onclick="confirmCustomCategory()" style="background:#7c3aed; color:white; border:none; padding:0.5rem 0.85rem; border-radius:6px; font-size:0.85rem; cursor:pointer; white-space:nowrap;">✓ Use</button>
+                                    <button type="button" onclick="cancelCustomCategory()" style="background:#f3f4f6; color:#6b7280; border:1px solid #e5e7eb; padding:0.5rem 0.6rem; border-radius:6px; font-size:0.85rem; cursor:pointer;">✕</button>
+                                </div>
+                                <p id="custom-cat-preview" style="color:#7c3aed; font-size:0.8rem; margin-top:0.35rem; display:none;"></p>
+                            </div>
+                            <div id="category-confirmed-badge" style="display:none; margin-top:0.35rem;">
+                                <span style="background:#ede9fe; color:#5b21b6; padding:0.2rem 0.6rem; border-radius:4px; font-size:0.82rem;">✓ Custom: <span id="category-confirmed-name"></span></span>
+                                <button onclick="clearCustomCategory()" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:0.8rem; margin-left:0.3rem;">✕ Change</button>
+                            </div>
                             <input id="contact-relation" placeholder="Relationship (e.g. Sister, Best Friend)" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; grid-column:span 2;">
                         </div>
                         <textarea id="contact-note" placeholder="Why are they meaningful to you? Share a memory or story..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:80px; resize:vertical;"></textarea>
@@ -2966,11 +3047,25 @@
                         </button>
                     </div>
                     <div id="secrets-body" style="display:none; padding:0 1.5rem 1.5rem;">
-                        <!-- Solemn notice -->
-                        <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:1.25rem; margin-bottom:1.5rem; text-align:center;">
-                            <div style="font-size:2rem; margin-bottom:0.5rem;">🔒</div>
-                            <p style="color:#dc2626; font-weight:700; font-size:1rem; margin-bottom:0.5rem;">Only open after my death</p>
-                            <p style="color:#7f1d1d; font-size:0.9rem; font-style:italic;" id="secrets-wish-text">Please respect my wish — <strong id="secrets-user-name"></strong></p>
+                        <!-- Solemn consent notice -->
+                        <div style="background:#fef2f2; border:2px solid #fecaca; border-radius:10px; padding:1.5rem; margin-bottom:1.5rem; text-align:center;">
+                            <div style="font-size:2.5rem; margin-bottom:0.75rem;">🔒</div>
+                            <p style="color:#7f1d1d; font-weight:700; font-size:1.05rem; margin-bottom:1rem;">These secrets are only to be opened after my death</p>
+                            <p style="color:#7f1d1d; font-size:0.9rem; font-style:italic; margin-bottom:1.25rem;" id="secrets-wish-text">Please respect my wish — <strong id="secrets-user-name"></strong></p>
+                            <div style="background:white; border-radius:8px; padding:1rem; border:1px solid #fecaca; display:inline-block; text-align:left; min-width:300px;">
+                                <p style="color:#374151; font-size:0.9rem; font-weight:600; margin-bottom:0.75rem;">I, <span id="secrets-name-inline" style="color:#dc2626;"></span>, confirm these secrets:</p>
+                                <label style="display:flex; align-items:flex-start; gap:0.6rem; cursor:pointer; margin-bottom:0.6rem;">
+                                    <input type="checkbox" id="secrets-consent-yes" onchange="handleSecretsConsent('yes',this)" 
+                                        style="width:18px; height:18px; margin-top:2px; accent-color:#dc2626; flex-shrink:0;">
+                                    <span style="color:#374151; font-size:0.88rem; line-height:1.4;">✅ Yes — I wish my secrets to remain sealed until after my death. I ask my inheritors to honour this.</span>
+                                </label>
+                                <label style="display:flex; align-items:flex-start; gap:0.6rem; cursor:pointer;">
+                                    <input type="checkbox" id="secrets-consent-no" onchange="handleSecretsConsent('no',this)"
+                                        style="width:18px; height:18px; margin-top:2px; accent-color:#6b7280; flex-shrink:0;">
+                                    <span style="color:#6b7280; font-size:0.88rem; line-height:1.4;">No — these are private notes only, no special wish attached</span>
+                                </label>
+                                <div id="secrets-consent-status" style="margin-top:0.75rem; font-size:0.82rem; color:#9ca3af; font-style:italic;"></div>
+                            </div>
                         </div>
                         <div id="secrets-list" style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;"></div>
                         <!-- Add secret form -->
@@ -3352,15 +3447,32 @@
     </div>
 
     
-    <!-- Photo Lightbox -->
-    <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; align-items:center; justify-content:center; padding:1rem;" onclick="closePhotoLightbox()">
-        <div style="max-width:900px; width:100%; position:relative;" onclick="event.stopPropagation()">
-            <button onclick="closePhotoLightbox()" style="position:absolute; top:-2.5rem; right:0; background:none; border:none; color:white; font-size:1.8rem; cursor:pointer; line-height:1;">✕</button>
-            <img id="lightbox-img" src="" style="width:100%; max-height:75vh; object-fit:contain; border-radius:8px; display:block;">
-            <div id="lightbox-caption" style="color:white; padding:1rem 0; min-height:60px;"></div>
-            <div style="display:flex; gap:0.75rem; justify-content:center;">
-                <button id="lightbox-caption-btn" onclick="lightboxAddCaption()" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; padding:0.5rem 1rem; border-radius:6px; cursor:pointer;">✏️ Add Caption</button>
-                <button id="lightbox-download-btn" onclick="downloadCurrentPhoto()" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; padding:0.5rem 1rem; border-radius:6px; cursor:pointer;">⬇️ Download</button>
+    <!-- Photo Lightbox Modal -->
+    <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.93); z-index:9999; align-items:flex-start; justify-content:center; padding:1rem; overflow-y:auto;" onclick="closePhotoLightbox()">
+        <div style="max-width:860px; width:100%; margin:auto; position:relative;" onclick="event.stopPropagation()">
+            <!-- Close -->
+            <button onclick="closePhotoLightbox()" style="position:absolute; top:-2.5rem; right:0; background:none; border:none; color:white; font-size:2rem; cursor:pointer; line-height:1; z-index:10;">✕</button>
+            <!-- Image -->
+            <img id="lightbox-img" src="" style="width:100%; max-height:65vh; object-fit:contain; border-radius:10px; display:block;">
+            <!-- Caption -->
+            <div id="lightbox-caption" style="color:white; padding:0.75rem 0; min-height:40px;"></div>
+            <!-- Action Buttons Row 1 -->
+            <div style="display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.6rem;">
+                <button id="lightbox-caption-btn" onclick="lightboxAddCaption()" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.35); color:white; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-size:0.9rem;">✏️ Caption</button>
+                <button onclick="downloadCurrentPhoto()" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.35); color:white; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-size:0.9rem;">⬇️ Download</button>
+                <button onclick="togglePrinterSearch()" style="background:rgba(251,191,36,0.25); border:1px solid rgba(251,191,36,0.5); color:#fbbf24; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-size:0.9rem;">🖨️ Print this Photo</button>
+            </div>
+            <!-- Printer Search Panel -->
+            <div id="printer-search-panel" style="display:none; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:1.25rem; margin-top:0.5rem;">
+                <h4 style="color:white; font-size:1rem; margin-bottom:0.75rem; text-align:center;">🖨️ Find a Local Online Photo Printer</h4>
+                <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem; flex-wrap:wrap;">
+                    <input id="printer-location" placeholder="Your location (e.g. Manchester, M1 2AB...)" 
+                        style="flex:1; min-width:200px; padding:0.6rem 0.8rem; border-radius:6px; border:none; font-size:0.9rem; outline:none;"
+                        onkeydown="if(event.key==='Enter') searchPrinters()">
+                    <button onclick="useMyLocation()" style="background:#3b82f6; color:white; border:none; padding:0.6rem 0.9rem; border-radius:6px; cursor:pointer; font-size:0.85rem; white-space:nowrap;">📍 Use My Location</button>
+                    <button onclick="searchPrinters()" style="background:#fbbf24; color:#1f2937; border:none; padding:0.6rem 1rem; border-radius:6px; cursor:pointer; font-size:0.9rem; font-weight:700;">Search</button>
+                </div>
+                <div id="printer-results" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
             </div>
         </div>
     </div>
@@ -4298,12 +4410,47 @@
             renderSecrets()
         }
 
+        function handleSecretsConsent(choice, checkbox) {
+            // Uncheck the other box
+            if (choice === 'yes') document.getElementById('secrets-consent-no').checked = false
+            else document.getElementById('secrets-consent-yes').checked = false
+
+            const status = document.getElementById('secrets-consent-status')
+            if (choice === 'yes' && checkbox.checked) {
+                status.textContent = '🔒 Your wish has been recorded. Your secrets will be marked as sealed until after your death.'
+                status.style.color = '#dc2626'
+                // Save consent state
+                localStorage.setItem('vault_secrets_consent', 'yes')
+                syncVaultToSupabase('vault_secrets_consent', 'yes')
+            } else if (choice === 'no' && checkbox.checked) {
+                status.textContent = 'These will be stored as private notes only.'
+                status.style.color = '#6b7280'
+                localStorage.setItem('vault_secrets_consent', 'no')
+                syncVaultToSupabase('vault_secrets_consent', 'no')
+            } else {
+                status.textContent = ''
+                localStorage.removeItem('vault_secrets_consent')
+            }
+        }
+
         function renderSecrets() {
             const list = document.getElementById('secrets-list')
             if (!list) return
-            // Set user name in solemn notice
+            // Set user name in consent panel
             const nameEl = document.getElementById('secrets-user-name')
-            if (nameEl && user) nameEl.textContent = user.name || user.email
+            const inlineEl = document.getElementById('secrets-name-inline')
+            const displayName = user ? (user.name || user.email) : ''
+            if (nameEl) nameEl.textContent = displayName
+            if (inlineEl) inlineEl.textContent = displayName
+            // Restore saved consent
+            const savedConsent = localStorage.getItem('vault_secrets_consent')
+            if (savedConsent === 'yes') {
+                const yesBox = document.getElementById('secrets-consent-yes')
+                if (yesBox) { yesBox.checked = true; document.getElementById('secrets-consent-status').textContent = '🔒 Your wish has been recorded.'; document.getElementById('secrets-consent-status').style.color = '#dc2626' }
+            } else if (savedConsent === 'no') {
+                const noBox = document.getElementById('secrets-consent-no')
+                if (noBox) { noBox.checked = true; document.getElementById('secrets-consent-status').textContent = 'Stored as private notes only.'; document.getElementById('secrets-consent-status').style.color = '#6b7280' }
+            }
             if (savedSecrets.length === 0) {
                 list.innerHTML = '<p style="color:#9ca3af; text-align:center; padding:1rem; font-style:italic;">No secrets added yet.</p>'
                 document.getElementById('secrets-count-header').textContent = 'Only to be opened after my death'
