@@ -3660,6 +3660,16 @@
                     users[email] = { password, name, plan: selectedPlan, registeredAt: new Date().toISOString() }
                     saveUsers(users)
 
+                    // Write registration record to Supabase so admin can see all users cross-device
+                    try {
+                        await supabaseClient.from('vault_data').upsert({
+                            user_email: email,
+                            data_key: '_registration',
+                            data_value: JSON.stringify({ name, plan: selectedPlan, registeredAt: new Date().toISOString() }),
+                            updated_at: new Date().toISOString()
+                        }, { onConflict: 'user_email,data_key' })
+                    } catch(e) { console.warn('Registration record failed:', e) }
+
                 } else {
                     // Login
                     const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({ email, password })
@@ -3692,6 +3702,16 @@
                         // Also save/update local backup
                         users[email] = { ...localUser, password, name: user.name, plan: user.plan }
                         saveUsers(users)
+
+                        // Upsert registration record so admin sees this user cross-device
+                        try {
+                            await supabaseClient.from('vault_data').upsert({
+                                user_email: email,
+                                data_key: '_registration',
+                                data_value: JSON.stringify({ name: user.name, plan: user.plan, registeredAt: localUser.registeredAt || new Date().toISOString() }),
+                                updated_at: new Date().toISOString()
+                            }, { onConflict: 'user_email,data_key' })
+                        } catch(e) { console.warn('Registration record failed:', e) }
                     }
                 }
 
@@ -3929,8 +3949,6 @@
                         byUser[row.user_email][row.data_key] = row.data_value
                     })
                 }
-
-                // Also include local user store (catches users who only ever used offline mode)
                 const localUsers = getUsers()
                 Object.entries(localUsers).forEach(([email, data]) => {
                     if (!byUser[email]) byUser[email] = { _localOnly: true, ...data }
@@ -3938,22 +3956,27 @@
 
                 // Build tester list with per-user stats
                 allTesters = Object.entries(byUser).map(([email, data]) => {
-                    let songs = 0, contacts = 0, stories = 0, photos = 0, plan = 'monthly', name = ''
+                    let songs = 0, contacts = 0, stories = 0, photos = 0, plan = 'monthly', name = '', registeredAt = null
+                    // Pull name/plan/date from _registration record first (most reliable cross-device)
+                    try {
+                        const reg = JSON.parse(data['_registration'] || '{}')
+                        name = reg.name || ''
+                        plan = reg.plan || 'monthly'
+                        registeredAt = reg.registeredAt || null
+                    } catch(e) {}
+                    // Fall back to local user store
+                    const localUser = localUsers[email] || {}
+                    if (!name) name = localUser.name || email.split('@')[0]
+                    if (plan === 'monthly' && localUser.plan) plan = localUser.plan
+                    if (!registeredAt) registeredAt = localUser.registeredAt || null
                     try { songs = JSON.parse(data['spotify_music_data'] || '[]').length } catch(e) {}
                     try { contacts = JSON.parse(data['vault_contacts'] || '[]').length } catch(e) {}
                     try { stories = Object.keys(JSON.parse(data['vault_stories'] || '{}')).length +
                                     Object.keys(JSON.parse(data['vault_lifebook'] || '{}')).length } catch(e) {}
                     try { photos = parseInt(data['vault_photos_count'] || '0') } catch(e) {}
-                    // Get plan/name from local user store if available
-                    const localUser = localUsers[email] || {}
-                    plan = localUser.plan || 'monthly'
-                    name = localUser.name || email.split('@')[0]
-                    return { email, name, plan, songs, contacts, stories, photos,
-                             registeredAt: localUser.registeredAt || null,
+                    return { email, name, plan, songs, contacts, stories, photos, registeredAt,
                              localOnly: !!data._localOnly }
                 })
-
-                // Aggregate stats
                 const totalSongs = allTesters.reduce((s, t) => s + t.songs, 0)
                 const totalContacts = allTesters.reduce((s, t) => s + t.contacts, 0)
                 const totalStories = allTesters.reduce((s, t) => s + t.stories, 0)
@@ -5144,7 +5167,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.60</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.61</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
