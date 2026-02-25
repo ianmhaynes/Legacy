@@ -2468,9 +2468,7 @@
 
                     <div id="photo-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:0.5rem;"></div>
 
-            <!-- TAB: MEMORIES -->
-            <div id="vtabcontent-memories" style="padding-top:1rem;">
-                <div id="tab-music" style="padding-top:1rem;"><div id="spotify-card">
+            <div id="tab-music" style="padding-top:1rem;"><div id="spotify-card">
                     <!-- Search Bar -->
                     <div style="margin-bottom:1rem;">
                         <input id="song-search" type="text" placeholder="🔍 Search for a song..." 
@@ -2653,8 +2651,6 @@
                                 📚 View All Chapters
                             </button>
                         </div></div>
-            </div>
-
 
             <!-- TAB: ESSENTIALS -->
             <div id="tab-essentials" style="display:none; padding-top:1rem;">
@@ -4035,7 +4031,7 @@
             captionEl.innerHTML = capHtml
             captionBtn.textContent = capHtml ? '✏️ Edit Caption' : '✏️ Add Caption'
 
-            lb.style.display = 'flex'
+            lb.style.display = 'block'
             document.body.style.overflow = 'hidden'
         }
 
@@ -4194,13 +4190,13 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.22</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.23</div>
 
     <!-- Photo Lightbox -->
-    <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; align-items:center; justify-content:center; padding:1rem;" onclick="closePhotoLightbox()">
-        <div style="max-width:900px; width:100%; position:relative;" onclick="event.stopPropagation()">
-            <button onclick="closePhotoLightbox()" style="position:absolute; top:-2.5rem; right:0; background:none; border:none; color:white; font-size:1.8rem; cursor:pointer; line-height:1;">✕</button>
-            <img id="lightbox-img" src="" style="width:100%; max-height:75vh; object-fit:contain; border-radius:8px; display:block;">
+    <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
+        <div style="max-width:900px; width:100%; margin:2rem auto; position:relative; padding:1rem;" onclick="event.stopPropagation()">
+            <button onclick="closePhotoLightbox()" style="position:absolute; top:0; right:1rem; background:none; border:none; color:white; font-size:2rem; cursor:pointer; line-height:1; z-index:1;">✕</button>
+            <img id="lightbox-img" src="" style="width:100%; max-height:80vh; object-fit:contain; border-radius:8px; display:block; margin-top:2.5rem;">
             <div id="lightbox-caption" style="color:white; padding:1rem 0; min-height:60px;"></div>
             <div style="display:flex; gap:0.75rem; justify-content:center;">
                 <button id="lightbox-caption-btn" onclick="lightboxAddCaption()" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; padding:0.5rem 1rem; border-radius:6px; cursor:pointer;">✏️ Add Caption</button>
