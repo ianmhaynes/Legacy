@@ -953,7 +953,14 @@
                 justify-content: center;
             }
         }
-    </style>
+    
+        .ess-section { border-top: 1px solid #e5e7eb; padding: 0.55rem 0; }
+        .ess-section:first-child { border-top: none; padding-top: 0; }
+        .ess-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; }
+        .ess-add-btn { color: white; border: none; padding: 0.2rem 0.55rem; border-radius: 5px; cursor: pointer; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+        .ess-empty { color: #9ca3af; font-size: 0.775rem; padding: 0.2rem 0; margin: 0; font-style: italic; }
+
+        </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -2654,101 +2661,130 @@
                         </div></div>
 
             <!-- TAB: ESSENTIALS -->
-            <div id="tab-essentials" style="display:none; padding-top:1rem;">
-                
-                <div id="vstabcontent-essentials-finance" style="margin-bottom:0.75rem; "><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;"><h3 style="color:#f59e0b; font-size:0.875rem; font-weight:700; margin:0;">💰 Financial</h3><button onclick="showAddEssential('finance')" style="background:#f59e0b; color:white; border:none; padding:0.2rem 0.6rem; border-radius:5px; cursor:pointer; font-size:0.78rem; font-weight:600;">+ Add</button></div>
-                    <div id="essentials-finance-list"></div>
-                    <p id="essentials-finance-empty" style="color:#9ca3af; font-size:0.78rem; padding:0.3rem 0; margin:0; font-style:italic;">No entries — bank accounts, insurance, will location</p>
-                </div>
-                </div>
-                <div id="vstabcontent-essentials-access" style="margin-bottom:0.75rem; border-top:1px solid #e5e7eb; padding-top:0.6rem; "><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;"><h3 style="color:#10b981; font-size:0.875rem; font-weight:700; margin:0;">🔑 Access & Passwords</h3><button onclick="showAddEssential('access')" style="background:#10b981; color:white; border:none; padding:0.2rem 0.6rem; border-radius:5px; cursor:pointer; font-size:0.78rem; font-weight:600;">+ Add</button></div>
-                    <div id="essentials-access-list"></div>
-                    <p id="essentials-access-empty" style="color:#9ca3af; font-size:0.78rem; padding:0.3rem 0; margin:0; font-style:italic;">No entries — safe combinations, security codes</p>
-                </div>
-                </div>
-                <div id="vstabcontent-essentials-digital" style="margin-bottom:0.75rem; border-top:1px solid #e5e7eb; padding-top:0.6rem; "><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;"><h3 style="color:#6366f1; font-size:0.875rem; font-weight:700; margin:0;">💻 Digital Accounts</h3><button onclick="showAddEssential('digital')" style="background:#6366f1; color:white; border:none; padding:0.2rem 0.6rem; border-radius:5px; cursor:pointer; font-size:0.78rem; font-weight:600;">+ Add</button></div>
-                    <div id="essentials-digital-list"></div>
-                    <p id="essentials-digital-empty" style="color:#9ca3af; font-size:0.78rem; padding:0.3rem 0; margin:0; font-style:italic;">No entries — email logins, social media, streaming</p>
-                </div>
-                </div>
-                <div id="vstabcontent-essentials-docs" style="margin-bottom:0.75rem; border-top:1px solid #e5e7eb; padding-top:0.6rem; "><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;"><h3 style="color:#ef4444; font-size:0.875rem; font-weight:700; margin:0;">📄 Documents</h3><button onclick="showAddEssential('docs')" style="background:#ef4444; color:white; border:none; padding:0.2rem 0.6rem; border-radius:5px; cursor:pointer; font-size:0.78rem; font-weight:600;">+ Add</button></div>
-                    <div id="essentials-docs-list"></div>
-                    <p id="essentials-docs-empty" style="color:#9ca3af; font-size:0.78rem; padding:0.3rem 0; margin:0; font-style:italic;">No entries — passport, NHS, birth certificate, NI</p>
-                </div>
-                </div>
-                <div id="vstabcontent-essentials-keys" style="margin-bottom:2rem; padding-top:1rem; border-top:2px solid #f3f4f6;">
-                    <h3 style="color:#0891b2; font-size:1rem; font-weight:700; margin-bottom:1rem;">🗝️ Keys — What Opens What</h3>
-                    <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
-                        <button onclick="showAddKey()" style="background:#0891b2; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Key</button>
-                    </div>
-                    <div id="add-key-form" style="display:none; background:white; border:2px solid #e0f2fe; border-radius:10px; padding:1.5rem; margin-bottom:1rem;">
-                        <h4 style="color:#0891b2; margin-bottom:1rem;">🗝️ Add a Key</h4>
-                        <input id="key-label" placeholder="What is this key? e.g. Front door, Garden shed, Safe" style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; box-sizing:border-box;">
-                        <textarea id="key-description" placeholder="More details — where it's kept, who has a copy, any codes..." style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:80px; resize:vertical; box-sizing:border-box;"></textarea>
-                        <div style="margin-bottom:0.75rem;">
-                            <label style="display:block; font-size:0.85rem; font-weight:600; color:#4b5563; margin-bottom:0.4rem;">📸 Photo of the key (optional)</label>
-                            <input type="file" id="key-image-input" accept="image/*" style="display:none;" onchange="previewKeyImage(this)">
-                            <label for="key-image-input" style="display:inline-block; padding:0.5rem 1rem; background:#f0f9ff; border:1px dashed #0891b2; border-radius:6px; cursor:pointer; font-size:0.85rem; color:#0891b2;">📷 Choose photo</label>
-                            <img id="key-image-preview" src="" style="display:none; width:120px; height:90px; object-fit:cover; border-radius:6px; margin-left:1rem; vertical-align:middle; border:1px solid #e5e7eb;">
-                        </div>
-                        <div id="key-custom-fields" style="margin-bottom:0.5rem;"></div>
-                        <button onclick="addKeyCustomField()" style="background:none; border:1px dashed #9ca3af; color:#6b7280; padding:0.35rem 0.75rem; border-radius:6px; font-size:0.8rem; cursor:pointer; margin-bottom:0.75rem; display:block;">+ Add custom field</button>
-                        <div style="display:flex; gap:0.5rem;">
-                            <button onclick="saveKey()" style="background:#0891b2; color:white; border:none; padding:0.6rem 1.25rem; border-radius:6px; font-weight:600; cursor:pointer;">Save Key</button>
-                            <button onclick="document.getElementById('add-key-form').style.display='none'; document.getElementById('key-custom-fields').innerHTML=''; document.getElementById('key-image-preview').style.display='none';" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.6rem 1rem; border-radius:6px; cursor:pointer;">Cancel</button>
-                        </div>
-                    </div>
-                    <div id="keys-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
-                    <p id="keys-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No keys recorded yet. Add your house keys, car keys, safe combinations...</p>
-                </div>
-                <div id="vstabcontent-essentials-wishes" style="margin-bottom:0.75rem; border-top:1px solid #e5e7eb; padding-top:0.6rem; "><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;"><h3 style="color:#8b5cf6; font-size:0.875rem; font-weight:700; margin:0;">🕊️ Final Wishes</h3><button onclick="showAddEssential('wishes')" style="background:#8b5cf6; color:white; border:none; padding:0.2rem 0.6rem; border-radius:5px; cursor:pointer; font-size:0.78rem; font-weight:600;">+ Add</button></div>
-                    <div id="essentials-wishes-list"></div>
-                    <p id="essentials-wishes-empty" style="color:#9ca3af; font-size:0.78rem; padding:0.3rem 0; margin:0; font-style:italic;">No entries — funeral wishes, who to contact first</p>
-                </div>
-                </div>
-                <div id="vstabcontent-essentials-custom" style="margin-bottom:0.75rem; border-top:1px solid #e5e7eb; padding-top:0.6rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
-                        <h3 style="color:#6b7280; font-size:0.875rem; font-weight:700; margin:0;">📝 Custom</h3>
-                        <button onclick="showAddCustomEssential()" style="background:#6b7280; color:white; border:none; padding:0.2rem 0.6rem; border-radius:5px; cursor:pointer; font-size:0.78rem; font-weight:600;">+ Add</button>
-                    </div>
-                    <!-- Add Custom Form -->
-                    <div id="add-custom-essential-form" style="display:none; background:white; border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin-bottom:0.5rem;">
-                        <input id="custom-essential-title" placeholder="Title" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; margin-bottom:0.4rem; box-sizing:border-box;">
-                        <textarea id="custom-essential-text" placeholder="Details, notes, anything you want to record..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; height:80px; resize:vertical; margin-bottom:0.4rem; box-sizing:border-box;"></textarea>
-                        <div style="margin-bottom:0.5rem;">
-                            <input type="file" id="custom-essential-image" accept="image/*" style="display:none;" onchange="previewCustomEssentialImage(this)">
-                            <label for="custom-essential-image" style="display:inline-block; padding:0.3rem 0.6rem; background:#f9fafb; border:1px dashed #d1d5db; border-radius:6px; cursor:pointer; font-size:0.78rem; color:#6b7280;">📎 Attach image</label>
-                            <img id="custom-essential-image-preview" src="" style="display:none; width:72px; height:54px; object-fit:cover; border-radius:4px; margin-left:0.5rem; vertical-align:middle; border:1px solid #e5e7eb;">
-                        </div>
-                        <div style="display:flex; gap:0.4rem;">
-                            <button onclick="saveCustomEssential()" style="background:#374151; color:white; border:none; padding:0.4rem 0.9rem; border-radius:6px; font-weight:600; cursor:pointer; font-size:0.8rem;">Save</button>
-                            <button onclick="document.getElementById('add-custom-essential-form').style.display='none'; document.getElementById('custom-essential-image-preview').style.display='none';" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.4rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.8rem;">Cancel</button>
-                        </div>
-                    </div>
-                    <div id="custom-essentials-list" style="display:flex; flex-direction:column; gap:0.35rem;"></div>
-                    <p id="custom-essentials-empty" style="color:#9ca3af; font-size:0.78rem; padding:0.3rem 0; margin:0; font-style:italic;">No custom entries — add anything that doesn't fit elsewhere</p>
-                </div>
+            <div id="tab-essentials" style="display:none; padding-top:0.75rem;">
 
-                <div id="add-essential-form" style="display:none; background:white; border:2px solid #e5e7eb; border-radius:10px; padding:1.25rem; margin-top:1rem;">
-                    <h4 id="add-essential-title" style="color:#1e3a8a; margin-bottom:0.75rem; font-size:0.95rem;">Add Entry</h4>
-                    <input id="essential-heading" placeholder="Heading (e.g. Barclays Current Account)" style="width:100%; padding:0.5rem 0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; margin-bottom:0.5rem; box-sizing:border-box;">
-                    <textarea id="essential-detail" placeholder="Details — location, numbers, instructions..." style="width:100%; padding:0.5rem 0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; margin-bottom:0.5rem; height:80px; resize:vertical; box-sizing:border-box;"></textarea>
-                    <div style="margin-bottom:0.5rem;">
-                        <input type="file" id="essential-image" accept="image/*" style="display:none;" onchange="previewEssentialImage(this)">
-                        <label for="essential-image" style="display:inline-block; padding:0.35rem 0.75rem; background:#f9fafb; border:1px dashed #d1d5db; border-radius:6px; cursor:pointer; font-size:0.8rem; color:#6b7280;">📎 Attach image</label>
-                        <img id="essential-image-preview" src="" style="display:none; width:80px; height:60px; object-fit:cover; border-radius:4px; margin-left:0.75rem; vertical-align:middle; border:1px solid #e5e7eb;">
+            <!-- Essentials: all sections use same compact row style -->
+            <div style="display:flex; flex-direction:column; gap:0;">
+
+            <!-- FINANCIAL -->
+            <div id="vstabcontent-essentials-finance" class="ess-section">
+                <div class="ess-header">
+                    <span style="color:#f59e0b; font-size:0.875rem; font-weight:700;">💰 Financial</span>
+                    <button onclick="showAddEssential('finance')" class="ess-add-btn" style="background:#f59e0b;">+ Add</button>
+                </div>
+                <div id="essentials-finance-list"></div>
+                <p id="essentials-finance-empty" class="ess-empty">No entries — bank accounts, insurance, will location</p>
+            </div>
+
+            <!-- ACCESS -->
+            <div id="vstabcontent-essentials-access" class="ess-section">
+                <div class="ess-header">
+                    <span style="color:#10b981; font-size:0.875rem; font-weight:700;">🔑 Access & Passwords</span>
+                    <button onclick="showAddEssential('access')" class="ess-add-btn" style="background:#10b981;">+ Add</button>
+                </div>
+                <div id="essentials-access-list"></div>
+                <p id="essentials-access-empty" class="ess-empty">No entries — safe combinations, security codes</p>
+            </div>
+
+            <!-- DIGITAL -->
+            <div id="vstabcontent-essentials-digital" class="ess-section">
+                <div class="ess-header">
+                    <span style="color:#6366f1; font-size:0.875rem; font-weight:700;">💻 Digital Accounts</span>
+                    <button onclick="showAddEssential('digital')" class="ess-add-btn" style="background:#6366f1;">+ Add</button>
+                </div>
+                <div id="essentials-digital-list"></div>
+                <p id="essentials-digital-empty" class="ess-empty">No entries — email logins, social media, streaming</p>
+            </div>
+
+            <!-- DOCUMENTS -->
+            <div id="vstabcontent-essentials-docs" class="ess-section">
+                <div class="ess-header">
+                    <span style="color:#ef4444; font-size:0.875rem; font-weight:700;">📄 Documents</span>
+                    <button onclick="showAddEssential('docs')" class="ess-add-btn" style="background:#ef4444;">+ Add</button>
+                </div>
+                <div id="essentials-docs-list"></div>
+                <p id="essentials-docs-empty" class="ess-empty">No entries — passport, NHS, birth certificate, NI</p>
+            </div>
+
+            <!-- KEYS -->
+            <div id="vstabcontent-essentials-keys" class="ess-section">
+                <div class="ess-header">
+                    <span style="color:#0891b2; font-size:0.875rem; font-weight:700;">🗝️ Keys — What Opens What</span>
+                    <button onclick="showAddKey()" class="ess-add-btn" style="background:#0891b2;">+ Add</button>
+                </div>
+                <div id="add-key-form" style="display:none; background:white; border:1px solid #e0f2fe; border-radius:8px; padding:1rem; margin-bottom:0.5rem;">
+                    <input id="key-label" placeholder="What is this key? e.g. Front door, Garden shed, Safe" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; margin-bottom:0.4rem; box-sizing:border-box;">
+                    <textarea id="key-description" placeholder="Where it's kept, who has a copy, any codes..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; height:70px; resize:vertical; margin-bottom:0.4rem; box-sizing:border-box;"></textarea>
+                    <div style="margin-bottom:0.4rem;">
+                        <input type="file" id="key-image-input" accept="image/*" style="display:none;" onchange="previewKeyImage(this)">
+                        <label for="key-image-input" style="display:inline-block; padding:0.3rem 0.6rem; background:#f0f9ff; border:1px dashed #0891b2; border-radius:6px; cursor:pointer; font-size:0.78rem; color:#0891b2;">📷 Photo</label>
+                        <img id="key-image-preview" src="" style="display:none; width:72px; height:54px; object-fit:cover; border-radius:4px; margin-left:0.5rem; vertical-align:middle; border:1px solid #e5e7eb;">
                     </div>
-                    <div id="essential-custom-fields" style="margin-bottom:0.5rem;"></div>
-                    <button onclick="addEssentialCustomField()" style="background:none; border:1px dashed #9ca3af; color:#6b7280; padding:0.25rem 0.6rem; border-radius:6px; font-size:0.78rem; cursor:pointer; margin-bottom:0.6rem; display:block;">+ Custom field</button>
-                    <input type="hidden" id="essential-category">
-                    <div style="display:flex; gap:0.5rem;">
-                        <button onclick="saveEssential()" style="background:#1e3a8a; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; font-weight:600; cursor:pointer; font-size:0.875rem;">Save</button>
-                        <button onclick="document.getElementById('add-essential-form').style.display='none'; document.getElementById('essential-custom-fields').innerHTML=''; document.getElementById('essential-image-preview').style.display='none';" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.5rem 0.75rem; border-radius:6px; cursor:pointer; font-size:0.875rem;">Cancel</button>
+                    <div id="key-custom-fields" style="margin-bottom:0.4rem;"></div>
+                    <button onclick="addKeyCustomField()" style="background:none; border:1px dashed #9ca3af; color:#6b7280; padding:0.2rem 0.5rem; border-radius:5px; font-size:0.75rem; cursor:pointer; margin-bottom:0.4rem; display:block;">+ Custom field</button>
+                    <div style="display:flex; gap:0.4rem;">
+                        <button onclick="saveKey()" style="background:#0891b2; color:white; border:none; padding:0.4rem 0.9rem; border-radius:6px; font-weight:600; cursor:pointer; font-size:0.8rem;">Save</button>
+                        <button onclick="document.getElementById('add-key-form').style.display='none'; document.getElementById('key-custom-fields').innerHTML=''; document.getElementById('key-image-preview').style.display='none';" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.4rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.8rem;">Cancel</button>
                     </div>
+                </div>
+                <div id="keys-list" style="display:flex; flex-direction:column; gap:0.35rem;"></div>
+                <p id="keys-empty" class="ess-empty">No entries — house keys, car keys, safe combinations</p>
+            </div>
+
+            <!-- FINAL WISHES -->
+            <div id="vstabcontent-essentials-wishes" class="ess-section">
+                <div class="ess-header">
+                    <span style="color:#8b5cf6; font-size:0.875rem; font-weight:700;">🕊️ Final Wishes</span>
+                    <button onclick="showAddEssential('wishes')" class="ess-add-btn" style="background:#8b5cf6;">+ Add</button>
+                </div>
+                <div id="essentials-wishes-list"></div>
+                <p id="essentials-wishes-empty" class="ess-empty">No entries — funeral wishes, who to contact first</p>
+            </div>
+
+            <!-- CUSTOM -->
+            <div id="vstabcontent-essentials-custom" class="ess-section">
+                <div class="ess-header">
+                    <span style="color:#6b7280; font-size:0.875rem; font-weight:700;">📝 Custom</span>
+                    <button onclick="showAddCustomEssential()" class="ess-add-btn" style="background:#6b7280;">+ Add</button>
+                </div>
+                <div id="add-custom-essential-form" style="display:none; background:white; border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin-bottom:0.5rem;">
+                    <input id="custom-essential-title" placeholder="Title" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; margin-bottom:0.4rem; box-sizing:border-box;">
+                    <textarea id="custom-essential-text" placeholder="Details, notes, anything you want to record..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; height:80px; resize:vertical; margin-bottom:0.4rem; box-sizing:border-box;"></textarea>
+                    <div style="margin-bottom:0.4rem;">
+                        <input type="file" id="custom-essential-image" accept="image/*" style="display:none;" onchange="previewCustomEssentialImage(this)">
+                        <label for="custom-essential-image" style="display:inline-block; padding:0.3rem 0.6rem; background:#f9fafb; border:1px dashed #d1d5db; border-radius:6px; cursor:pointer; font-size:0.78rem; color:#6b7280;">📎 Attach image</label>
+                        <img id="custom-essential-image-preview" src="" style="display:none; width:72px; height:54px; object-fit:cover; border-radius:4px; margin-left:0.5rem; vertical-align:middle; border:1px solid #e5e7eb;">
+                    </div>
+                    <div style="display:flex; gap:0.4rem;">
+                        <button onclick="saveCustomEssential()" style="background:#374151; color:white; border:none; padding:0.4rem 0.9rem; border-radius:6px; font-weight:600; cursor:pointer; font-size:0.8rem;">Save</button>
+                        <button onclick="document.getElementById('add-custom-essential-form').style.display='none'; document.getElementById('custom-essential-image-preview').style.display='none';" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.4rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.8rem;">Cancel</button>
+                    </div>
+                </div>
+                <div id="custom-essentials-list" style="display:flex; flex-direction:column; gap:0.35rem;"></div>
+                <p id="custom-essentials-empty" class="ess-empty">No entries — add anything that doesn't fit elsewhere</p>
+            </div>
+
+            <!-- ADD ENTRY FORM (shared for finance/access/digital/docs/wishes) -->
+            <div id="add-essential-form" style="display:none; background:white; border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin-top:0.5rem;">
+                <h4 id="add-essential-title" style="color:#1e3a8a; margin-bottom:0.6rem; font-size:0.9rem;">Add Entry</h4>
+                <input id="essential-heading" placeholder="Heading (e.g. Barclays Current Account)" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; margin-bottom:0.4rem; box-sizing:border-box;">
+                <textarea id="essential-detail" placeholder="Details — location, numbers, instructions..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; margin-bottom:0.4rem; height:80px; resize:vertical; box-sizing:border-box;"></textarea>
+                <div style="margin-bottom:0.4rem;">
+                    <input type="file" id="essential-image" accept="image/*" style="display:none;" onchange="previewEssentialImage(this)">
+                    <label for="essential-image" style="display:inline-block; padding:0.3rem 0.6rem; background:#f9fafb; border:1px dashed #d1d5db; border-radius:6px; cursor:pointer; font-size:0.78rem; color:#6b7280;">📎 Attach image</label>
+                    <img id="essential-image-preview" src="" style="display:none; width:72px; height:54px; object-fit:cover; border-radius:4px; margin-left:0.5rem; vertical-align:middle; border:1px solid #e5e7eb;">
+                </div>
+                <div id="essential-custom-fields" style="margin-bottom:0.4rem;"></div>
+                <button onclick="addEssentialCustomField()" style="background:none; border:1px dashed #9ca3af; color:#6b7280; padding:0.2rem 0.5rem; border-radius:5px; font-size:0.75rem; cursor:pointer; margin-bottom:0.4rem; display:block;">+ Custom field</button>
+                <input type="hidden" id="essential-category">
+                <div style="display:flex; gap:0.4rem;">
+                    <button onclick="saveEssential()" style="background:#1e3a8a; color:white; border:none; padding:0.4rem 0.9rem; border-radius:6px; font-weight:600; cursor:pointer; font-size:0.8rem;">Save</button>
+                    <button onclick="document.getElementById('add-essential-form').style.display='none'; document.getElementById('essential-custom-fields').innerHTML=''; document.getElementById('essential-image-preview').style.display='none';" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.4rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.8rem;">Cancel</button>
                 </div>
             </div>
 
-
+            </div><!-- end essentials flex column -->
+        
             <!-- TAB: LEGACY -->
             <div id="tab-legacy" style="display:none; padding-top:1rem;">
                 
@@ -4520,7 +4556,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.29</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.30</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
