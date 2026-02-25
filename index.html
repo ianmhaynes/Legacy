@@ -2476,7 +2476,7 @@
             </div>
 
             <!-- Sticky nav - single flat row -->
-            <div style="position:sticky; top:60px; background:white; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin:0 -1rem; padding:0.6rem 1rem 0;">
+            <div style="position:sticky; top:60px; background:linear-gradient(to bottom,rgba(253,252,255,0.98),rgba(245,243,255,0.97)); z-index:100; box-shadow:0 2px 12px rgba(99,102,241,0.08); margin:0 -1rem; padding:0.6rem 1rem 0; backdrop-filter:blur(8px);">
                 <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.6rem;">
                     <input id="vault-search" placeholder="🔍 Search capsule..."
                         style="flex:1; padding:0.4rem 0.9rem; border:1px solid rgba(99,102,241,0.2); border-radius:8px; background:rgba(255,255,255,0.8); border-radius:980px; font-size:0.85rem; outline:none;"
@@ -3138,35 +3138,37 @@
 
     <!-- Share Modal -->
     <div id="share-modal" class="modal">
-        <div class="modal-content" style="max-width:600px;">
-            <div style="text-align:center; margin-bottom:2rem;">
-                <div style="font-size:4rem; margin-bottom:1rem;">🔗</div>
-                <h2 style="margin-bottom:0.5rem;">Share Your Legacy</h2>
-                <p style="color:#6b7280;">Show friends & family what you're preserving</p>
+        <div class="modal-content" style="max-width:520px;">
+            <!-- Warm header accent -->
+            <div style="text-align:center;margin-bottom:1.75rem;">
+                <div style="display:inline-flex;align-items:center;gap:0.4rem;background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(139,92,246,0.1));border:1px solid rgba(99,102,241,0.2);border-radius:20px;padding:0.35rem 1rem;margin-bottom:1rem;">
+                    <span style="font-size:0.85rem;">🔗</span>
+                    <span style="color:#6366f1;font-size:0.75rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;font-family:'Georgia',serif;">Share Your Capsule</span>
+                </div>
+                <h2 style="font-family:'Georgia',serif;font-weight:400;font-size:1.4rem;color:#1e293b;margin:0 0 0.4rem;">Invite someone to see your story</h2>
+                <p style="color:#64748b;font-size:0.88rem;font-style:italic;font-family:'Georgia',serif;margin:0;">They'll see your capsule — but can't edit it.</p>
             </div>
 
-            <div style="background:linear-gradient(135deg, #a855f7 0%, #ec4899 100%); border-radius:12px; padding:2rem; margin-bottom:1.5rem;">
-                <div style="background:rgba(255,255,255,0.95); border-radius:8px; padding:1.5rem; margin-bottom:1rem;">
-                    <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
-                        <input id="share-modal-link" readonly 
-                            style="flex:1; padding:0.85rem; border-radius:6px; border:2px solid #e5e7eb; font-size:0.9rem; color:#1e3a8a; font-weight:500;" 
-                            value="">
-                        <button onclick="copyShareLinkModal()" 
-                            style="background:#a855f7; color:white; border:none; padding:0.85rem 1.5rem; border-radius:6px; font-weight:600; cursor:pointer;">
-                            Copy
-                        </button>
-                    </div>
+            <!-- Link box -->
+            <div style="background:rgba(99,102,241,0.04);border:1.5px solid rgba(99,102,241,0.15);border-radius:14px;padding:1.25rem;margin-bottom:1rem;">
+                <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;">
+                    <input id="share-modal-link" readonly
+                        style="flex:1;padding:0.7rem 0.9rem;border-radius:8px;border:1.5px solid rgba(99,102,241,0.2);font-size:0.85rem;color:#4338ca;font-weight:500;background:white;outline:none;"
+                        value="" placeholder="Click below to generate your link">
+                    <button onclick="copyShareLinkModal()"
+                        style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border:none;padding:0.7rem 1.2rem;border-radius:8px;font-weight:700;cursor:pointer;font-family:'Georgia',serif;font-size:0.88rem;white-space:nowrap;">
+                        Copy
+                    </button>
                 </div>
-
-                <button onclick="generateShareLink()" class="btn-primary" style="width:100%; background:white; color:#a855f7;">
-                    📤 Generate Share Link
+                <button onclick="generateShareLink()" style="width:100%;background:transparent;border:1.5px solid rgba(99,102,241,0.25);color:#6366f1;padding:0.7rem;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Georgia',serif;font-size:0.88rem;" onmouseover="this.style.background='rgba(99,102,241,0.06)'" onmouseout="this.style.background='transparent'">
+                    ✨ Generate share link
                 </button>
             </div>
 
-            <div style="background:#fef3c7; border:1px solid #fbbf24; border-radius:8px; padding:1rem; margin-bottom:1.5rem;">
-                <p style="color:#92400e; font-size:0.85rem; margin:0;">
-                    ⚠️ <strong>Privacy Notice:</strong> Anyone with this link can view your capsule (but not edit it).
-                </p>
+            <!-- Privacy note - warm, not alarming -->
+            <div style="background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.12);border-radius:10px;padding:0.75rem 1rem;margin-bottom:1.5rem;display:flex;gap:0.6rem;align-items:flex-start;">
+                <span style="color:#6366f1;flex-shrink:0;">🔒</span>
+                <p style="color:#475569;font-size:0.82rem;margin:0;line-height:1.6;font-family:'Georgia',serif;font-style:italic;">Read-only access — they can see your memories but nothing can be changed or deleted.</p>
             </div>
 
             <button onclick="closeShareModal()" class="btn-secondary" style="width:100%;">Close</button>
@@ -3539,6 +3541,9 @@
             document.getElementById('home-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.remove('active');
             document.getElementById('admin-section').style.display = 'none';
+            // Hide footer when leaving dashboard
+            const footer = document.getElementById('site-footer')
+            if (footer && section !== 'dashboard') footer.style.display = 'none'
 
             if (section === 'home') {
                 document.getElementById('home-section').classList.remove('hidden');
@@ -4429,8 +4434,8 @@
                 var btn = document.getElementById('vtab-' + t)
                 if (content) content.style.display = t === tab ? 'block' : 'none'
                 if (btn) {
-                    btn.style.borderBottomColor = t === tab ? '#3b82f6' : 'transparent'
-                    btn.style.color = t === tab ? '#1e3a8a' : '#6b7280'
+                    btn.style.borderBottomColor = t === tab ? '#6366f1' : 'transparent'
+                    btn.style.color = t === tab ? '#4f46e5' : '#64748b'
                     btn.style.fontWeight = t === tab ? '700' : '600'
                 }
             })
@@ -5077,7 +5082,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.53</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.54</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
@@ -5178,7 +5183,7 @@
         <!-- About section -->
         <div id="footer-section-about" style="display:none; max-width:960px; margin:0 auto; padding:2.5rem 2rem;">
             <h2 style="color:#f1f5f9; font-size:1.4rem; font-weight:700; margin:0 0 0.3rem;">About We Loved Life</h2>
-            <p style="color:#64748b; font-size:0.8rem; margin:0 0 2rem; letter-spacing:0.05em; text-transform:uppercase;">A vault for everything that matters</p>
+            <p style="color:#64748b; font-size:0.8rem; margin:0 0 2rem; letter-spacing:0.05em; text-transform:uppercase;">A time capsule for the people you'll never meet</p>
             <div style="max-width:600px;">
                 <p style="font-size:0.9rem; line-height:1.8; color:#cbd5e1; margin:0 0 1rem;">We Loved Life was built for one reason — to make sure the people you love know what matters to you, long after you're gone.</p>
                 <p style="font-size:0.9rem; line-height:1.8; color:#94a3b8; margin:0 0 1rem;">Store your contacts, memories, music, stories, essential documents, passwords, and final wishes in one secure place. Designate who gets access. Rest easy.</p>
@@ -5286,7 +5291,11 @@
 
         function maybeShowFooter() {
             const footer = document.getElementById('site-footer')
-            if (footer) footer.style.display = 'block'
+            if (footer) {
+                footer.style.display = 'block'
+                // Show security section by default
+                showFooterSection('security')
+            }
         }
     </script>
 </body>
