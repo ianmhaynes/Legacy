@@ -3295,11 +3295,29 @@
                     data.forEach(row => {
                         localStorage.setItem(row.data_key, row.data_value)
                     })
+                    // Reload all in-memory arrays from updated localStorage
+                    try { loadInheritors() } catch(e) {}
+                    try { loadEssentials() } catch(e) {}
+                    try { loadKeys() } catch(e) {}
+                    try { loadCustomEssentials() } catch(e) {}
                     showNotification('☁️ Vault synced from cloud!')
                 }
             } catch(e) {
                 console.warn('Could not load from Supabase, using local data:', e)
             }
+        }
+
+        async function manualSync() {
+            if (!user) { showNotification('Please log in to sync'); return }
+            // Push everything local to Supabase first
+            syncVaultToSupabase('vault_inheritors', savedInheritors)
+            syncVaultToSupabase('vault_secrets', savedSecrets)
+            syncVaultToSupabase('vault_valuables', savedValuables)
+            syncVaultToSupabase('vault_essentials', savedEssentials)
+            syncVaultToSupabase('vault_keys', savedKeys)
+            syncVaultToSupabase('vault_custom_essentials', savedCustomEssentials)
+            showNotification('☁️ Syncing...')
+            await loadAllVaultData()
         }
 
         function showSection(section) {
@@ -4356,7 +4374,7 @@
         }
 
 
-        function deleteSecret(id) { savedSecrets = savedSecrets.filter(s=>s.id!==id); localStorage.setItem('vault_secrets',JSON.stringify(savedSecrets)); renderSecrets(); showNotification('Deleted') }
+        function deleteSecret(id) { savedSecrets = savedSecrets.filter(s=>s.id!==id); localStorage.setItem('vault_secrets',JSON.stringify(savedSecrets)); syncVaultToSupabase('vault_secrets',savedSecrets); renderSecrets(); showNotification('Deleted') }
 
         function showAddValuable() {
             const f = document.getElementById('add-valuable-form')
@@ -4394,7 +4412,7 @@
         }
 
 
-        function deleteValuable(id) { savedValuables = savedValuables.filter(v=>v.id!==id); localStorage.setItem('vault_valuables',JSON.stringify(savedValuables)); renderValuables(); showNotification('Deleted') }
+        function deleteValuable(id) { savedValuables = savedValuables.filter(v=>v.id!==id); localStorage.setItem('vault_valuables',JSON.stringify(savedValuables)); syncVaultToSupabase('vault_valuables',savedValuables); renderValuables(); showNotification('Deleted') }
 
         // ===== PHOTO LIGHTBOX =====
         let lightboxCurrentFile = ''
@@ -4604,7 +4622,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.43</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.44</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
