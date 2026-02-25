@@ -966,7 +966,7 @@
         .acc-header { display:flex; align-items:center; gap:0.6rem; padding:0.5rem 0.75rem; cursor:pointer; user-select:none; }
         .acc-header:hover { background:#f9fafb; }
         .acc-chevron { font-size:0.65rem; color:#9ca3af; transition:transform 0.15s; flex-shrink:0; margin-left:auto; }
-        .acc-body { display:none; padding:0 0.75rem 0.6rem 0.75rem; border-top:1px solid #f3f4f6; }
+        .acc-body { display:none; padding:0 0.75rem 0.6rem 0.75rem; }
         .acc-row.open .acc-body { display:block; }
         .acc-row.open .acc-chevron { transform:rotate(180deg); }
 
@@ -4170,6 +4170,7 @@
 
         var allTabs = ['contacts','photos','music','stories','lifebook','essentials','legacy']
 
+        function toggleRow(el) { el.closest('.acc-row').classList.toggle('open') }
         function switchTab(tab) {
             currentVaultTab = tab
             allTabs.forEach(function(t) {
@@ -4337,14 +4338,17 @@
             if (!list) return
             if (savedSecrets.length === 0) { if(empty) empty.style.display='block'; list.innerHTML=''; return }
             if(empty) empty.style.display='none'
-            list.innerHTML = savedSecrets.map(s => `<div class="acc-row" onclick="this.classList.toggle('open')">
-                <div class="acc-header">
-                    <span style="font-size:0.875rem;font-weight:600;color:#7c3aed;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">🔒 ${s.title}</span>
-                    <button onclick="event.stopPropagation();deleteSecret(${s.id})" style="background:none;border:none;color:#d1d5db;cursor:pointer;font-size:0.75rem;padding:0 0.25rem;">🗑️</button>
-                    <span class="acc-chevron">▼</span>
-                </div>
-                ${s.content ? `<div class="acc-body"><div style="color:#4b5563;font-size:0.8rem;white-space:pre-wrap;">${s.content}</div></div>` : ''}
-            </div>`).join('')
+            list.innerHTML = savedSecrets.map(s => {
+                const hasBody = s.content && s.content.trim()
+                return '<div class="acc-row" ' + (hasBody ? 'onclick="toggleRow(this)"' : '') + '>' +
+                '<div class="acc-header">' +
+                '<span style="font-size:0.875rem;font-weight:600;color:#7c3aed;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">🔒 ' + s.title + '</span>' +
+                '<button onclick="event.stopPropagation();deleteSecret(' + s.id + ')" style="background:none;border:none;color:#d1d5db;cursor:pointer;font-size:0.75rem;padding:0 0.25rem;">🗑️</button>' +
+                (hasBody ? '<span class="acc-chevron">▼</span>' : '') +
+                '</div>' +
+                (hasBody ? '<div class="acc-body"><div style="color:#4b5563;font-size:0.8rem;white-space:pre-wrap;">' + s.content + '</div></div>' : '') +
+                '</div>'
+            }).join('')
         }
         function deleteSecret(id) { savedSecrets = savedSecrets.filter(s=>s.id!==id); localStorage.setItem('vault_secrets',JSON.stringify(savedSecrets)); renderSecrets(); showNotification('Deleted') }
 
@@ -4370,14 +4374,17 @@
             if (!list) return
             if (savedValuables.length === 0) { if(empty) empty.style.display='block'; list.innerHTML=''; return }
             if(empty) empty.style.display='none'
-            list.innerHTML = savedValuables.map(v => `<div class="acc-row" onclick="this.classList.toggle('open')">
-                <div class="acc-header">
-                    <span style="font-size:0.875rem;font-weight:600;color:#d97706;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">💎 ${v.title || v.name || 'Untitled'}</span>
-                    <button onclick="event.stopPropagation();deleteValuable(${v.id})" style="background:none;border:none;color:#d1d5db;cursor:pointer;font-size:0.75rem;padding:0 0.25rem;">🗑️</button>
-                    <span class="acc-chevron">▼</span>
-                </div>
-                ${v.detail ? `<div class="acc-body"><div style="color:#4b5563;font-size:0.8rem;">${v.detail}</div></div>` : ''}
-            </div>`).join('')
+            list.innerHTML = savedValuables.map(v => {
+                const hasBody = v.detail && v.detail.trim()
+                return '<div class="acc-row" ' + (hasBody ? 'onclick="toggleRow(this)"' : '') + '>' +
+                '<div class="acc-header">' +
+                '<span style="font-size:0.875rem;font-weight:600;color:#d97706;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">💎 ' + (v.title || v.name || 'Untitled') + '</span>' +
+                '<button onclick="event.stopPropagation();deleteValuable(' + v.id + ')" style="background:none;border:none;color:#d1d5db;cursor:pointer;font-size:0.75rem;padding:0 0.25rem;">🗑️</button>' +
+                (hasBody ? '<span class="acc-chevron">▼</span>' : '') +
+                '</div>' +
+                (hasBody ? '<div class="acc-body"><div style="color:#4b5563;font-size:0.8rem;">' + v.detail + '</div></div>' : '') +
+                '</div>'
+            }).join('')
         }
         function deleteValuable(id) { savedValuables = savedValuables.filter(v=>v.id!==id); localStorage.setItem('vault_valuables',JSON.stringify(savedValuables)); renderValuables(); showNotification('Deleted') }
 
@@ -4589,7 +4596,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.37</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.39</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
