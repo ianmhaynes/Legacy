@@ -2331,7 +2331,7 @@
                 <span style="color:#9ca3af; font-size:0.85rem;">· <span id="user-name">User</span></span>
             </div>
 
-            <!-- Sticky nav -->
+            <!-- Sticky nav - single flat row -->
             <div style="position:sticky; top:60px; background:white; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin:0 -1rem; padding:0.6rem 1rem 0;">
                 <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.6rem;">
                     <input id="vault-search" placeholder="🔍 Search vault..."
@@ -2344,31 +2344,133 @@
                     <button onclick="manualSync()" style="background:#3730a3; color:white; border:none; border-radius:980px; padding:0.35rem 0.85rem; font-size:0.78rem; cursor:pointer; white-space:nowrap;">☁️ Sync</button>
                 </div>
                 <div id="vault-tabs" style="display:flex; border-bottom:2px solid #e5e7eb; overflow-x:auto;">
-                    <button onclick="switchVaultTab('memories')" id="vtab-memories" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.88rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                        📸 Memories <span id="vtab-memories-count" style="font-size:0.75rem; color:#6b7280; font-weight:400;"></span>
-                    </button>
-                    <button onclick="switchVaultTab('contacts')" id="vtab-contacts" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                    <button onclick="switchTab('contacts')" id="vtab-contacts" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
                         👥 Contacts <span id="vtab-contacts-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchVaultTab('essentials')" id="vtab-essentials" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                    <button onclick="switchTab('photos')" id="vtab-photos" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        📸 Photos <span id="vtab-photos-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    </button>
+                    <button onclick="switchTab('music')" id="vtab-music" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        🎵 Music <span id="vtab-music-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    </button>
+                    <button onclick="switchTab('stories')" id="vtab-stories" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        ✨ Stories <span id="vtab-stories-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    </button>
+                    <button onclick="switchTab('lifebook')" id="vtab-lifebook" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        📖 Life Book <span id="vtab-lifebook-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    </button>
+                    <button onclick="switchTab('essentials')" id="vtab-essentials" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
                         🗝️ Essentials <span id="vtab-essentials-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchVaultTab('legacy')" id="vtab-legacy" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                    <button onclick="switchTab('legacy')" id="vtab-legacy" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
                         🏛️ Legacy <span id="vtab-legacy-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
                 </div>
-                <!-- Sub-tab strip lives in sticky header so both rows are equal -->
-                <div id="sub-tab-strip" style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; overflow-x:auto;">
-                    <button onclick="switchSubTab('memories','music')" id="vstab-memories-music" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.88rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">🎵 Music</button>
-                    <button onclick="switchSubTab('memories','photos')" id="vstab-memories-photos" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">📸 Photos</button>
-                    <button onclick="switchSubTab('memories','stories')" id="vstab-memories-stories" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">✨ Stories</button>
-                    <button onclick="switchSubTab('memories','lifebook')" id="vstab-memories-lifebook" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">📖 Life Book</button>
-                </div>
             </div>
+
+            <!-- FLAT TABS - order: Contacts, Photos, Music, Stories, Life Book, Essentials, Legacy -->
+
+            <!-- TAB: CONTACTS -->
+            <div id="tab-contacts" style="display:none; padding-top:1rem;">
+                <div id="contacts-cat-strip" style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:1rem;"></div>
+                <!-- Export Instructions -->
+                    <div id="export-instructions" style="background:#eff6ff; border:1px solid #3b82f6; border-radius:8px; padding:1.25rem; margin-bottom:1.5rem;">
+                        <h5 style="color:#1e40af; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                            <span style="font-size:1.3rem;">📱</span> How to Export Contacts from Your Phone
+                        </h5>
+                        
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.5rem;">
+                            <div style="background:white; padding:1rem; border-radius:6px;">
+                                <h6 style="color:#1e3a8a; margin-bottom:0.75rem; font-size:1.05rem;">📱 iPhone (iOS)</h6>
+                                <ol style="color:#4b5563; font-size:0.9rem; line-height:1.7; padding-left:1.25rem; margin:0;">
+                                    <li style="margin-bottom:0.5rem;"><strong>Open iCloud.com</strong> on your computer</li>
+                                    <li style="margin-bottom:0.5rem;">Sign in with your Apple ID</li>
+                                    <li style="margin-bottom:0.5rem;">Click <strong>Contacts</strong></li>
+                                    <li style="margin-bottom:0.5rem;">Click the <strong>gear icon</strong> (⚙️) → <strong>Select All</strong></li>
+                                    <li style="margin-bottom:0.5rem;">Click the gear again → <strong>Export vCard</strong></li>
+                                    <li>Upload the .vcf file here</li>
+                                </ol>
+                            </div>
+                            
+                            <div style="background:white; padding:1rem; border-radius:6px;">
+                                <h6 style="color:#1e3a8a; margin-bottom:0.75rem; font-size:1.05rem;">🤖 Android</h6>
+                                <ol style="color:#4b5563; font-size:0.9rem; line-height:1.7; padding-left:1.25rem; margin:0;">
+                                    <li style="margin-bottom:0.5rem;"><strong>Open Contacts app</strong></li>
+                                    <li style="margin-bottom:0.5rem;">Tap the <strong>3-dot menu</strong> (⋮)</li>
+                                    <li style="margin-bottom:0.5rem;">Select <strong>Settings</strong> → <strong>Export</strong></li>
+                                    <li style="margin-bottom:0.5rem;">Choose <strong>Export to .vcf file</strong></li>
+                                    <li style="margin-bottom:0.5rem;">Save to your device</li>
+                                    <li>Upload the .vcf file here</li>
+                                </ol>
+                            </div>
+                        </div>
+                        
+                        <button class="action-button secondary" onclick="document.getElementById('export-instructions').style.display='none'" 
+                            style="margin-top:1rem; font-size:0.85rem; padding:0.5rem 1rem;">
+                            Got it, hide this
+                        </button>
+                    </div>
+
+                    <input type="file" id="vcf-upload-input" accept=".vcf,.csv" style="display:none;" onchange="handleContactsUpload(this)">
+
+                    <div id="add-contact-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
+                        <h4 style="color:#1e3a8a; margin-bottom:1rem;">Add a Contact</h4>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
+                            <input id="contact-name" placeholder="Full Name *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                            <input id="contact-phone" placeholder="Phone Number" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                            <input id="contact-email" placeholder="Email Address" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                            <input id="contact-relation" placeholder="Relationship" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
+                        </div>
+                        <textarea id="contact-note" placeholder="A note about this person..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:60px; resize:vertical;"></textarea>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button class="action-button" onclick="saveContact()" style="background:#8b5cf6;">Save</button>
+                            <button class="action-button secondary" onclick="document.getElementById('add-contact-form').style.display='none'">Cancel</button>
+                        </div>
+                    </div>
+
+                    <div id="contacts-search-bar" style="display:none; margin-bottom:1rem;">
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                            <input id="contact-search" placeholder="🔍 Search contacts..." 
+                                style="flex:1; min-width:200px; padding:0.75rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.9rem;"
+                                oninput="searchContacts(this.value)">
+                            <select id="contacts-sort" onchange="renderContacts(document.getElementById('contact-search').value)"
+                                style="padding:0.75rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.9rem; background:white; cursor:pointer;">
+                                <option value="name">Sort A-Z</option>
+                                <option value="date">Sort by Date</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="contacts-list" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+                    <p id="contacts-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;"></p>
+            </div>
+
+                    <div id="my-songs-list" style="display:none;"></div>
+                </div></div>
+                <div id="tab-photos" style="display:none; padding-top:1rem;"><input type="file" id="photo-upload-input" multiple accept="image/*" style="display:none;" onchange="handlePhotoUpload(this.files)">
+
+                    <label for="photo-upload-input" id="drop-zone" 
+                         style="border:3px dashed #3b82f6; border-radius:12px; padding:2.5rem; text-align:center; margin-bottom:1rem; cursor:pointer; transition:all 0.2s; background:#eff6ff; display:block;"
+                         ondrop="handleDrop(event)"
+                         ondragover="handleDragOver(event)"
+                         ondragleave="handleDragLeave(event)">
+                        <div style="font-size:3rem; margin-bottom:0.5rem;">📸</div>
+                        <p style="color:#1e3a8a; font-weight:600; font-size:1.1rem; margin-bottom:0.25rem;">Drop your photos here</p>
+                        <p style="color:#6b7280; font-size:0.9rem;">or click to browse</p>
+                    </label>
+
+                    <div id="upload-progress" style="display:none; margin-bottom:1rem;">
+                        <div style="background:#e5e7eb; border-radius:10px; height:10px; overflow:hidden;">
+                            <div id="progress-bar" style="background:#3b82f6; height:100%; width:0%; transition:width 0.3s;"></div>
+                        </div>
+                        <p id="progress-text" style="color:#6b7280; font-size:0.85rem; margin-top:0.5rem; text-align:center;">Uploading...</p>
+                    </div>
+
+                    <div id="photo-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:0.5rem;"></div>
 
             <!-- TAB: MEMORIES -->
             <div id="vtabcontent-memories" style="padding-top:1rem;">
-                <div id="vstabcontent-memories-music"><div id="spotify-card">
+                <div id="tab-music" style="padding-top:1rem;"><div id="spotify-card">
                     <!-- Search Bar -->
                     <div style="margin-bottom:1rem;">
                         <input id="song-search" type="text" placeholder="🔍 Search for a song..." 
@@ -2390,31 +2492,10 @@
                     </div>
 
                     <!-- User's Saved Songs -->
-                    <div id="my-songs-list" style="display:none;"></div>
-                </div></div>
-                <div id="vstabcontent-memories-photos" style="display:none;"><input type="file" id="photo-upload-input" multiple accept="image/*" style="display:none;" onchange="handlePhotoUpload(this.files)">
 
-                    <label for="photo-upload-input" id="drop-zone" 
-                         style="border:3px dashed #3b82f6; border-radius:12px; padding:2.5rem; text-align:center; margin-bottom:1rem; cursor:pointer; transition:all 0.2s; background:#eff6ff; display:block;"
-                         ondrop="handleDrop(event)"
-                         ondragover="handleDragOver(event)"
-                         ondragleave="handleDragLeave(event)">
-                        <div style="font-size:3rem; margin-bottom:0.5rem;">📸</div>
-                        <p style="color:#1e3a8a; font-weight:600; font-size:1.1rem; margin-bottom:0.25rem;">Drop your photos here</p>
-                        <p style="color:#6b7280; font-size:0.9rem;">or click to browse</p>
-                    </label>
-
-                    <div id="upload-progress" style="display:none; margin-bottom:1rem;">
-                        <div style="background:#e5e7eb; border-radius:10px; height:10px; overflow:hidden;">
-                            <div id="progress-bar" style="background:#3b82f6; height:100%; width:0%; transition:width 0.3s;"></div>
-                        </div>
-                        <p id="progress-text" style="color:#6b7280; font-size:0.85rem; margin-top:0.5rem; text-align:center;">Uploading...</p>
-                    </div>
-
-                    <div id="photo-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:0.5rem;"></div>
 
                     <p id="photo-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;">No photos uploaded yet</p></div>
-                <div id="vstabcontent-memories-stories" style="display:none;"><div id="stories-prompts" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+                <div id="tab-stories" style="display:none; padding-top:1rem;"><div id="stories-prompts" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
                             
                             <div class="story-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
                                  onclick="openStoryEditor('best_memory', '🌟 Best Memory', 'What is the single best memory of your life?')">
@@ -2466,9 +2547,10 @@
                             <div style="display:flex; gap:0.5rem;">
                                 <button class="action-button" onclick="saveStory()" style="background:#f59e0b;">💾 Save</button>
                                 <button class="action-button secondary" onclick="closeStoryEditor()">Cancel</button>
+
                             </div>
                         </div></div>
-                <div id="vstabcontent-memories-lifebook" style="display:none;"><div id="lifebook-prompts" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+                <div id="tab-lifebook" style="display:none; padding-top:1rem;"><div id="lifebook-prompts" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
                             
                             <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
                                  onclick="openLifebookEditor('childhood', '👶 Childhood', 'Where did you grow up? What are your earliest memories?')">
@@ -2573,83 +2655,9 @@
                         </div></div>
             </div>
 
-            <!-- TAB: CONTACTS -->
-            <div id="vtabcontent-contacts" style="display:none; padding-top:1.5rem;">
-                <div id="contacts-cat-strip" style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:1rem;"></div>
-                <!-- Export Instructions -->
-                    <div id="export-instructions" style="background:#eff6ff; border:1px solid #3b82f6; border-radius:8px; padding:1.25rem; margin-bottom:1.5rem;">
-                        <h5 style="color:#1e40af; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
-                            <span style="font-size:1.3rem;">📱</span> How to Export Contacts from Your Phone
-                        </h5>
-                        
-                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.5rem;">
-                            <div style="background:white; padding:1rem; border-radius:6px;">
-                                <h6 style="color:#1e3a8a; margin-bottom:0.75rem; font-size:1.05rem;">📱 iPhone (iOS)</h6>
-                                <ol style="color:#4b5563; font-size:0.9rem; line-height:1.7; padding-left:1.25rem; margin:0;">
-                                    <li style="margin-bottom:0.5rem;"><strong>Open iCloud.com</strong> on your computer</li>
-                                    <li style="margin-bottom:0.5rem;">Sign in with your Apple ID</li>
-                                    <li style="margin-bottom:0.5rem;">Click <strong>Contacts</strong></li>
-                                    <li style="margin-bottom:0.5rem;">Click the <strong>gear icon</strong> (⚙️) → <strong>Select All</strong></li>
-                                    <li style="margin-bottom:0.5rem;">Click the gear again → <strong>Export vCard</strong></li>
-                                    <li>Upload the .vcf file here</li>
-                                </ol>
-                            </div>
-                            
-                            <div style="background:white; padding:1rem; border-radius:6px;">
-                                <h6 style="color:#1e3a8a; margin-bottom:0.75rem; font-size:1.05rem;">🤖 Android</h6>
-                                <ol style="color:#4b5563; font-size:0.9rem; line-height:1.7; padding-left:1.25rem; margin:0;">
-                                    <li style="margin-bottom:0.5rem;"><strong>Open Contacts app</strong></li>
-                                    <li style="margin-bottom:0.5rem;">Tap the <strong>3-dot menu</strong> (⋮)</li>
-                                    <li style="margin-bottom:0.5rem;">Select <strong>Settings</strong> → <strong>Export</strong></li>
-                                    <li style="margin-bottom:0.5rem;">Choose <strong>Export to .vcf file</strong></li>
-                                    <li style="margin-bottom:0.5rem;">Save to your device</li>
-                                    <li>Upload the .vcf file here</li>
-                                </ol>
-                            </div>
-                        </div>
-                        
-                        <button class="action-button secondary" onclick="document.getElementById('export-instructions').style.display='none'" 
-                            style="margin-top:1rem; font-size:0.85rem; padding:0.5rem 1rem;">
-                            Got it, hide this
-                        </button>
-                    </div>
-
-                    <input type="file" id="vcf-upload-input" accept=".vcf,.csv" style="display:none;" onchange="handleContactsUpload(this)">
-
-                    <div id="add-contact-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
-                        <h4 style="color:#1e3a8a; margin-bottom:1rem;">Add a Contact</h4>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
-                            <input id="contact-name" placeholder="Full Name *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                            <input id="contact-phone" placeholder="Phone Number" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                            <input id="contact-email" placeholder="Email Address" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                            <input id="contact-relation" placeholder="Relationship" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem;">
-                        </div>
-                        <textarea id="contact-note" placeholder="A note about this person..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:60px; resize:vertical;"></textarea>
-                        <div style="display:flex; gap:0.5rem;">
-                            <button class="action-button" onclick="saveContact()" style="background:#8b5cf6;">Save</button>
-                            <button class="action-button secondary" onclick="document.getElementById('add-contact-form').style.display='none'">Cancel</button>
-                        </div>
-                    </div>
-
-                    <div id="contacts-search-bar" style="display:none; margin-bottom:1rem;">
-                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-                            <input id="contact-search" placeholder="🔍 Search contacts..." 
-                                style="flex:1; min-width:200px; padding:0.75rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.9rem;"
-                                oninput="searchContacts(this.value)">
-                            <select id="contacts-sort" onchange="renderContacts(document.getElementById('contact-search').value)"
-                                style="padding:0.75rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.9rem; background:white; cursor:pointer;">
-                                <option value="name">Sort A-Z</option>
-                                <option value="date">Sort by Date</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div id="contacts-list" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
-                    <p id="contacts-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;"></p>
-            </div>
 
             <!-- TAB: ESSENTIALS -->
-            <div id="vtabcontent-essentials" style="display:none; padding-top:1.5rem;">
+            <div id="tab-essentials" style="display:none; padding-top:1rem;">
                 
                 <div id="vstabcontent-essentials-finance">
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;"><button onclick="showAddEssential('finance')" style="background:#f59e0b; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Entry</button></div>
@@ -2692,8 +2700,9 @@
                 </div>
             </div>
 
+
             <!-- TAB: LEGACY -->
-            <div id="vtabcontent-legacy" style="display:none; padding-top:1.5rem;">
+            <div id="tab-legacy" style="display:none; padding-top:1rem;">
                 
                 <div id="vstabcontent-legacy-inheritors">
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
@@ -2757,9 +2766,6 @@
                     <p id="valuables-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No valuables yet. Record jewellery, artwork, heirlooms, sentimental items...</p>
                 </div>
             </div>
-
-        </div>
-    </section>            </div>
 
         </div>
     </section>
@@ -3381,6 +3387,7 @@
             try { updateDashboardStats(); } catch(e) { console.error('updateDashboardStats fail',e) }
             
             setTimeout(() => {
+                switchTab('contacts')
                 loadContacts()
                 loadEssentials()
                 loadSavedPhotos()
@@ -3453,7 +3460,10 @@
             // Update tab counts
             const essCount = JSON.parse(localStorage.getItem('vault_essentials')||'[]').length
             const legCount = inheritors + JSON.parse(localStorage.getItem('vault_secrets')||'[]').length + JSON.parse(localStorage.getItem('vault_valuables')||'[]').length
-            setEl('vtab-memories-count', totalMemories > 0 ? '('+totalMemories+')' : '')
+            setEl('vtab-music-count', songs > 0 ? '('+songs+')' : '')
+            setEl('vtab-photos-count', photos > 0 ? '('+photos+')' : '')
+            setEl('vtab-stories-count', stories > 0 ? '('+stories+')' : '')
+            setEl('vtab-lifebook-count', lifebook > 0 ? '('+lifebook+')' : '')
             setEl('vtab-contacts-count', contacts > 0 ? '('+contacts+')' : '')
             setEl('vtab-essentials-count', essCount > 0 ? '('+essCount+')' : '')
             setEl('vtab-legacy-count', legCount > 0 ? '('+legCount+')' : '')
@@ -3794,18 +3804,13 @@
         var currentVaultTab = 'memories'
         var currentSubTabs = {}
 
-        var subStripHTML = {
-            memories: '<button onclick="switchSubTab(\'memories\',\'music\')" id="vstab-memories-music" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.88rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">🎵 Music</button><button onclick="switchSubTab(\'memories\',\'photos\')" id="vstab-memories-photos" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">📸 Photos</button><button onclick="switchSubTab(\'memories\',\'stories\')" id="vstab-memories-stories" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">✨ Stories</button><button onclick="switchSubTab(\'memories\',\'lifebook\')" id="vstab-memories-lifebook" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">📖 Life Book</button>',
-            contacts: '',
-            essentials: '<button onclick="switchSubTab(\'essentials\',\'finance\')" id="vstab-essentials-finance" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.88rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">💰 Financial</button><button onclick="switchSubTab(\'essentials\',\'access\')" id="vstab-essentials-access" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">🔑 Access</button><button onclick="switchSubTab(\'essentials\',\'digital\')" id="vstab-essentials-digital" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">💻 Digital</button><button onclick="switchSubTab(\'essentials\',\'docs\')" id="vstab-essentials-docs" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">📄 Docs</button><button onclick="switchSubTab(\'essentials\',\'wishes\')" id="vstab-essentials-wishes" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">🕊️ Wishes</button>',
-            legacy: '<button onclick="switchSubTab(\'legacy\',\'inheritors\')" id="vstab-legacy-inheritors" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.88rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">👨‍👩‍👧‍👦 Inheritors</button><button onclick="switchSubTab(\'legacy\',\'secrets\')" id="vstab-legacy-secrets" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">🔒 Secrets</button><button onclick="switchSubTab(\'legacy\',\'valuables\')" id="vstab-legacy-valuables" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">💎 Valuables</button>'
-        }
 
-        function switchVaultTab(tab) {
+        var allTabs = ['contacts','photos','music','stories','lifebook','essentials','legacy']
+
+        function switchTab(tab) {
             currentVaultTab = tab
-            var tabs = ['memories','contacts','essentials','legacy']
-            tabs.forEach(function(t) {
-                var content = document.getElementById('vtabcontent-' + t)
+            allTabs.forEach(function(t) {
+                var content = document.getElementById('tab-' + t)
                 var btn = document.getElementById('vtab-' + t)
                 if (content) content.style.display = t === tab ? 'block' : 'none'
                 if (btn) {
@@ -3814,36 +3819,16 @@
                     btn.style.fontWeight = t === tab ? '700' : '600'
                 }
             })
-            // Swap sub-strip in sticky header
-            var strip = document.getElementById('sub-tab-strip')
-            if (strip) {
-                strip.innerHTML = subStripHTML[tab] || ''
-                strip.style.display = subStripHTML[tab] ? 'flex' : 'none'
-            }
-            // Restore active sub-tab for this section
-            var subDefaults = { memories:'music', essentials:'finance', legacy:'inheritors' }
-            if (subDefaults[tab]) {
-                var activeSub = (currentSubTabs && currentSubTabs[tab]) || subDefaults[tab]
-                switchSubTab(tab, activeSub)
-            }
             window.scrollTo({top:0, behavior:'smooth'})
         }
 
-        function switchSubTab(parent, sub) {
-            currentSubTabs[parent] = sub
-            var parentEl = document.getElementById('vtabcontent-' + parent)
-            if (!parentEl) return
-            parentEl.querySelectorAll('[id^="vstabcontent-' + parent + '-"]').forEach(function(el) {
-                el.style.display = el.id === 'vstabcontent-'+parent+'-'+sub ? 'block' : 'none'
-            })
-            parentEl.querySelectorAll('[id^="vstab-' + parent + '-"]').forEach(function(btn) {
-                var active = btn.id === 'vstab-'+parent+'-'+sub
-                btn.style.borderBottomColor = active ? '#3b82f6' : 'transparent'
-                btn.style.borderBottomWidth = '3px'
-                btn.style.color = active ? '#1e3a8a' : '#6b7280'
-                btn.style.fontWeight = active ? '700' : '600'
-            })
+        // Legacy aliases so any old calls still work
+        function switchVaultTab(tab) {
+            var map = {memories:'music', contacts:'contacts', essentials:'essentials', legacy:'legacy'}
+            switchTab(map[tab] || tab)
         }
+        function switchSubTab(parent, sub) { switchTab(sub === 'finance' ? 'essentials' : sub === 'inheritors' ? 'legacy' : sub) }
+        function switchFlatTab(tab) { switchTab(tab) }
 
         // ===== CONTACT CATEGORIES =====
         const categoryEmoji = { 'Family':'👨‍👩‍👧‍👦','Friends':'👫','Business':'💼','Romantic':'💕','Disliked':'😖','Others':'⭐','':'📋','All':'👥' }
@@ -3883,7 +3868,7 @@
         function filterContactsByCategory(cat) {
             const strip = document.getElementById('contacts-cat-strip')
             if (strip) strip.dataset.active = cat
-            renderCategoryStrip()
+            renderCategoryStrip()  // re-render strip with correct active highlight
             if (cat === 'All') {
                 renderContacts()
             } else {
@@ -3933,11 +3918,19 @@
         function assignContactCategory(id, category) {
             const contact = savedContacts.find(c => c.id == id)
             if (contact) {
+                // Capture active filter BEFORE any rendering changes it
+                const strip = document.getElementById('contacts-cat-strip')
+                const activeCat = strip ? (strip.dataset.active || 'All') : 'All'
+                
                 contact.category = category
                 localStorage.setItem('vault_contacts', JSON.stringify(savedContacts))
                 syncVaultToSupabase('vault_contacts', savedContacts)
-                renderContacts()
+                
+                // Rebuild strip (updates counts), then re-apply the filter we were on
                 renderCategoryStrip()
+                // Restore the active filter state after strip rebuild
+                if (strip) strip.dataset.active = activeCat
+                filterContactsByCategory(activeCat)
                 showNotification('✅ Moved to ' + category)
             }
         }
@@ -4201,7 +4194,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.20</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.22</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; align-items:center; justify-content:center; padding:1rem;" onclick="closePhotoLightbox()">
