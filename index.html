@@ -1246,7 +1246,7 @@
             `).join('')
         }
 
-        function addSongToLibrary(id, name, artist, album, image) {
+        function addSongToLibrary(id, name, artist, album, image, preview_url, spotify_url) {
             if (savedSongs.find(s => s.id === id)) {
                 showNotification('Song already in your library!')
                 return
@@ -1258,6 +1258,8 @@
                 artist: artist,
                 album: album,
                 image: image,
+                preview_url: preview_url || '',
+                spotify_url: spotify_url || '',
                 captured_at: new Date().toISOString()
             }
 
@@ -1313,7 +1315,9 @@
                                 <div style="color:#6b7280; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${song.artist} • ${song.album}</div>
                                 ${song.why ? `<div style="color:#7c3aed; font-size:0.78rem; margin-top:0.2rem; font-style:italic;">💜 ${song.why}${song.period ? ' · '+song.period : ''}</div>` : ''}
                             </div>
-                            <div style="display:flex; gap:0.4rem; flex-shrink:0;">
+                            <div style="display:flex; gap:0.4rem; flex-shrink:0; align-items:center;">
+                                ${song.preview_url ? `<button id="play-btn-${song.id}" onclick="playSongPreview('${song.id}','${song.preview_url}')" style="background:#dcfce7; color:#16a34a; border:none; padding:0.3rem 0.6rem; border-radius:6px; font-size:0.85rem;" title="Play 30s preview">▶</button>` : ''}
+                                ${song.spotify_url ? `<a href="${song.spotify_url}" target="_blank" style="background:#fee2e2; color:#dc2626; border:none; padding:0.3rem 0.6rem; border-radius:6px; font-size:0.75rem; text-decoration:none;" title="Open in Apple Music">🎵</a>` : ''}
                                 <button onclick="openSongMemory('${song.id}')" style="background:#ede9fe; color:#7c3aed; border:none; padding:0.3rem 0.6rem; border-radius:6px; font-size:0.85rem;" title="Add Memory">✏️</button>
                                 <button onclick="removeSong('${song.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem;" title="Remove">🗑️</button>
                             </div>
@@ -2445,40 +2449,36 @@
                     <p id="contacts-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;"></p>
             </div>
 
-                    <div id="my-songs-list" style="display:none;"></div>
-                </div></div>
-                <div id="tab-photos" style="display:none; padding-top:1rem;"><input type="file" id="photo-upload-input" multiple accept="image/*" style="display:none;" onchange="handlePhotoUpload(this.files)">
-
-                    <label for="photo-upload-input" id="drop-zone" 
-                         style="border:3px dashed #3b82f6; border-radius:12px; padding:2.5rem; text-align:center; margin-bottom:1rem; cursor:pointer; transition:all 0.2s; background:#eff6ff; display:block;"
-                         ondrop="handleDrop(event)"
-                         ondragover="handleDragOver(event)"
-                         ondragleave="handleDragLeave(event)">
-                        <div style="font-size:3rem; margin-bottom:0.5rem;">📸</div>
-                        <p style="color:#1e3a8a; font-weight:600; font-size:1.1rem; margin-bottom:0.25rem;">Drop your photos here</p>
-                        <p style="color:#6b7280; font-size:0.9rem;">or click to browse</p>
-                    </label>
-
-                    <div id="upload-progress" style="display:none; margin-bottom:1rem;">
-                        <div style="background:#e5e7eb; border-radius:10px; height:10px; overflow:hidden;">
-                            <div id="progress-bar" style="background:#3b82f6; height:100%; width:0%; transition:width 0.3s;"></div>
-                        </div>
-                        <p id="progress-text" style="color:#6b7280; font-size:0.85rem; margin-top:0.5rem; text-align:center;">Uploading...</p>
+            <div id="tab-photos" style="display:none; padding-top:1rem;">
+                <input type="file" id="photo-upload-input" multiple accept="image/*" style="display:none;" onchange="handlePhotoUpload(this.files)">
+                <label for="photo-upload-input" id="drop-zone"
+                     style="border:3px dashed #3b82f6; border-radius:12px; padding:2.5rem; text-align:center; margin-bottom:1rem; cursor:pointer; transition:all 0.2s; background:#eff6ff; display:block;"
+                     ondrop="handleDrop(event)"
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)">
+                    <div style="font-size:3rem; margin-bottom:0.5rem;">📸</div>
+                    <p style="color:#1e3a8a; font-weight:600; font-size:1.1rem; margin-bottom:0.25rem;">Drop your photos here</p>
+                    <p style="color:#6b7280; font-size:0.9rem;">or click to browse</p>
+                </label>
+                <div id="upload-progress" style="display:none; margin-bottom:1rem;">
+                    <div style="background:#e5e7eb; border-radius:10px; height:10px; overflow:hidden;">
+                        <div id="progress-bar" style="background:#3b82f6; height:100%; width:0%; transition:width 0.3s;"></div>
                     </div>
+                    <p id="progress-text" style="color:#6b7280; font-size:0.85rem; margin-top:0.5rem; text-align:center;">Uploading...</p>
+                </div>
+                <div id="photo-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:0.5rem;"></div>
+                <p id="photo-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;">No photos uploaded yet</p>
+            </div>
 
-                    <div id="photo-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:0.5rem;"></div>
-
-            <div id="tab-music" style="padding-top:1rem;"><div id="spotify-card">
+            <div id="tab-music" style="display:none; padding-top:1rem;"><div id="spotify-card">
                     <!-- Search Bar -->
                     <div style="margin-bottom:1rem;">
-                        <input id="song-search" type="text" placeholder="🔍 Search for a song..." 
+                        <input id="song-search" type="text" placeholder="🔍 Search for a song..."
                             style="width:100%; padding:1rem; border:2px solid #e5e7eb; border-radius:10px; font-size:1rem;"
                             oninput="searchSpotifySongs(this.value)">
                     </div>
-
                     <!-- Search Results -->
                     <div id="search-results" style="display:none; background:white; border-radius:10px; border:1px solid #e5e7eb; max-height:400px; overflow-y:auto; margin-bottom:1rem;"></div>
-
                     <!-- Saved Songs Count -->
                     <div id="saved-songs-header" style="display:none; margin-bottom:1rem; padding:1rem; background:white; border-radius:10px; border:1px solid #e5e7eb;">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -2488,11 +2488,9 @@
                             </button>
                         </div>
                     </div>
-
                     <!-- User's Saved Songs -->
-
-
-                    <p id="photo-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;">No photos uploaded yet</p></div>
+                    <div id="my-songs-list" style="display:none;"></div>
+            </div></div>
                 <div id="tab-stories" style="display:none; padding-top:1rem;"><div id="stories-prompts" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
                             
                             <div class="story-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
@@ -4099,6 +4097,32 @@
         }
 
         // ===== SONG MEMORIES =====
+        let currentAudio = null
+        let currentPlayBtn = null
+
+        function playSongPreview(id, previewUrl) {
+            const btn = document.getElementById('play-btn-' + id)
+            if (currentAudio && currentPlayBtn) {
+                currentAudio.pause()
+                currentPlayBtn.textContent = '▶'
+                currentPlayBtn.style.background = '#dcfce7'
+                currentPlayBtn.style.color = '#16a34a'
+                if (currentPlayBtn === btn) { currentAudio = null; currentPlayBtn = null; return }
+            }
+            currentAudio = new Audio(previewUrl)
+            currentPlayBtn = btn
+            currentAudio.play()
+            btn.textContent = '⏸'
+            btn.style.background = '#fee2e2'
+            btn.style.color = '#dc2626'
+            currentAudio.onended = function() {
+                btn.textContent = '▶'
+                btn.style.background = '#dcfce7'
+                btn.style.color = '#16a34a'
+                currentAudio = null; currentPlayBtn = null
+            }
+        }
+
         function openSongMemory(id) {
             document.querySelectorAll('.song-memory-form').forEach(f => f.style.display = 'none')
             const form = document.getElementById('song-memory-' + id)
@@ -4190,7 +4214,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.23</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.24</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
