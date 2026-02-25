@@ -2587,6 +2587,16 @@
 
                     <input type="file" id="vcf-upload-input" accept=".vcf,.csv" style="display:none;" onchange="handleContactsUpload(this)">
 
+                    <!-- Action buttons -->
+                    <div style="display:flex; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap;">
+                        <button onclick="showAddContactForm()" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; padding:0.6rem 1.2rem; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.9rem;">
+                            ➕ Add Contact
+                        </button>
+                        <button onclick="document.getElementById('vcf-upload-input').click()" style="background:white; color:#6366f1; border:1.5px solid rgba(99,102,241,0.3); padding:0.6rem 1.2rem; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.9rem;">
+                            📥 Import from Phone
+                        </button>
+                    </div>
+
                     <div id="add-contact-form" style="display:none; background:white; border-radius:8px; padding:1rem; margin-bottom:1rem; border:1px solid #e5e7eb;">
                         <h4 style="color:#1e3a8a; margin-bottom:1rem;">Add a Contact</h4>
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
@@ -5249,7 +5259,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.64</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.65</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
