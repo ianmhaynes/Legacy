@@ -3503,6 +3503,16 @@
         // Load ALL vault data for this user from Supabase on login
         async function loadAllVaultData() {
             if (!user) return
+            // Clear stale data from any previous user before loading fresh data
+            const vaultKeys = ['vault_contacts','vault_essentials','vault_custom_essentials',
+                'vault_keys','vault_secrets','vault_valuables','vault_inheritors',
+                'vault_stories','vault_lifebook','vault_hero','vault_photo_captions',
+                'spotify_music_data']
+            vaultKeys.forEach(k => localStorage.removeItem(k))
+            // Reset all in-memory arrays so previous user's data doesn't bleed through
+            savedContacts=[]; savedEssentials=[]; savedCustomEssentials=[]; savedKeys=[]
+            savedSecrets=[]; savedValuables=[]; savedInheritors=[]; savedSongs=[]
+            uploadedPhotos=[]; savedVideos=[]
             try {
                 const { data, error } = await supabaseClient
                     .from('vault_data')
@@ -3703,9 +3713,20 @@
             try { await supabaseClient.auth.signOut() } catch(e) {}
             user = null;
             localStorage.removeItem('user');
+            // Clear all vault data so next user gets a clean slate
+            const vaultKeys = ['vault_contacts','vault_essentials','vault_custom_essentials',
+                'vault_keys','vault_secrets','vault_valuables','vault_inheritors',
+                'vault_stories','vault_lifebook','vault_hero','vault_photo_captions',
+                'spotify_music_data','spotify_token','spotify_refresh_token',
+                'spotify_token_expires','spotify_code_verifier']
+            vaultKeys.forEach(k => localStorage.removeItem(k))
+            // Reset in-memory arrays
+            savedContacts=[]; savedEssentials=[]; savedCustomEssentials=[]; savedKeys=[]
+            savedSecrets=[]; savedValuables=[]; savedInheritors=[]; savedSongs=[]
+            uploadedPhotos=[]
             updateUIForLoggedOut();
             showSection('home');
-            showNotification('Logged out');
+            showNotification('Logged out — see you soon 👋');
         }
 
         async function checkLogin() {
@@ -5082,7 +5103,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.54</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.55</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
@@ -5291,11 +5312,8 @@
 
         function maybeShowFooter() {
             const footer = document.getElementById('site-footer')
-            if (footer) {
-                footer.style.display = 'block'
-                // Show security section by default
-                showFooterSection('security')
-            }
+            if (footer) footer.style.display = 'block'
+            // Do NOT auto-scroll or open a section — footer just becomes visible
         }
     </script>
 </body>
