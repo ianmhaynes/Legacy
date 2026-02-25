@@ -1228,7 +1228,7 @@
 
         // Spotify Song Search
         let searchTimeout
-        let savedSongs = JSON.parse(localStorage.getItem('spotify_music_data') || '[]')
+        let savedSongs = []  // populated after login only
 
         function searchSpotifySongs(query) {
             clearTimeout(searchTimeout)
@@ -1649,7 +1649,7 @@
         }
 
         // Contacts handling
-        let savedContacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]')
+        let savedContacts = []  // populated after login only
 
         function showAddContactForm() {
             const form = document.getElementById('add-contact-form')
@@ -1873,7 +1873,7 @@
         }
 
         // Inheritors Management
-        let savedInheritors = JSON.parse(localStorage.getItem('vault_inheritors') || '[]')
+        let savedInheritors = []  // populated after login only
 
                 function showAddInheritorForm() {
             const panel = document.getElementById('inheritors-panel')
@@ -1969,7 +1969,7 @@
 
         // Life Stories
         let currentStoryKey = ''
-        let savedStories = JSON.parse(localStorage.getItem('vault_stories') || '{}')
+        let savedStories = {}  // populated after login only
 
         function openStoryEditor(key, title, prompt) {
             currentStoryKey = key
@@ -4729,7 +4729,7 @@
 
         // ===== PHOTO CAPTIONS =====
         let captionTargetFilename = ''
-        let photoCaptions = JSON.parse(localStorage.getItem('vault_photo_captions') || '{}')
+        let photoCaptions = {}  // populated after login only
 
         function openPhotoCaptionModal(url, filename) {
             captionTargetFilename = filename
@@ -4889,7 +4889,7 @@
         let recordedChunks = []
         let recTimerInterval = null
         let recSeconds = 0
-        let heroConfig = JSON.parse(localStorage.getItem('vault_hero') || '{"mode":"photo","quote":"","name":"","photo":"","videoId":null}')
+        let heroConfig = {mode:'photo',quote:'',name:'',photo:'',videoId:null}  // populated after login only
 
         function openVideoDB() {
             return new Promise(function(resolve, reject) {
@@ -5103,7 +5103,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.55</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.56</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
