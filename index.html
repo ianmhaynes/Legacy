@@ -3778,6 +3778,15 @@
                     const localUser = users[email] || {}
                     user = { email, name: meta.name || localUser.name || email.split('@')[0], plan: meta.plan || localUser.plan || 'monthly' }
                     localStorage.setItem('user', JSON.stringify(user))
+                    // Write registration record so admin can see this user
+                    try {
+                        await supabaseClient.from('vault_data').upsert({
+                            user_email: email,
+                            data_key: '_registration',
+                            data_value: JSON.stringify({ name: user.name, plan: user.plan, registeredAt: localUser.registeredAt || new Date().toISOString() }),
+                            updated_at: new Date().toISOString()
+                        }, { onConflict: 'user_email,data_key' })
+                    } catch(e) {}
                     await loadAllVaultData()
                     updateUIForLoggedIn()
                     return
@@ -5240,7 +5249,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.63</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.64</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
