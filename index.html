@@ -2352,7 +2352,7 @@
         <div class="container">
             <!-- Compact header -->
             <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem; padding-top:0.5rem;">
-                <span style="font-size:1.1rem; font-weight:700; color:#1e3a8a;">We Loved Life</span>
+                <span onclick="showVaultHero()" style="font-size:1.1rem; font-weight:700; color:#1e3a8a; cursor:pointer;" title="Back to opening screen">We Loved Life</span>
                 <span style="color:#9ca3af; font-size:0.85rem;">· <span id="user-name">User</span></span>
             </div>
 
@@ -2393,6 +2393,33 @@
                     <button onclick="switchTab('legacy')" id="vtab-legacy" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
                         🏛️ Legacy <span id="vtab-legacy-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
+                </div>
+            </div>
+
+            <!-- VAULT HERO - shown on vault open, hidden when tab selected -->
+            <div id="vault-hero-screen" style="margin-bottom:0.5rem;">
+                <!-- Video hero -->
+                <div id="vault-hero-video-wrap" style="display:none; position:relative; border-radius:14px; overflow:hidden; background:#000; max-height:70vh;">
+                    <video id="vault-hero-video" style="width:100%; max-height:70vh; display:block; object-fit:cover;" controls preload="auto" playsinline></video>
+                    <div style="position:absolute;bottom:0;left:0;right:0;padding:1.5rem;background:linear-gradient(transparent,rgba(0,0,0,0.7));">
+                        <p id="vault-hero-video-title" style="color:white;font-size:0.9rem;font-weight:600;margin:0;text-shadow:0 1px 3px rgba(0,0,0,0.5);"></p>
+                    </div>
+                </div>
+                <!-- Photo + quote hero -->
+                <div id="vault-hero-photo-wrap" style="display:none; position:relative; border-radius:14px; overflow:hidden; min-height:280px; background:#1e293b; display:flex; align-items:center; justify-content:center;">
+                    <img id="vault-hero-photo-bg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.5;" src="">
+                    <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(15,23,42,0.7),rgba(30,27,75,0.6));"></div>
+                    <div style="position:relative;text-align:center;padding:2.5rem 2rem;max-width:600px;">
+                        <p id="vault-hero-quote-text" style="color:white;font-size:1.3rem;font-style:italic;font-weight:400;line-height:1.6;margin:0 0 1rem;text-shadow:0 2px 8px rgba(0,0,0,0.4);font-family:Georgia,serif;"></p>
+                        <p id="vault-hero-name-text" style="color:rgba(255,255,255,0.75);font-size:0.9rem;font-weight:600;margin:0;letter-spacing:0.05em;"></p>
+                    </div>
+                </div>
+                <!-- Default empty state -->
+                <div id="vault-hero-empty" style="text-align:center;padding:2.5rem;background:linear-gradient(135deg,#f8faff,#eef2ff);border-radius:14px;border:2px dashed #c7d2fe;">
+                    <div style="font-size:2.5rem;margin-bottom:0.75rem;">💜</div>
+                    <p style="color:#4338ca;font-weight:700;font-size:1rem;margin:0 0 0.25rem;">Welcome to your vault</p>
+                    <p style="color:#818cf8;font-size:0.85rem;margin:0 0 1rem;">Set up your opening screen in the Videos tab — add a photo with a message, or a featured video</p>
+                    <button onclick="switchTab('videos')" style="background:#6366f1;color:white;border:none;padding:0.5rem 1.25rem;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;">Set up opening screen →</button>
                 </div>
             </div>
 
@@ -3393,6 +3420,7 @@
                     const fab = document.getElementById('feedback-fab')
                     if (fab) fab.style.display = 'block'
                     try { maybeShowFooter() } catch(e) {}
+                    try { showVaultHero() } catch(e) {}
                 } else {
                     showLogin();
                 }
@@ -4257,6 +4285,9 @@
         function toggleRow(el) { el.closest('.acc-row').classList.toggle('open') }
         function switchTab(tab) {
             currentVaultTab = tab
+            // Hide hero screen when any tab is selected
+            var hero = document.getElementById('vault-hero-screen')
+            if (hero) hero.style.display = 'none'
             allTabs.forEach(function(t) {
                 var content = document.getElementById('tab-' + t)
                 var btn = document.getElementById('vtab-' + t)
@@ -4910,7 +4941,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.48</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.49</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
@@ -5066,6 +5097,57 @@
         }
 
         // Show footer once user is in dashboard
+        function showVaultHero() {
+            // Reset all tab highlights
+            allTabs.forEach(function(t) {
+                var btn = document.getElementById('vtab-' + t)
+                if (btn) { btn.style.borderBottomColor = 'transparent'; btn.style.color = '#6b7280'; btn.style.fontWeight = '600' }
+                var content = document.getElementById('tab-' + t)
+                if (content) content.style.display = 'none'
+            })
+            var hero = document.getElementById('vault-hero-screen')
+            if (hero) hero.style.display = 'block'
+            currentVaultTab = ''
+
+            var hConfig = JSON.parse(localStorage.getItem('vault_hero') || '{"mode":"photo","quote":"","name":"","photo":"","videoId":null}')
+            var hasPhoto = hConfig.photo && hConfig.photo.length > 10
+            var hasVideo = hConfig.videoId !== null && hConfig.videoId !== undefined
+
+            var emptyEl = document.getElementById('vault-hero-empty')
+            var photoWrap = document.getElementById('vault-hero-photo-wrap')
+            var videoWrap = document.getElementById('vault-hero-video-wrap')
+
+            if (hConfig.mode === 'video' && hasVideo) {
+                if (emptyEl) emptyEl.style.display = 'none'
+                if (photoWrap) photoWrap.style.display = 'none'
+                if (videoWrap) videoWrap.style.display = 'block'
+                // Load video from IndexedDB
+                getAllVideosDB().then(function(vids) {
+                    var v = vids.find(function(v) { return v.id === hConfig.videoId })
+                    if (v && v.blob) {
+                        var vid = document.getElementById('vault-hero-video')
+                        var titleEl = document.getElementById('vault-hero-video-title')
+                        if (vid) vid.src = URL.createObjectURL(v.blob)
+                        if (titleEl) titleEl.textContent = v.title
+                    }
+                }).catch(function() {})
+            } else if (hConfig.mode === 'photo' && hasPhoto) {
+                if (emptyEl) emptyEl.style.display = 'none'
+                if (videoWrap) videoWrap.style.display = 'none'
+                if (photoWrap) { photoWrap.style.display = 'flex' }
+                var bg = document.getElementById('vault-hero-photo-bg')
+                var qt = document.getElementById('vault-hero-quote-text')
+                var nm = document.getElementById('vault-hero-name-text')
+                if (bg) bg.src = hConfig.photo
+                if (qt) qt.textContent = hConfig.quote || ''
+                if (nm) nm.textContent = hConfig.name || ''
+            } else {
+                if (photoWrap) photoWrap.style.display = 'none'
+                if (videoWrap) videoWrap.style.display = 'none'
+                if (emptyEl) emptyEl.style.display = 'block'
+            }
+        }
+
         function maybeShowFooter() {
             const footer = document.getElementById('site-footer')
             if (footer) footer.style.display = 'block'
