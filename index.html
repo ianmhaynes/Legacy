@@ -4340,6 +4340,8 @@
         let savedValuables = []
 
         function showAddSecret() {
+            const panel = document.getElementById('secrets-panel')
+            if (panel) panel.style.display = 'block'
             const f = document.getElementById('add-secret-form')
             if (f) f.style.display = 'block'
         }
@@ -4349,6 +4351,7 @@
             if (!title) { showNotification('Please enter a title'); return }
             savedSecrets.push({ id: Date.now(), title, content, addedAt: new Date().toISOString() })
             localStorage.setItem('vault_secrets', JSON.stringify(savedSecrets))
+            syncVaultToSupabase('vault_secrets', savedSecrets)
             renderSecrets()
             document.getElementById('add-secret-form').style.display = 'none'
             document.getElementById('secret-title').value = ''
@@ -4377,6 +4380,8 @@
         function deleteSecret(id) { savedSecrets = savedSecrets.filter(s=>s.id!==id); localStorage.setItem('vault_secrets',JSON.stringify(savedSecrets)); syncVaultToSupabase('vault_secrets',savedSecrets); renderSecrets(); showNotification('Deleted') }
 
         function showAddValuable() {
+            const panel = document.getElementById('valuables-panel')
+            if (panel) panel.style.display = 'block'
             const f = document.getElementById('add-valuable-form')
             if (f) f.style.display = 'block'
         }
@@ -4622,7 +4627,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.44</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.45</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
