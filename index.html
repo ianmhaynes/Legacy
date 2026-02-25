@@ -1235,7 +1235,7 @@
                 <div style="display:flex; align-items:center; padding:1rem; border-bottom:1px solid #f3f4f6; gap:1rem; cursor:pointer; transition:background 0.2s;"
                      onmouseover="this.style.background='#f9fafb'"
                      onmouseout="this.style.background='white'"
-                     onclick="addSongToLibrary('${track.trackId}', '${(track.trackName || '').replace(/'/g, "\\'")}', '${(track.artistName || '').replace(/'/g, "\\'")}', '${(track.collectionName || '').replace(/'/g, "\\'")}', '${track.artworkUrl100 || ""}')">
+                     onclick="addSongToLibrary('${track.trackId}', '${(track.trackName || '').replace(/'/g, "\\'")}', '${(track.artistName || '').replace(/'/g, "\\'")}', '${(track.collectionName || '').replace(/'/g, "\\'")}', '${track.artworkUrl100 || ""}', '${track.previewUrl || ""}', '${track.trackViewUrl || ""}')">
                     <img src="${track.artworkUrl60 || track.artworkUrl100}" style="width:50px; height:50px; border-radius:6px;">
                     <div style="flex:1; min-width:0;">
                         <div style="font-weight:600; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${track.trackName}</div>
@@ -1318,6 +1318,7 @@
                             <div style="display:flex; gap:0.4rem; flex-shrink:0; align-items:center;">
                                 ${song.preview_url ? `<button id="play-btn-${song.id}" onclick="playSongPreview('${song.id}','${song.preview_url}')" style="background:#dcfce7; color:#16a34a; border:none; padding:0.3rem 0.6rem; border-radius:6px; font-size:0.85rem;" title="Play 30s preview">▶</button>` : ''}
                                 ${song.spotify_url ? `<a href="${song.spotify_url}" target="_blank" style="background:#fee2e2; color:#dc2626; border:none; padding:0.3rem 0.6rem; border-radius:6px; font-size:0.75rem; text-decoration:none;" title="Open in Apple Music">🎵</a>` : ''}
+                                <a href="https://www.youtube.com/results?search_query=${encodeURIComponent((song.artist||'') + ' ' + (song.name||''))}" target="_blank" style="background:#fef2f2; color:#dc2626; border:none; padding:0.3rem 0.6rem; border-radius:6px; font-size:0.75rem; text-decoration:none;" title="Search on YouTube">▶ YT</a>
                                 <button onclick="openSongMemory('${song.id}')" style="background:#ede9fe; color:#7c3aed; border:none; padding:0.3rem 0.6rem; border-radius:6px; font-size:0.85rem;" title="Add Memory">✏️</button>
                                 <button onclick="removeSong('${song.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem;" title="Remove">🗑️</button>
                             </div>
@@ -2675,6 +2676,31 @@
                     <div id="essentials-docs-list"></div>
                     <p id="essentials-docs-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No entries yet. Add passport, NHS number, birth certificate, NI number...</p>
                 </div>
+                <div id="vstabcontent-essentials-keys" style="margin-bottom:2rem; padding-top:1rem; border-top:2px solid #f3f4f6;">
+                    <h3 style="color:#0891b2; font-size:1rem; font-weight:700; margin-bottom:1rem;">🗝️ Keys — What Opens What</h3>
+                    <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+                        <button onclick="showAddKey()" style="background:#0891b2; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Key</button>
+                    </div>
+                    <div id="add-key-form" style="display:none; background:white; border:2px solid #e0f2fe; border-radius:10px; padding:1.5rem; margin-bottom:1rem;">
+                        <h4 style="color:#0891b2; margin-bottom:1rem;">🗝️ Add a Key</h4>
+                        <input id="key-label" placeholder="What is this key? e.g. Front door, Garden shed, Safe" style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; box-sizing:border-box;">
+                        <textarea id="key-description" placeholder="More details — where it's kept, who has a copy, any codes..." style="width:100%; padding:0.6rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.9rem; margin-bottom:0.75rem; height:80px; resize:vertical; box-sizing:border-box;"></textarea>
+                        <div style="margin-bottom:0.75rem;">
+                            <label style="display:block; font-size:0.85rem; font-weight:600; color:#4b5563; margin-bottom:0.4rem;">📸 Photo of the key (optional)</label>
+                            <input type="file" id="key-image-input" accept="image/*" style="display:none;" onchange="previewKeyImage(this)">
+                            <label for="key-image-input" style="display:inline-block; padding:0.5rem 1rem; background:#f0f9ff; border:1px dashed #0891b2; border-radius:6px; cursor:pointer; font-size:0.85rem; color:#0891b2;">📷 Choose photo</label>
+                            <img id="key-image-preview" src="" style="display:none; width:120px; height:90px; object-fit:cover; border-radius:6px; margin-left:1rem; vertical-align:middle; border:1px solid #e5e7eb;">
+                        </div>
+                        <div id="key-custom-fields" style="margin-bottom:0.5rem;"></div>
+                        <button onclick="addKeyCustomField()" style="background:none; border:1px dashed #9ca3af; color:#6b7280; padding:0.35rem 0.75rem; border-radius:6px; font-size:0.8rem; cursor:pointer; margin-bottom:0.75rem; display:block;">+ Add custom field</button>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button onclick="saveKey()" style="background:#0891b2; color:white; border:none; padding:0.6rem 1.25rem; border-radius:6px; font-weight:600; cursor:pointer;">Save Key</button>
+                            <button onclick="document.getElementById('add-key-form').style.display='none'; document.getElementById('key-custom-fields').innerHTML=''; document.getElementById('key-image-preview').style.display='none';" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.6rem 1rem; border-radius:6px; cursor:pointer;">Cancel</button>
+                        </div>
+                    </div>
+                    <div id="keys-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+                    <p id="keys-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No keys recorded yet. Add your house keys, car keys, safe combinations...</p>
+                </div>
                 <div id="vstabcontent-essentials-wishes" style="margin-bottom:2rem; padding-top:1rem; border-top:2px solid #f3f4f6;"><h3 style="color:#8b5cf6; font-size:1rem; font-weight:700; margin-bottom:1rem;">🕊️ Final Wishes</h3>
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;"><button onclick="showAddEssential('wishes')" style="background:#8b5cf6; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Entry</button></div>
                     <div id="essentials-wishes-list"></div>
@@ -3390,6 +3416,7 @@
                 loadStories()
                 loadLifebook()
                 loadSavedMusic()
+                loadKeys()
                 loadInheritors()
             }, 400);
         }
@@ -3755,7 +3782,110 @@
         // ===== ESSENTIALS =====
         let savedEssentials = []
 
-        function showAddEssential(category) {
+        // ===== KEYS =====
+        let savedKeys = []
+
+        function loadKeys() {
+            savedKeys = JSON.parse(localStorage.getItem('vault_keys') || '[]')
+            renderKeys()
+        }
+
+        function showAddKey() {
+            document.getElementById('add-key-form').style.display = 'block'
+            document.getElementById('key-label').value = ''
+            document.getElementById('key-description').value = ''
+            document.getElementById('key-custom-fields').innerHTML = ''
+            document.getElementById('key-image-preview').style.display = 'none'
+            document.getElementById('key-image-input').value = ''
+            document.getElementById('add-key-form').scrollIntoView({ behavior:'smooth', block:'nearest' })
+        }
+
+        function previewKeyImage(input) {
+            const file = input.files[0]
+            if (!file) return
+            const reader = new FileReader()
+            reader.onload = function(e) {
+                const img = document.getElementById('key-image-preview')
+                img.src = e.target.result
+                img.style.display = 'inline-block'
+            }
+            reader.readAsDataURL(file)
+        }
+
+        function addKeyCustomField() {
+            const container = document.getElementById('key-custom-fields')
+            const fieldId = 'key-custom-' + Date.now()
+            const div = document.createElement('div')
+            div.style.cssText = 'display:flex; gap:0.5rem; margin-bottom:0.5rem; align-items:center;'
+            div.innerHTML = `<input placeholder="Field name e.g. Code, Location" style="flex:1; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.85rem;" class="key-custom-name">
+                <input placeholder="Value" style="flex:2; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.85rem;" class="key-custom-value">
+                <button onclick="this.parentNode.remove()" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; flex-shrink:0;">✕</button>`
+            container.appendChild(div)
+        }
+
+        function saveKey() {
+            const label = document.getElementById('key-label').value.trim()
+            if (!label) { showNotification('Please enter a key name'); return }
+            const description = document.getElementById('key-description').value.trim()
+            const imagePreview = document.getElementById('key-image-preview')
+            const image = imagePreview.style.display !== 'none' ? imagePreview.src : ''
+            // Collect custom fields
+            const customFields = []
+            document.querySelectorAll('#key-custom-fields > div').forEach(div => {
+                const name = div.querySelector('.key-custom-name').value.trim()
+                const value = div.querySelector('.key-custom-value').value.trim()
+                if (name) customFields.push({ name, value })
+            })
+            const key = {
+                id: Date.now(),
+                label,
+                description,
+                image,
+                customFields,
+                addedAt: new Date().toISOString()
+            }
+            savedKeys.push(key)
+            localStorage.setItem('vault_keys', JSON.stringify(savedKeys))
+            syncVaultToSupabase('vault_keys', savedKeys)
+            document.getElementById('add-key-form').style.display = 'none'
+            document.getElementById('key-custom-fields').innerHTML = ''
+            document.getElementById('key-image-preview').style.display = 'none'
+            renderKeys()
+            showNotification('🗝️ Key saved!')
+        }
+
+        function deleteKey(id) {
+            if (!confirm('Delete this key?')) return
+            savedKeys = savedKeys.filter(k => k.id !== id)
+            localStorage.setItem('vault_keys', JSON.stringify(savedKeys))
+            syncVaultToSupabase('vault_keys', savedKeys)
+            renderKeys()
+        }
+
+        function renderKeys() {
+            const list = document.getElementById('keys-list')
+            const empty = document.getElementById('keys-empty')
+            if (!list) return
+            if (savedKeys.length === 0) {
+                list.innerHTML = ''
+                if (empty) empty.style.display = 'block'
+                return
+            }
+            if (empty) empty.style.display = 'none'
+            list.innerHTML = savedKeys.map(k => `
+                <div style="background:white; border:1px solid #e0f2fe; border-radius:10px; padding:1rem; display:flex; gap:1rem; align-items:flex-start;">
+                    ${k.image ? `<img src="${k.image}" style="width:80px; height:60px; object-fit:cover; border-radius:6px; flex-shrink:0; border:1px solid #e5e7eb;">` : '<div style="width:80px; height:60px; background:#f0f9ff; border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:2rem;">🗝️</div>'}
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-weight:700; color:#0891b2; font-size:1rem; margin-bottom:0.25rem;">${k.label}</div>
+                        ${k.description ? `<div style="color:#4b5563; font-size:0.85rem; margin-bottom:0.4rem;">${k.description}</div>` : ''}
+                        ${k.customFields && k.customFields.length > 0 ? k.customFields.map(f => `<div style="font-size:0.8rem; color:#6b7280;"><span style="font-weight:600; color:#374151;">${f.name}:</span> ${f.value}</div>`).join('') : ''}
+                    </div>
+                    <button onclick="deleteKey(${k.id})" style="background:none; border:none; color:#9ca3af; cursor:pointer; font-size:1rem; flex-shrink:0;" title="Delete">🗑️</button>
+                </div>
+            `).join('')
+        }
+
+                function showAddEssential(category) {
             const form = document.getElementById('add-essential-form')
             const title = document.getElementById('add-essential-title')
             const catInput = document.getElementById('essential-category')
@@ -4238,7 +4368,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.26</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.27</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
