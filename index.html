@@ -2140,6 +2140,14 @@
         }
     </script>
     
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-T70V1148EK"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-T70V1148EK');
+    </script>
 </head>
 <body>
 
@@ -3213,7 +3221,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem;">
                 <div>
                     <h1 style="color:white; font-size:1.8rem; font-weight:700; margin-bottom:0.25rem;">⚙️ Admin Panel</h1>
-                    <p style="color:#64748b; font-size:0.9rem;">We Loved Life Beta • <span id="admin-last-refresh"></span></p>
+                    <p style="color:#64748b; font-size:0.9rem;">We Loved Life Beta • <span id="admin-last-refresh"></span> • <a href="https://analytics.google.com" target="_blank" style="color:#38bdf8; text-decoration:none; font-weight:600;">📊 Analytics →</a></p>
                 </div>
                 <div style="display:flex; gap:0.75rem;">
                     <button onclick="refreshAdminData()" style="background:#1e293b; color:#94a3b8; border:1px solid #334155; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer; font-size:0.9rem;">
@@ -5259,7 +5267,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.65</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.67</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
