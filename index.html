@@ -2836,38 +2836,42 @@
 
             <!-- SECRETS -->
             <div id="vstabcontent-legacy-secrets" class="ess-section">
-                <div class="ess-header">
+                <div class="ess-header" onclick="var p=document.getElementById('secrets-panel');p.style.display=p.style.display==='none'?'block':'none';" style="cursor:pointer;">
                     <span style="color:#7c3aed; font-size:0.875rem; font-weight:700;">🔒 Secrets & Private Notes</span>
-                    <button onclick="showAddSecret()" class="ess-add-btn" style="background:#7c3aed;">+ Add</button>
+                    <button onclick="event.stopPropagation();showAddSecret()" class="ess-add-btn" style="background:#7c3aed;">+ Add</button>
                 </div>
-                <div id="add-secret-form" style="display:none; background:white; border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin-bottom:0.5rem;">
-                    <input id="secret-title" placeholder="Title (e.g. Private message, Safe combination)" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; margin-bottom:0.4rem; box-sizing:border-box;">
-                    <textarea id="secret-content" placeholder="The content..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; height:90px; resize:vertical; box-sizing:border-box; margin-bottom:0.4rem;"></textarea>
-                    <div style="display:flex; gap:0.4rem;">
-                        <button onclick="saveSecret()" style="background:#7c3aed; color:white; border:none; padding:0.4rem 0.9rem; border-radius:6px; cursor:pointer; font-weight:600; font-size:0.8rem;">Save</button>
-                        <button onclick="document.getElementById('add-secret-form').style.display='none'" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.4rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.8rem;">Cancel</button>
+                <div id="secrets-panel" style="display:none;">
+                    <div id="add-secret-form" style="display:none; background:white; border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin-bottom:0.5rem;">
+                        <input id="secret-title" placeholder="Title (e.g. Private message, Safe combination)" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; margin-bottom:0.4rem; box-sizing:border-box;">
+                        <textarea id="secret-content" placeholder="The content..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; height:90px; resize:vertical; box-sizing:border-box; margin-bottom:0.4rem;"></textarea>
+                        <div style="display:flex; gap:0.4rem;">
+                            <button onclick="saveSecret()" style="background:#7c3aed; color:white; border:none; padding:0.4rem 0.9rem; border-radius:6px; cursor:pointer; font-weight:600; font-size:0.8rem;">Save</button>
+                            <button onclick="document.getElementById('add-secret-form').style.display='none'" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.4rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.8rem;">Cancel</button>
+                        </div>
                     </div>
+                    <div id="secrets-list"></div>
+                    <p id="secrets-empty" class="ess-empty">No secrets yet — private messages, codes, hidden notes</p>
                 </div>
-                <div id="secrets-list"></div>
-                <p id="secrets-empty" class="ess-empty">No secrets yet — private messages, codes, hidden notes</p>
             </div>
 
             <!-- VALUABLES -->
             <div id="vstabcontent-legacy-valuables" class="ess-section">
-                <div class="ess-header">
+                <div class="ess-header" onclick="var p=document.getElementById('valuables-panel');p.style.display=p.style.display==='none'?'block':'none';" style="cursor:pointer;">
                     <span style="color:#d97706; font-size:0.875rem; font-weight:700;">💎 Valuables & Heirlooms</span>
-                    <button onclick="showAddValuable()" class="ess-add-btn" style="background:#d97706;">+ Add</button>
+                    <button onclick="event.stopPropagation();showAddValuable()" class="ess-add-btn" style="background:#d97706;">+ Add</button>
                 </div>
-                <div id="add-valuable-form" style="display:none; background:white; border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin-bottom:0.5rem;">
-                    <input id="valuable-title" placeholder="Item name (e.g. Gold watch, Diamond ring)" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; margin-bottom:0.4rem; box-sizing:border-box;">
-                    <textarea id="valuable-detail" placeholder="Description, location, sentimental value..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; height:80px; resize:vertical; box-sizing:border-box; margin-bottom:0.4rem;"></textarea>
-                    <div style="display:flex; gap:0.4rem;">
-                        <button onclick="saveValuable()" style="background:#d97706; color:white; border:none; padding:0.4rem 0.9rem; border-radius:6px; cursor:pointer; font-weight:600; font-size:0.8rem;">Save</button>
-                        <button onclick="document.getElementById('add-valuable-form').style.display='none'" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.4rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.8rem;">Cancel</button>
+                <div id="valuables-panel" style="display:none;">
+                    <div id="add-valuable-form" style="display:none; background:white; border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin-bottom:0.5rem;">
+                        <input id="valuable-title" placeholder="Item name (e.g. Gold watch, Diamond ring)" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; margin-bottom:0.4rem; box-sizing:border-box;">
+                        <textarea id="valuable-detail" placeholder="Description, location, sentimental value..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; height:80px; resize:vertical; box-sizing:border-box; margin-bottom:0.4rem;"></textarea>
+                        <div style="display:flex; gap:0.4rem;">
+                            <button onclick="saveValuable()" style="background:#d97706; color:white; border:none; padding:0.4rem 0.9rem; border-radius:6px; cursor:pointer; font-weight:600; font-size:0.8rem;">Save</button>
+                            <button onclick="document.getElementById('add-valuable-form').style.display='none'" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.4rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.8rem;">Cancel</button>
+                        </div>
                     </div>
+                    <div id="valuables-list"></div>
+                    <p id="valuables-empty" class="ess-empty">No valuables yet — jewellery, artwork, heirlooms, sentimental items</p>
                 </div>
-                <div id="valuables-list"></div>
-                <p id="valuables-empty" class="ess-empty">No valuables yet — jewellery, artwork, heirlooms, sentimental items</p>
             </div>
 
             </div><!-- end legacy flex column -->
@@ -4600,7 +4604,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.42</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.43</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
