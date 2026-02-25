@@ -4316,13 +4316,12 @@
             if (!list) return
             if (savedSecrets.length === 0) { if(empty) empty.style.display='block'; list.innerHTML=''; return }
             if(empty) empty.style.display='none'
-            list.innerHTML = savedSecrets.map(s => `<div style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:1rem;margin-bottom:0.75rem;">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                    <strong style="color:#1e3a8a;">🔒 ${s.title}</strong>
-                    <button onclick="deleteSecret(${s.id})" style="background:none;border:none;color:#9ca3af;cursor:pointer;">🗑️</button>
+            list.innerHTML = savedSecrets.map(s => `<div style="background:white;border:1px solid #e5e7eb;border-radius:6px;padding:0.5rem 0.75rem;margin-bottom:0.35rem;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;gap:0.5rem;">
+                    <strong style="color:#7c3aed;font-size:0.875rem;">🔒 ${s.title}</strong>
+                    <button onclick="deleteSecret(${s.id})" style="background:none;border:none;color:#d1d5db;cursor:pointer;font-size:0.8rem;flex-shrink:0;">🗑️</button>
                 </div>
-                <pre style="margin:0.5rem 0 0;color:#374151;font-size:0.85rem;white-space:pre-wrap;font-family:inherit;">${s.content}</pre>
-                <div style="color:#9ca3af;font-size:0.75rem;margin-top:0.5rem;">${new Date(s.addedAt).toLocaleDateString()}</div>
+                ${s.content ? `<div style="color:#4b5563;font-size:0.8rem;margin-top:0.1rem;white-space:pre-wrap;">${s.content}</div>` : ''}
             </div>`).join('')
         }
         function deleteSecret(id) { savedSecrets = savedSecrets.filter(s=>s.id!==id); localStorage.setItem('vault_secrets',JSON.stringify(savedSecrets)); renderSecrets(); showNotification('Deleted') }
@@ -4349,13 +4348,12 @@
             if (!list) return
             if (savedValuables.length === 0) { if(empty) empty.style.display='block'; list.innerHTML=''; return }
             if(empty) empty.style.display='none'
-            list.innerHTML = savedValuables.map(v => `<div style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:1rem;margin-bottom:0.75rem;">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                    <strong style="color:#d97706;">💎 ${v.title || v.name || 'Untitled'}</strong>
-                    <button onclick="deleteValuable(${v.id})" style="background:none;border:none;color:#9ca3af;cursor:pointer;">🗑️</button>
+            list.innerHTML = savedValuables.map(v => `<div style="background:white;border:1px solid #e5e7eb;border-radius:6px;padding:0.5rem 0.75rem;margin-bottom:0.35rem;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;gap:0.5rem;">
+                    <strong style="color:#d97706;font-size:0.875rem;">💎 ${v.title || v.name || 'Untitled'}</strong>
+                    <button onclick="deleteValuable(${v.id})" style="background:none;border:none;color:#d1d5db;cursor:pointer;font-size:0.8rem;flex-shrink:0;">🗑️</button>
                 </div>
-                ${v.detail ? '<p style="margin:0.5rem 0 0;color:#374151;font-size:0.85rem;">'+v.detail+'</p>' : ''}
-                <div style="color:#9ca3af;font-size:0.75rem;margin-top:0.5rem;">${new Date(v.addedAt).toLocaleDateString()}</div>
+                ${v.detail ? `<div style="color:#4b5563;font-size:0.8rem;margin-top:0.1rem;">${v.detail}</div>` : ''}
             </div>`).join('')
         }
         function deleteValuable(id) { savedValuables = savedValuables.filter(v=>v.id!==id); localStorage.setItem('vault_valuables',JSON.stringify(savedValuables)); renderValuables(); showNotification('Deleted') }
@@ -4568,7 +4566,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.34</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.35</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
