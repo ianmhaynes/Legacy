@@ -3258,8 +3258,8 @@
                                 <th style="padding:0.75rem 1rem; text-align:center; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">🎵</th>
                                 <th style="padding:0.75rem 1rem; text-align:center; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">👥</th>
                                 <th style="padding:0.75rem 1rem; text-align:center; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">📸</th>
-                                <th style="padding:0.75rem 1rem; text-align:center; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">✨</th>
-                                <th style="padding:0.75rem 1rem; text-align:center; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">📖</th>
+                                <th style="padding:0.75rem 1rem; text-align:center; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">✨ Stories</th>
+                                <th style="padding:0.75rem 1rem; text-align:center; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Joined</th>
                                 <th style="padding:0.75rem 1rem; text-align:left; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Actions</th>
                             </tr>
                         </thead>
@@ -3910,34 +3910,74 @@
             document.getElementById('admin-login-error').style.display = 'none'
         }
 
-        function refreshAdminData() {
-            const users = getUsers()
-            allTesters = Object.entries(users).map(([email, data]) => ({ email, ...data }))
+        async function refreshAdminData() {
+            document.getElementById('admin-last-refresh').textContent = 'Loading...'
 
-            // Stats
-            let totalSongs = 0, totalContacts = 0, totalStories = 0, lifetimePlans = 0
+            try {
+                // Pull all vault_data rows from Supabase — one source of truth across all devices
+                const { data: vaultRows, error: vaultError } = await supabaseClient
+                    .from('vault_data')
+                    .select('user_email, data_key, data_value')
 
-            allTesters.forEach(t => {
-                const songs = JSON.parse(localStorage.getItem('spotify_music_data') || '[]')
-                const contacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]')
-                const stories = Object.keys(JSON.parse(localStorage.getItem('vault_stories') || '{}'))
-                // Note: in a real multi-user app these would be per-user; for beta they're shared localStorage
-                if (t.plan === 'lifetime') lifetimePlans++
-            })
+                if (vaultError) throw vaultError
 
-            // Use global counts for now (single-device beta)
-            totalSongs = JSON.parse(localStorage.getItem('spotify_music_data') || '[]').length
-            totalContacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]').length
-            totalStories = Object.keys(JSON.parse(localStorage.getItem('vault_stories') || '{}')).length +
-                           Object.keys(JSON.parse(localStorage.getItem('vault_lifebook') || '{}')).length
+                // Group rows by user
+                const byUser = {}
+                if (vaultRows) {
+                    vaultRows.forEach(row => {
+                        if (!byUser[row.user_email]) byUser[row.user_email] = {}
+                        byUser[row.user_email][row.data_key] = row.data_value
+                    })
+                }
 
-            document.getElementById('stat-total-testers').textContent = allTesters.length
-            document.getElementById('stat-total-songs').textContent = totalSongs
-            document.getElementById('stat-total-contacts').textContent = totalContacts
-            document.getElementById('stat-total-stories').textContent = totalStories
-            document.getElementById('stat-lifetime-plans').textContent = lifetimePlans
+                // Also include local user store (catches users who only ever used offline mode)
+                const localUsers = getUsers()
+                Object.entries(localUsers).forEach(([email, data]) => {
+                    if (!byUser[email]) byUser[email] = { _localOnly: true, ...data }
+                })
 
-            document.getElementById('admin-last-refresh').textContent = 'Refreshed ' + new Date().toLocaleTimeString()
+                // Build tester list with per-user stats
+                allTesters = Object.entries(byUser).map(([email, data]) => {
+                    let songs = 0, contacts = 0, stories = 0, photos = 0, plan = 'monthly', name = ''
+                    try { songs = JSON.parse(data['spotify_music_data'] || '[]').length } catch(e) {}
+                    try { contacts = JSON.parse(data['vault_contacts'] || '[]').length } catch(e) {}
+                    try { stories = Object.keys(JSON.parse(data['vault_stories'] || '{}')).length +
+                                    Object.keys(JSON.parse(data['vault_lifebook'] || '{}')).length } catch(e) {}
+                    try { photos = parseInt(data['vault_photos_count'] || '0') } catch(e) {}
+                    // Get plan/name from local user store if available
+                    const localUser = localUsers[email] || {}
+                    plan = localUser.plan || 'monthly'
+                    name = localUser.name || email.split('@')[0]
+                    return { email, name, plan, songs, contacts, stories, photos,
+                             registeredAt: localUser.registeredAt || null,
+                             localOnly: !!data._localOnly }
+                })
+
+                // Aggregate stats
+                const totalSongs = allTesters.reduce((s, t) => s + t.songs, 0)
+                const totalContacts = allTesters.reduce((s, t) => s + t.contacts, 0)
+                const totalStories = allTesters.reduce((s, t) => s + t.stories, 0)
+                const lifetimePlans = allTesters.filter(t => t.plan === 'lifetime').length
+
+                document.getElementById('stat-total-testers').textContent = allTesters.length
+                document.getElementById('stat-total-songs').textContent = totalSongs
+                document.getElementById('stat-total-contacts').textContent = totalContacts
+                document.getElementById('stat-total-stories').textContent = totalStories
+                document.getElementById('stat-lifetime-plans').textContent = lifetimePlans
+                document.getElementById('admin-last-refresh').textContent = 'Refreshed ' + new Date().toLocaleTimeString()
+
+            } catch(e) {
+                console.error('Admin data load failed:', e)
+                // Fallback to local only
+                const localUsers = getUsers()
+                allTesters = Object.entries(localUsers).map(([email, data]) => ({
+                    email, name: data.name || email.split('@')[0], plan: data.plan || 'monthly',
+                    songs: 0, contacts: 0, stories: 0, photos: 0,
+                    registeredAt: data.registeredAt || null, localOnly: true
+                }))
+                document.getElementById('stat-total-testers').textContent = allTesters.length
+                document.getElementById('admin-last-refresh').textContent = 'Refreshed (local only) ' + new Date().toLocaleTimeString()
+            }
 
             renderTesterTable(allTesters)
             renderFeedback()
@@ -3954,31 +3994,26 @@
             }
             noTesters.style.display = 'none'
 
-            const songs = JSON.parse(localStorage.getItem('spotify_music_data') || '[]').length
-            const contacts = JSON.parse(localStorage.getItem('vault_contacts') || '[]').length
-            const stories = Object.keys(JSON.parse(localStorage.getItem('vault_stories') || '{}')).length
-            const lifebook = Object.keys(JSON.parse(localStorage.getItem('vault_lifebook') || '{}')).length
-            const photos = JSON.parse(localStorage.getItem('vault_photos_count') || '0')
-
-            tbody.innerHTML = testers.map((t, i) => `
-                <tr style="border-bottom:1px solid #1e293b; transition:background 0.15s;" 
+            tbody.innerHTML = testers.map((t) => `
+                <tr style="border-bottom:1px solid #1e293b; transition:background 0.15s;"
                     onmouseover="this.style.background='#0f172a'" onmouseout="this.style.background='transparent'">
                     <td style="padding:1rem; color:white;">
                         <div style="font-weight:600; font-size:0.95rem;">${t.name || '—'}</div>
                         <div style="color:#64748b; font-size:0.8rem;">${t.email}</div>
+                        ${t.localOnly ? '<div style="color:#475569;font-size:0.7rem;">local only</div>' : ''}
                     </td>
                     <td style="padding:1rem;">
                         <span style="background:${t.plan === 'lifetime' ? '#1e3a8a' : '#064e3b'}; color:${t.plan === 'lifetime' ? '#93c5fd' : '#6ee7b7'}; padding:0.2rem 0.6rem; border-radius:980px; font-size:0.75rem; font-weight:600; text-transform:uppercase;">
                             ${t.plan || 'monthly'}
                         </span>
                     </td>
-                    <td style="padding:1rem; text-align:center; color:#1db954; font-weight:600;">${i === 0 ? songs : '—'}</td>
-                    <td style="padding:1rem; text-align:center; color:#8b5cf6; font-weight:600;">${i === 0 ? contacts : '—'}</td>
-                    <td style="padding:1rem; text-align:center; color:#3b82f6; font-weight:600;">${i === 0 ? (photos || '—') : '—'}</td>
-                    <td style="padding:1rem; text-align:center; color:#f59e0b; font-weight:600;">${i === 0 ? stories : '—'}</td>
-                    <td style="padding:1rem; text-align:center; color:#8b5cf6; font-weight:600;">${i === 0 ? lifebook : '—'}</td>
+                    <td style="padding:1rem; text-align:center; color:#1db954; font-weight:600;">${t.songs || '—'}</td>
+                    <td style="padding:1rem; text-align:center; color:#8b5cf6; font-weight:600;">${t.contacts || '—'}</td>
+                    <td style="padding:1rem; text-align:center; color:#3b82f6; font-weight:600;">${t.photos || '—'}</td>
+                    <td style="padding:1rem; text-align:center; color:#f59e0b; font-weight:600;">${t.stories || '—'}</td>
+                    <td style="padding:1rem; text-align:center; color:#475569; font-size:0.75rem;">${t.registeredAt ? new Date(t.registeredAt).toLocaleDateString() : '—'}</td>
                     <td style="padding:1rem;">
-                        <button onclick="deleteAdminTester('${t.email}')" 
+                        <button onclick="deleteAdminTester('${t.email}')"
                             style="background:#7f1d1d; color:#fca5a5; border:none; padding:0.3rem 0.75rem; border-radius:6px; font-size:0.8rem; cursor:pointer;">
                             Delete
                         </button>
@@ -5109,7 +5144,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.59</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.60</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
