@@ -2147,8 +2147,8 @@
                 <li><a href="#how" onclick="scrollToSection('how-it-works'); closeMobileNav()">How It Works</a></li>
                 <li><a href="#pricing" onclick="scrollToSection('pricing'); closeMobileNav()">Pricing</a></li>
                 <li id="nav-share" class="hidden"><a href="#" onclick="openShareModal(); closeMobileNav()">🔗 Share</a></li>
-                <li id="nav-dashboard" class="hidden"><a href="#dashboard" onclick="showSection('dashboard'); closeMobileNav()">My Vault</a></li>
-                <li id="nav-login"><a href="#" onclick="showLogin(); closeMobileNav()" class="btn-nav">Start Your Legacy</a></li>
+                <li id="nav-dashboard" class="hidden"><a href="#dashboard" onclick="showSection('dashboard'); closeMobileNav()">My Capsule</a></li>
+                <li id="nav-login"><a href="#" onclick="showLogin(); closeMobileNav()" class="btn-nav">Open your capsule</a></li>
                 <li id="nav-logout" class="hidden"><a href="#" onclick="logout(); closeMobileNav()">Logout</a></li>
                 <li id="nav-admin" class="hidden"><a href="#" onclick="showSection('admin'); closeMobileNav()" style="color:#ef4444; font-weight:600;">⚙️ Admin</a></li>
             </ul>
@@ -2160,193 +2160,302 @@
 
     <!-- Home Section -->
     <div id="home-section">
-        <!-- Hero -->
-        <section class="hero">
-            <div class="hero-content">
-                <h1>Your life. Your story. Preserved forever.</h1>
-                <p class="subtitle">Share who you are with the people who matter most.</p>
-                <p>Your music, photos, memories, and life story—all in one place. Create a digital time capsule that your family will treasure for generations.</p>
-                <div class="cta-buttons">
-                    <button class="cta-button" onclick="showLogin()">Start Preserving Your Story</button>
-                    <button class="cta-button secondary" onclick="scrollToSection('how-it-works')">See How It Works</button>
+
+        <!-- ═══ HERO ═══ -->
+        <section class="hero" style="background:linear-gradient(160deg,#0a0a0f 0%,#0d1117 40%,#0f0a1e 100%); min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; padding:0;">
+
+            <!-- Grain texture overlay -->
+            <div style="position:absolute;inset:0;opacity:0.04;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><filter id=%22n%22><feTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22/></filter><rect width=%22200%22 height=%22200%22 filter=%22url(%23n)%22 opacity=%221%22/></svg>');pointer-events:none;"></div>
+
+            <!-- Subtle radial glow -->
+            <div style="position:absolute;top:20%;left:50%;transform:translateX(-50%);width:700px;height:500px;background:radial-gradient(ellipse,rgba(99,102,241,0.12) 0%,transparent 70%);pointer-events:none;"></div>
+
+            <div style="position:relative;text-align:center;padding:6rem 2rem 4rem;max-width:860px;margin:0 auto;">
+
+                <!-- Eyebrow -->
+                <div style="display:inline-flex;align-items:center;gap:0.5rem;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);border-radius:20px;padding:0.35rem 1rem;margin-bottom:2rem;">
+                    <span style="width:6px;height:6px;background:#6366f1;border-radius:50%;display:inline-block;"></span>
+                    <span style="color:#a5b4fc;font-size:0.78rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;font-family:'Georgia',serif;">A time capsule for the people you'll never meet</span>
+                </div>
+
+                <!-- Main headline -->
+                <h1 style="font-family:'Georgia',serif;font-size:clamp(2.8rem,6vw,5rem);font-weight:400;color:#f8fafc;line-height:1.12;margin:0 0 1.5rem;letter-spacing:-0.02em;">
+                    One day, they'll want<br>
+                    <em style="font-style:italic;color:#a5b4fc;">to hear your voice again.</em>
+                </h1>
+
+                <p style="font-size:clamp(1rem,2vw,1.2rem);color:#94a3b8;line-height:1.7;max-width:580px;margin:0 auto 2.5rem;font-family:'Georgia',serif;">
+                    We Loved Life preserves not just your photos — your humour, your values, your music, your stories. A complete portrait of who you were, for grandchildren you'll never meet.
+                </p>
+
+                <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                    <button onclick="showLogin()" style="background:#6366f1;color:white;border:none;padding:0.9rem 2.2rem;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'Georgia',serif;letter-spacing:0.01em;transition:all 0.2s;" onmouseover="this.style.background='#4f46e5'" onmouseout="this.style.background='#6366f1'">Open your capsule →</button>
+                    <button onclick="document.getElementById('evolution-section').scrollIntoView({behavior:'smooth'})" style="background:transparent;color:#94a3b8;border:1px solid rgba(255,255,255,0.15);padding:0.9rem 2rem;border-radius:10px;font-size:1rem;cursor:pointer;font-family:'Georgia',serif;" onmouseover="this.style.borderColor='rgba(255,255,255,0.4)';this.style.color='#f1f5f9'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='#94a3b8'">See the story</button>
+                </div>
+
+                <!-- Scroll hint -->
+                <div style="margin-top:4rem;color:#334155;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;">scroll to discover ↓</div>
+            </div>
+        </section>
+
+        <!-- ═══ EVOLUTION TIMELINE ═══ -->
+        <section id="evolution-section" style="background:#0d1117;padding:6rem 2rem;overflow:hidden;">
+            <div style="max-width:900px;margin:0 auto;">
+
+                <div style="text-align:center;margin-bottom:4rem;">
+                    <p style="color:#6366f1;font-size:0.78rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:0.75rem;font-family:'Georgia',serif;">The history of memory</p>
+                    <h2 style="font-family:'Georgia',serif;font-size:clamp(2rem,4vw,3rem);font-weight:400;color:#f1f5f9;margin:0;line-height:1.2;">Every generation found a new way<br>to preserve the people they loved.</h2>
+                </div>
+
+                <!-- Timeline -->
+                <div style="position:relative;">
+                    <!-- Connecting line -->
+                    <div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,transparent,rgba(99,102,241,0.4),rgba(99,102,241,0.4),transparent);transform:translateX(-50%);display:none;" class="timeline-line"></div>
+
+                    <div style="display:grid;gap:0;position:relative;">
+
+                        <!-- Era 1 -->
+                        <div style="display:grid;grid-template-columns:1fr 60px 1fr;gap:0;align-items:center;margin-bottom:0;">
+                            <div style="text-align:right;padding:2rem 2rem 2rem 0;">
+                                <div style="font-size:2.5rem;margin-bottom:0.5rem;">🖼️</div>
+                                <div style="font-family:'Georgia',serif;color:#f1f5f9;font-size:1.1rem;font-weight:600;margin-bottom:0.25rem;">The Portrait</div>
+                                <div style="color:#475569;font-size:0.78rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.5rem;">1400s – 1800s</div>
+                                <div style="color:#94a3b8;font-size:0.88rem;line-height:1.6;font-family:'Georgia',serif;">Oil paintings preserved faces for the wealthy. A commission could take months. Only the powerful left a visual trace.</div>
+                            </div>
+                            <div style="display:flex;align-items:center;justify-content:center;flex-direction:column;">
+                                <div style="width:14px;height:14px;background:#6366f1;border-radius:50%;border:3px solid #0d1117;box-shadow:0 0 0 2px #6366f1;"></div>
+                                <div style="width:1px;height:60px;background:linear-gradient(to bottom,#6366f1,rgba(99,102,241,0.3));"></div>
+                            </div>
+                            <div></div>
+                        </div>
+
+                        <!-- Era 2 -->
+                        <div style="display:grid;grid-template-columns:1fr 60px 1fr;gap:0;align-items:center;">
+                            <div></div>
+                            <div style="display:flex;align-items:center;justify-content:center;flex-direction:column;">
+                                <div style="width:1px;height:60px;background:linear-gradient(to bottom,rgba(99,102,241,0.3),#818cf8);"></div>
+                                <div style="width:14px;height:14px;background:#818cf8;border-radius:50%;border:3px solid #0d1117;box-shadow:0 0 0 2px #818cf8;"></div>
+                                <div style="width:1px;height:60px;background:linear-gradient(to bottom,#818cf8,rgba(129,140,248,0.3));"></div>
+                            </div>
+                            <div style="padding:2rem 0 2rem 2rem;">
+                                <div style="font-size:2.5rem;margin-bottom:0.5rem;">📷</div>
+                                <div style="font-family:'Georgia',serif;color:#f1f5f9;font-size:1.1rem;font-weight:600;margin-bottom:0.25rem;">The Photograph</div>
+                                <div style="color:#475569;font-size:0.78rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.5rem;">1839 – 1980s</div>
+                                <div style="color:#94a3b8;font-size:0.88rem;line-height:1.6;font-family:'Georgia',serif;">Photography democratised memory. Suddenly everyone could preserve a moment. Weddings, graduations, ordinary Tuesdays — all frozen in time.</div>
+                            </div>
+                        </div>
+
+                        <!-- Era 3 -->
+                        <div style="display:grid;grid-template-columns:1fr 60px 1fr;gap:0;align-items:center;">
+                            <div style="text-align:right;padding:2rem 2rem 2rem 0;">
+                                <div style="font-size:2.5rem;margin-bottom:0.5rem;">🎞️</div>
+                                <div style="font-family:'Georgia',serif;color:#f1f5f9;font-size:1.1rem;font-weight:600;margin-bottom:0.25rem;">The Film</div>
+                                <div style="color:#475569;font-size:0.78rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.5rem;">1890s – 2000s</div>
+                                <div style="color:#94a3b8;font-size:0.88rem;line-height:1.6;font-family:'Georgia',serif;">Cine cameras preserved movement — how someone walked, laughed, gestured. For the first time, the dead could be seen in motion.</div>
+                            </div>
+                            <div style="display:flex;align-items:center;justify-content:center;flex-direction:column;">
+                                <div style="width:1px;height:60px;background:linear-gradient(to bottom,rgba(129,140,248,0.3),#a78bfa);"></div>
+                                <div style="width:14px;height:14px;background:#a78bfa;border-radius:50%;border:3px solid #0d1117;box-shadow:0 0 0 2px #a78bfa;"></div>
+                                <div style="width:1px;height:60px;background:linear-gradient(to bottom,#a78bfa,rgba(167,139,250,0.3));"></div>
+                            </div>
+                            <div></div>
+                        </div>
+
+                        <!-- Era 4 -->
+                        <div style="display:grid;grid-template-columns:1fr 60px 1fr;gap:0;align-items:center;">
+                            <div></div>
+                            <div style="display:flex;align-items:center;justify-content:center;flex-direction:column;">
+                                <div style="width:1px;height:60px;background:linear-gradient(to bottom,rgba(167,139,250,0.3),#c084fc);"></div>
+                                <div style="width:14px;height:14px;background:#c084fc;border-radius:50%;border:3px solid #0d1117;box-shadow:0 0 0 2px #c084fc;"></div>
+                                <div style="width:1px;height:60px;background:linear-gradient(to bottom,#c084fc,rgba(192,132,252,0.3));"></div>
+                            </div>
+                            <div style="padding:2rem 0 2rem 2rem;">
+                                <div style="font-size:2.5rem;margin-bottom:0.5rem;">📱</div>
+                                <div style="font-family:'Georgia',serif;color:#f1f5f9;font-size:1.1rem;font-weight:600;margin-bottom:0.25rem;">The Digital Life</div>
+                                <div style="color:#475569;font-size:0.78rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.5rem;">2000s – Today</div>
+                                <div style="color:#94a3b8;font-size:0.88rem;line-height:1.6;font-family:'Georgia',serif;">For the first time, we can preserve the <em>whole person</em> — their humour, values, music, stories, relationships, voice. Every dimension of a life, not just its surface.</div>
+                            </div>
+                        </div>
+
+                        <!-- Era 5 - NOW -->
+                        <div style="display:grid;grid-template-columns:1fr 60px 1fr;gap:0;align-items:center;">
+                            <div style="text-align:right;padding:2rem 2rem 2rem 0;">
+                                <div style="font-size:2.5rem;margin-bottom:0.5rem;">💜</div>
+                                <div style="font-family:'Georgia',serif;color:#f1f5f9;font-size:1.1rem;font-weight:600;margin-bottom:0.25rem;">We Loved Life</div>
+                                <div style="color:#6366f1;font-size:0.78rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.5rem;">Now — Forever</div>
+                                <div style="color:#94a3b8;font-size:0.88rem;line-height:1.6;font-family:'Georgia',serif;">The first place designed to hold all of it. Not a backup. Not a tool. A digital portrait — preserved so grandchildren you'll never meet can know exactly who you were.</div>
+                            </div>
+                            <div style="display:flex;align-items:center;justify-content:center;flex-direction:column;">
+                                <div style="width:1px;height:60px;background:linear-gradient(to bottom,rgba(192,132,252,0.3),#6366f1);"></div>
+                                <div style="width:20px;height:20px;background:linear-gradient(135deg,#6366f1,#a78bfa);border-radius:50%;border:3px solid #0d1117;box-shadow:0 0 0 3px rgba(99,102,241,0.4),0 0 20px rgba(99,102,241,0.3);"></div>
+                            </div>
+                            <div></div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Trust Bar -->
-        <div class="trust-bar">
-            <p><strong>Guaranteed for 100+ years</strong> • Bank-level encryption • Trusted by thousands of families</p>
-        </div>
+        <!-- ═══ GRANDCHILD PREVIEW ═══ -->
+        <section style="background:#f8fafc;padding:6rem 2rem;">
+            <div style="max-width:900px;margin:0 auto;">
 
-        <!-- Problem Section -->
-        <section class="problem-section">
-            <h2>Your Digital Life Won't Outlive You</h2>
-            <div class="problem-grid">
-                <div class="problem-card">
-                    <div class="problem-icon">📱</div>
-                    <h3>Locked Phones</h3>
-                    <p>When you pass, your family can't unlock your iPhone. Everything inside—photos, messages, memories—is lost forever.</p>
+                <div style="text-align:center;margin-bottom:3.5rem;">
+                    <p style="color:#6366f1;font-size:0.78rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:0.75rem;font-family:'Georgia',serif;">This is what they'll see</p>
+                    <h2 style="font-family:'Georgia',serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:400;color:#0f172a;margin:0 0 1rem;line-height:1.2;">Your grandchild opens your capsule<br>in 2075.</h2>
+                    <p style="color:#64748b;font-size:1rem;font-family:'Georgia',serif;max-width:500px;margin:0 auto;">This is what they find.</p>
                 </div>
-                <div class="problem-card">
-                    <div class="problem-icon">☁️</div>
-                    <h3>Deleted Accounts</h3>
-                    <p>iCloud accounts close when payments stop. Apple deletes your photos, contacts, and data within months of your death.</p>
-                </div>
-                <div class="problem-card">
-                    <div class="problem-icon">🔒</div>
-                    <h3>Lost Passwords</h3>
-                    <p>Your loved ones don't know your passwords to Spotify, Instagram, or Facebook. Your digital footprint disappears.</p>
-                </div>
-                <div class="problem-card">
-                    <div class="problem-icon">👨‍👩‍👧‍👦</div>
-                    <h3>Family History Erased</h3>
-                    <p>Your grandchildren will never see photos of you in your youth, hear your favorite songs, or know what you cared about.</p>
+
+                <!-- Simulated capsule view -->
+                <div style="background:white;border-radius:20px;box-shadow:0 25px 80px rgba(0,0,0,0.12),0 4px 20px rgba(0,0,0,0.06);overflow:hidden;max-width:680px;margin:0 auto;">
+
+                    <!-- Capsule header -->
+                    <div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:2rem 2rem 1.5rem;text-align:center;">
+                        <div style="font-size:0.7rem;letter-spacing:0.15em;color:#6366f1;text-transform:uppercase;font-weight:600;margin-bottom:0.5rem;">We Loved Life · Time Capsule</div>
+                        <h3 style="font-family:'Georgia',serif;color:#f1f5f9;font-size:1.6rem;font-weight:400;margin:0 0 0.25rem;font-style:italic;">Ian's Capsule</h3>
+                        <p style="color:#94a3b8;font-size:0.85rem;margin:0;">Opened by his granddaughter · 2075</p>
+                    </div>
+
+                    <!-- Content rows -->
+                    <div style="padding:1.5rem;">
+
+                        <!-- Voice message -->
+                        <div style="background:#f8fafc;border-radius:12px;padding:1rem 1.25rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:1rem;">
+                            <div style="width:40px;height:40px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem;">🎙️</div>
+                            <div style="flex:1;">
+                                <div style="font-weight:600;font-size:0.88rem;color:#1e293b;margin-bottom:0.15rem;">A message for you</div>
+                                <div style="font-size:0.78rem;color:#64748b;font-style:italic;">"I hope you're living a life that makes you proud. I'm sorry we never got to meet..."</div>
+                            </div>
+                            <div style="width:36px;height:36px;background:#6366f1;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:0.9rem;">▶</div>
+                        </div>
+
+                        <!-- Favourite music -->
+                        <div style="background:#f8fafc;border-radius:12px;padding:1rem 1.25rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:1rem;">
+                            <div style="width:40px;height:40px;background:linear-gradient(135deg,#059669,#10b981);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem;">🎵</div>
+                            <div style="flex:1;">
+                                <div style="font-weight:600;font-size:0.88rem;color:#1e293b;margin-bottom:0.15rem;">Songs that moved him</div>
+                                <div style="font-size:0.78rem;color:#64748b;">Thunder Road · Born to Run · The River · Nebraska...</div>
+                            </div>
+                            <div style="font-size:0.78rem;color:#94a3b8;">47 songs</div>
+                        </div>
+
+                        <!-- Memory -->
+                        <div style="background:#f8fafc;border-radius:12px;padding:1rem 1.25rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:1rem;">
+                            <div style="width:40px;height:40px;background:linear-gradient(135deg,#f59e0b,#fbbf24);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem;">✨</div>
+                            <div style="flex:1;">
+                                <div style="font-weight:600;font-size:0.88rem;color:#1e293b;margin-bottom:0.15rem;">The day I met your grandmother</div>
+                                <div style="font-size:0.78rem;color:#64748b;font-style:italic;">"It was 1987. I was late for work and she was reading a book outside..."</div>
+                            </div>
+                        </div>
+
+                        <!-- Photos -->
+                        <div style="background:#f8fafc;border-radius:12px;padding:1rem 1.25rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:1rem;">
+                            <div style="display:flex;gap:0.3rem;flex-shrink:0;">
+                                <div style="width:40px;height:40px;background:linear-gradient(135deg,#be185d,#ec4899);border-radius:8px;"></div>
+                                <div style="width:40px;height:40px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:8px;"></div>
+                                <div style="width:40px;height:40px;background:linear-gradient(135deg,#065f46,#10b981);border-radius:8px;"></div>
+                            </div>
+                            <div style="flex:1;">
+                                <div style="font-weight:600;font-size:0.88rem;color:#1e293b;margin-bottom:0.15rem;">Photos of his life</div>
+                                <div style="font-size:0.78rem;color:#64748b;">From age 24 to 71 · 847 photos</div>
+                            </div>
+                        </div>
+
+                        <!-- Values -->
+                        <div style="background:linear-gradient(135deg,#fdf4ff,#f5f3ff);border:1px solid #e9d5ff;border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;">
+                            <div style="width:40px;height:40px;background:linear-gradient(135deg,#7c3aed,#a78bfa);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem;">📖</div>
+                            <div>
+                                <div style="font-weight:600;font-size:0.88rem;color:#1e293b;margin-bottom:0.15rem;">His life in his own words</div>
+                                <div style="font-size:0.78rem;color:#6b21a8;font-style:italic;">"Work hard but not so hard you forget why you're working. Be kind first, correct later."</div>
+                            </div>
+                        </div>
+
+                        <div style="text-align:center;margin-top:1.5rem;">
+                            <button onclick="showLogin()" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border:none;padding:0.75rem 2rem;border-radius:10px;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:'Georgia',serif;">Create your capsule →</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Solution Section -->
-        <section class="solution-section">
-            <h2>A Digital Time Capsule for Future Generations</h2>
-            <p class="intro">We Loved Life preserves your digital life so your family can discover who you really were—decades after you're gone.</p>
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🎵</div>
-                    <h3>Your Soundtrack</h3>
-                    <p>Preserve your Spotify playlists and Apple Music library. Let your grandchildren discover what music moved you, what made you dance, what got you through hard times.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">📸</div>
-                    <h3>Your Life in Photos</h3>
-                    <p>Automatically backup every photo from your phone and social media. Future generations see you young, vibrant, and living your full life.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">👥</div>
-                    <h3>Your People</h3>
-                    <p>Preserve contacts, messages, and social connections. Your family will know who mattered to you and why.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">📖</div>
-                    <h3>Your Stories</h3>
-                    <p>Record voice memos, write letters, and create video messages. Speak directly to descendants you'll never meet.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔐</div>
-                    <h3>Designated Inheritors</h3>
-                    <p>Choose who gets access when you're gone. Set conditions—age requirements, specific dates, or automatic triggers.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">⏰</div>
-                    <h3>50-Year Guarantee</h3>
-                    <p>Your vault is preserved and accessible for at least 50 years, guaranteed. We maintain it so your family doesn't have to.</p>
+        <!-- ═══ WHAT TO PRESERVE ═══ -->
+        <section id="how-it-works" style="background:#0d1117;padding:6rem 2rem;">
+            <div style="max-width:860px;margin:0 auto;text-align:center;">
+                <p style="color:#6366f1;font-size:0.78rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:0.75rem;font-family:'Georgia',serif;">Not an upload. A ritual.</p>
+                <h2 style="font-family:'Georgia',serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:400;color:#f1f5f9;margin:0 0 1rem;line-height:1.2;">Tell your story.<br>Record your voice.<br>Share your lessons.</h2>
+                <p style="color:#64748b;font-size:1rem;font-family:'Georgia',serif;max-width:480px;margin:0 auto 3.5rem;">Not a tool. Not a backup. A living portrait of who you are.</p>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;text-align:left;">
+                    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:1.5rem;">
+                        <div style="font-size:1.75rem;margin-bottom:0.75rem;">🎙️</div>
+                        <div style="font-family:'Georgia',serif;color:#f1f5f9;font-weight:600;margin-bottom:0.4rem;">Your voice</div>
+                        <div style="color:#64748b;font-size:0.85rem;line-height:1.6;">Record messages to the people you love — and to the ones you'll never meet.</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:1.5rem;">
+                        <div style="font-size:1.75rem;margin-bottom:0.75rem;">🎵</div>
+                        <div style="font-family:'Georgia',serif;color:#f1f5f9;font-weight:600;margin-bottom:0.4rem;">Your music</div>
+                        <div style="color:#64748b;font-size:0.85rem;line-height:1.6;">The songs that shaped you. What you played on road trips. What made you cry.</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:1.5rem;">
+                        <div style="font-size:1.75rem;margin-bottom:0.75rem;">✨</div>
+                        <div style="font-family:'Georgia',serif;color:#f1f5f9;font-weight:600;margin-bottom:0.4rem;">Your stories</div>
+                        <div style="color:#64748b;font-size:0.85rem;line-height:1.6;">The memories that made you. Your childhood, your loves, your proudest moments.</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:1.5rem;">
+                        <div style="font-size:1.75rem;margin-bottom:0.75rem;">📸</div>
+                        <div style="font-family:'Georgia',serif;color:#f1f5f9;font-weight:600;margin-bottom:0.4rem;">Your photos</div>
+                        <div style="color:#64748b;font-size:0.85rem;line-height:1.6;">Every era of your life. Young, old, in between. A face they'll recognise across time.</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:1.5rem;">
+                        <div style="font-size:1.75rem;margin-bottom:0.75rem;">📖</div>
+                        <div style="font-family:'Georgia',serif;color:#f1f5f9;font-weight:600;margin-bottom:0.4rem;">Your wisdom</div>
+                        <div style="color:#64748b;font-size:0.85rem;line-height:1.6;">Your values. What you believed. What you'd tell them if you could.</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:1.5rem;">
+                        <div style="font-size:1.75rem;margin-bottom:0.75rem;">👨‍👩‍👧</div>
+                        <div style="font-family:'Georgia',serif;color:#f1f5f9;font-weight:600;margin-bottom:0.4rem;">Your people</div>
+                        <div style="color:#64748b;font-size:0.85rem;line-height:1.6;">Who mattered to you, and why. The relationships that defined your life.</div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- How It Works -->
-        <section class="how-it-works" id="how-it-works">
-            <h2>How It Works</h2>
-            <div class="steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <h3>Connect Your Life</h3>
-                    <p>Link your Spotify, photos, social media, and other accounts. We automatically backup everything important.</p>
+        <!-- ═══ TESTIMONIALS ═══ -->
+        <section style="background:#f8fafc;padding:5rem 2rem;">
+            <div style="max-width:860px;margin:0 auto;">
+                <div style="text-align:center;margin-bottom:3rem;">
+                    <h2 style="font-family:'Georgia',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;color:#0f172a;margin:0;">Stories from families</h2>
                 </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <h3>Add Your Stories</h3>
-                    <p>Record voice messages, write letters to future generations, and add context to your photos and memories.</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <h3>Choose Inheritors</h3>
-                    <p>Designate who gets access—children, grandchildren, or specific family members. Set conditions for when they receive it.</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <h3>Live Your Life</h3>
-                    <p>Your vault automatically updates as you create new memories. No maintenance required.</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">5</div>
-                    <h3>Write Your Life Book</h3>
-                    <p>Record your autobiography chapter by chapter — childhood, career, family, wisdom. Your story in your own words, preserved forever.</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">6</div>
-                    <h3>Legacy Released</h3>
-                    <p>When the time comes, your inheritors receive a beautiful digital time capsule of your entire life.</p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;">
+                    <div style="background:white;border-radius:14px;padding:1.75rem;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+                        <p style="font-family:'Georgia',serif;font-style:italic;color:#334155;line-height:1.7;margin:0 0 1rem;font-size:0.92rem;">"When my father passed, we couldn't access his phone. All his photos were locked forever. I'm making sure my kids never experience that loss."</p>
+                        <div style="font-weight:700;font-size:0.85rem;color:#0f172a;">Sarah M.</div>
+                        <div style="font-size:0.78rem;color:#94a3b8;">Mother of three</div>
+                    </div>
+                    <div style="background:white;border-radius:14px;padding:1.75rem;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+                        <p style="font-family:'Georgia',serif;font-style:italic;color:#334155;line-height:1.7;margin:0 0 1rem;font-size:0.92rem;">"My grandmother died when I was young. I'd give anything to hear her voice. I'm making sure my grandchildren have that gift."</p>
+                        <div style="font-weight:700;font-size:0.85rem;color:#0f172a;">James L.</div>
+                        <div style="font-size:0.78rem;color:#94a3b8;">Grandfather</div>
+                    </div>
+                    <div style="background:white;border-radius:14px;padding:1.75rem;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+                        <p style="font-family:'Georgia',serif;font-style:italic;color:#334155;line-height:1.7;margin:0 0 1rem;font-size:0.92rem;">"This isn't backup software — it's an heirloom. I'm creating something my great-great-grandchildren will treasure."</p>
+                        <div style="font-weight:700;font-size:0.85rem;color:#0f172a;">Maria R.</div>
+                        <div style="font-size:0.78rem;color:#94a3b8;">We Loved Life member</div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Testimonials -->
-        <section class="testimonials">
-            <h2>Stories from Families</h2>
-            <div class="testimonial-grid">
-                <div class="testimonial">
-                    <p class="testimonial-text">"When my father passed, we couldn't access his phone. All his photos were locked forever. I created a We Loved Life vault so my kids never experience that loss."</p>
-                    <p class="testimonial-author">Sarah M.</p>
-                    <p class="testimonial-role">Mother of three</p>
-                </div>
-                <div class="testimonial">
-                    <p class="testimonial-text">"My grandmother died when I was young. I'd give anything to hear her voice or see photos of her as a young woman. I'm making sure my grandchildren have that gift."</p>
-                    <p class="testimonial-author">James L.</p>
-                    <p class="testimonial-role">Grandfather</p>
-                </div>
-                <div class="testimonial">
-                    <p class="testimonial-text">"This isn't just backup software—it's an heirloom. I'm creating something my great-great-grandchildren will treasure."</p>
-                    <p class="testimonial-author">Maria R.</p>
-                    <p class="testimonial-role">We Loved Life member</p>
-                </div>
+        <!-- ═══ FINAL CTA ═══ -->
+        <section id="pricing" style="background:linear-gradient(160deg,#0a0a0f,#1e1b4b);padding:6rem 2rem;text-align:center;">
+            <div style="max-width:600px;margin:0 auto;">
+                <h2 style="font-family:'Georgia',serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:400;color:#f8fafc;margin:0 0 1rem;line-height:1.15;font-style:italic;">"A time capsule for the people you'll never meet."</h2>
+                <p style="color:#94a3b8;font-size:1rem;font-family:'Georgia',serif;margin:0 0 2.5rem;line-height:1.7;">Free during beta. Start today. Your grandchildren will thank you.</p>
+                <button onclick="showLogin()" style="background:#6366f1;color:white;border:none;padding:1rem 2.5rem;border-radius:12px;font-size:1.05rem;font-weight:700;cursor:pointer;font-family:'Georgia',serif;letter-spacing:0.01em;" onmouseover="this.style.background='#4f46e5'" onmouseout="this.style.background='#6366f1'">Open your capsule — it's free →</button>
             </div>
         </section>
 
-        <!-- Pricing Section -->
-        <section class="pricing" id="pricing">
-            <h2>Choose Your Plan</h2>
-            <p class="subtitle">Preserve your life story for generations</p>
-            <div class="pricing-grid">
-                <div class="pricing-card">
-                    <h3>Monthly</h3>
-                    <div class="price">$2</div>
-                    <span class="price-period">per month (USD)</span>
-                    <ul class="pricing-features">
-                        <li>Unlimited music library</li>
-                        <li>Unlimited photos & videos</li>
-                        <li>Unlimited contacts</li>
-                        <li>Write your Life Book</li>
-                        <li>Export to Kindle</li>
-                        <li>Unlimited inheritors</li>
-                        <li>100-year guarantee</li>
-                        <li>Bank-level encryption</li>
-                        <li>Cancel anytime</li>
-                    </ul>
-                    <button class="pricing-cta" onclick="showLoginWithPlan('monthly')">Start Your Story</button>
-                </div>
-
-                <div class="pricing-card popular">
-                    <span class="popular-badge">Best Value</span>
-                    <h3>Lifetime</h3>
-                    <div class="price">$1,000</div>
-                    <span class="price-period">one-time payment (USD)</span>
-                    <ul class="pricing-features">
-                        <li>Everything in Monthly</li>
-                        <li>Never pay again</li>
-                        <li>Priority support</li>
-                        <li>Early access to new features</li>
-                        <li>Founding member badge</li>
-                        <li>Pass to your children</li>
-                        <li><strong>Pay once, preserve forever</strong></li>
-                    </ul>
-                    <button class="pricing-cta" onclick="showLoginWithPlan('lifetime')">Preserve Forever</button>
-                </div>
-            </div>
-            
-            <div style="text-align:center; margin-top:2rem; color:#6b7280; font-size:0.9rem;">
-                <p>🔒 <strong>100% Secure</strong> • All data encrypted • No ads ever • Cancel monthly plan anytime</p>
-            </div>
-        </section>
     </div>
 
     <!-- Dashboard Section -->
@@ -2361,7 +2470,7 @@
             <!-- Sticky nav - single flat row -->
             <div style="position:sticky; top:60px; background:white; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin:0 -1rem; padding:0.6rem 1rem 0;">
                 <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.6rem;">
-                    <input id="vault-search" placeholder="🔍 Search vault..."
+                    <input id="vault-search" placeholder="🔍 Search capsuleule..."
                         style="flex:1; padding:0.4rem 0.9rem; border:1px solid #e5e7eb; border-radius:980px; font-size:0.85rem; outline:none;"
                         oninput="searchVault(this.value)">
                     <div id="sync-status" style="display:inline-flex; align-items:center; gap:0.3rem; font-size:0.78rem; color:#16a34a; white-space:nowrap;">
@@ -2419,7 +2528,7 @@
                 <!-- Default empty state -->
                 <div id="vault-hero-empty" style="text-align:center;padding:2.5rem;background:linear-gradient(135deg,#f8faff,#eef2ff);border-radius:14px;border:2px dashed #c7d2fe;">
                     <div style="font-size:2.5rem;margin-bottom:0.75rem;">💜</div>
-                    <p style="color:#4338ca;font-weight:700;font-size:1rem;margin:0 0 0.25rem;">Welcome to your vault</p>
+                    <p style="color:#4338ca;font-weight:700;font-size:1rem;margin:0 0 0.25rem;">Welcome to your capsule</p>
                     <p style="color:#818cf8;font-size:0.85rem;margin:0 0 1rem;">Set up your opening screen in the Videos tab — add a photo with a message, or a featured video</p>
                     <button onclick="switchTab('videos')" style="background:#6366f1;color:white;border:none;padding:0.5rem 1.25rem;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;">Set up opening screen →</button>
                 </div>
@@ -3041,7 +3150,7 @@
 
             <div style="background:#fef3c7; border:1px solid #fbbf24; border-radius:8px; padding:1rem; margin-bottom:1.5rem;">
                 <p style="color:#92400e; font-size:0.85rem; margin:0;">
-                    ⚠️ <strong>Privacy Notice:</strong> Anyone with this link can view your vault (but not edit it).
+                    ⚠️ <strong>Privacy Notice:</strong> Anyone with this link can view your capsule (but not edit it).
                 </p>
             </div>
 
@@ -3286,7 +3395,7 @@
             document.getElementById('login-modal-title').textContent = isSignup ? 'Start Your We Loved Life' : 'Welcome Back'
             document.getElementById('login-modal-subtitle').textContent = isSignup
                 ? 'Create your account to start preserving your story.'
-                : 'Log in to access your vault.'
+                : 'Log in to access your capsule.'
             document.getElementById('password').placeholder = isSignup ? 'Min. 8 characters' : '••••••••'
             document.getElementById('password').minLength = isSignup ? 8 : 1
             document.getElementById('login-error').style.display = 'none'
@@ -3391,7 +3500,7 @@
                     try { loadEssentials() } catch(e) {}
                     try { loadKeys() } catch(e) {}
                     try { loadCustomEssentials() } catch(e) {}
-                    showNotification('☁️ Vault synced from cloud!')
+                    showNotification('☁️ Capsule synced from cloud!')
                 }
             } catch(e) {
                 console.warn('Could not load from Supabase, using local data:', e)
@@ -4945,7 +5054,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.51</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.52</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
@@ -5038,7 +5147,7 @@
 
             <div style="background:linear-gradient(135deg, #1e3a5f, #1e293b); border:1px solid #334155; border-left:3px solid #38bdf8; border-radius:8px; padding:1rem 1.25rem;">
                 <p style="margin:0; font-size:0.875rem; color:#cbd5e1; line-height:1.6;">
-                    <strong style="color:#f1f5f9;">What this means for you —</strong> Your data is encrypted, access-controlled and hosted on infrastructure trusted by global enterprises. We never sell your data. We never read your vault.
+                    <strong style="color:#f1f5f9;">What this means for you —</strong> Your data is encrypted, access-controlled and hosted on infrastructure trusted by global enterprises. We never sell your data. We never read your capsule.
                 </p>
             </div>
         </div>
@@ -5062,7 +5171,7 @@
                 <p style="color:#cbd5e1; font-weight:600; margin:0 0 0.5rem;">Free Beta</p>
                 <p style="margin:0 0 1rem;">We Loved Life is currently free. We reserve the right to introduce pricing in future. We will always give you advance notice and the ability to export your data.</p>
                 <p style="color:#cbd5e1; font-weight:600; margin:0 0 0.5rem;">Your Data</p>
-                <p style="margin:0 0 1rem;">You own everything you store. We do not access, sell, or share your vault contents. You can delete your account and all data at any time.</p>
+                <p style="margin:0 0 1rem;">You own everything you store. We do not access, sell, or share your capsule contents. You can delete your account and all data at any time.</p>
                 <p style="color:#cbd5e1; font-weight:600; margin:0 0 0.5rem;">No Guarantees</p>
                 <p style="margin:0;">This is a beta product. While we take security seriously, we recommend keeping copies of critical information in multiple places. We are not liable for data loss.</p>
             </div>
