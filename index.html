@@ -966,8 +966,9 @@
         .acc-header { display:flex; align-items:center; gap:0.6rem; padding:0.5rem 0.75rem; cursor:pointer; user-select:none; }
         .acc-header:hover { background:#f9fafb; }
         .acc-chevron { font-size:0.65rem; color:#9ca3af; transition:transform 0.15s; flex-shrink:0; margin-left:auto; }
-        .acc-body { display:none; padding:0 0.75rem 0.6rem 0.75rem; }
-        .acc-row.open .acc-body { display:block; }
+        .acc-body { display:none !important; padding:0; }
+        .acc-row.open .acc-body { padding:0 0.75rem 0.6rem 0.75rem; }
+        .acc-row.open .acc-body { display:block !important; }
         .acc-row.open .acc-chevron { transform:rotate(180deg); }
 
         </style>
@@ -4596,7 +4597,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.39</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.40</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
