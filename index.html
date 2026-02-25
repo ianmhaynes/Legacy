@@ -2357,16 +2357,17 @@
                         🏛️ Legacy <span id="vtab-legacy-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
                 </div>
-            </div>
-
-            <!-- TAB: MEMORIES -->
-            <div id="vtabcontent-memories" style="padding-top:1.5rem;">
-                <div style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; margin-bottom:1rem; overflow-x:auto;">
+                <!-- Sub-tab strip lives in sticky header so both rows are equal -->
+                <div id="sub-tab-strip" style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; overflow-x:auto;">
                     <button onclick="switchSubTab('memories','music')" id="vstab-memories-music" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.88rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">🎵 Music</button>
                     <button onclick="switchSubTab('memories','photos')" id="vstab-memories-photos" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">📸 Photos</button>
                     <button onclick="switchSubTab('memories','stories')" id="vstab-memories-stories" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">✨ Stories</button>
                     <button onclick="switchSubTab('memories','lifebook')" id="vstab-memories-lifebook" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">📖 Life Book</button>
                 </div>
+            </div>
+
+            <!-- TAB: MEMORIES -->
+            <div id="vtabcontent-memories" style="padding-top:1rem;">
                 <div id="vstabcontent-memories-music"><div id="spotify-card">
                     <!-- Search Bar -->
                     <div style="margin-bottom:1rem;">
@@ -2649,13 +2650,7 @@
 
             <!-- TAB: ESSENTIALS -->
             <div id="vtabcontent-essentials" style="display:none; padding-top:1.5rem;">
-                <div style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; margin-bottom:1rem; overflow-x:auto;">
-                    <button onclick="switchSubTab('essentials','finance')" id="vstab-essentials-finance" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.88rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">💰 Financial</button>
-                    <button onclick="switchSubTab('essentials','access')" id="vstab-essentials-access" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">🔑 Access</button>
-                    <button onclick="switchSubTab('essentials','digital')" id="vstab-essentials-digital" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">💻 Digital</button>
-                    <button onclick="switchSubTab('essentials','docs')" id="vstab-essentials-docs" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">📄 Docs</button>
-                    <button onclick="switchSubTab('essentials','wishes')" id="vstab-essentials-wishes" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">🕊️ Wishes</button>
-                </div>
+                
                 <div id="vstabcontent-essentials-finance">
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;"><button onclick="showAddEssential('finance')" style="background:#f59e0b; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Entry</button></div>
                     <div id="essentials-finance-list"></div>
@@ -2699,11 +2694,7 @@
 
             <!-- TAB: LEGACY -->
             <div id="vtabcontent-legacy" style="display:none; padding-top:1.5rem;">
-                <div style="display:flex; gap:0; border-bottom:2px solid #e5e7eb; margin-bottom:1rem; overflow-x:auto;">
-                    <button onclick="switchSubTab('legacy','inheritors')" id="vstab-legacy-inheritors" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.88rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">👨‍👩‍👧‍👦 Inheritors</button>
-                    <button onclick="switchSubTab('legacy','secrets')" id="vstab-legacy-secrets" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">🔒 Secrets</button>
-                    <button onclick="switchSubTab('legacy','valuables')" id="vstab-legacy-valuables" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">💎 Valuables</button>
-                </div>
+                
                 <div id="vstabcontent-legacy-inheritors">
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
                         <button onclick="showAddInheritorForm()" style="background:#ec4899; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Inheritor</button>
@@ -3803,6 +3794,13 @@
         var currentVaultTab = 'memories'
         var currentSubTabs = {}
 
+        var subStripHTML = {
+            memories: '<button onclick="switchSubTab(\'memories\',\'music\')" id="vstab-memories-music" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.88rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">🎵 Music</button><button onclick="switchSubTab(\'memories\',\'photos\')" id="vstab-memories-photos" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">📸 Photos</button><button onclick="switchSubTab(\'memories\',\'stories\')" id="vstab-memories-stories" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">✨ Stories</button><button onclick="switchSubTab(\'memories\',\'lifebook\')" id="vstab-memories-lifebook" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">📖 Life Book</button>',
+            contacts: '',
+            essentials: '<button onclick="switchSubTab(\'essentials\',\'finance\')" id="vstab-essentials-finance" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.88rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">💰 Financial</button><button onclick="switchSubTab(\'essentials\',\'access\')" id="vstab-essentials-access" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">🔑 Access</button><button onclick="switchSubTab(\'essentials\',\'digital\')" id="vstab-essentials-digital" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">💻 Digital</button><button onclick="switchSubTab(\'essentials\',\'docs\')" id="vstab-essentials-docs" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">📄 Docs</button><button onclick="switchSubTab(\'essentials\',\'wishes\')" id="vstab-essentials-wishes" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">🕊️ Wishes</button>',
+            legacy: '<button onclick="switchSubTab(\'legacy\',\'inheritors\')" id="vstab-legacy-inheritors" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid #3b82f6; background:none; font-weight:700; font-size:0.88rem; color:#1e3a8a; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">👨‍👩‍👧‍👦 Inheritors</button><button onclick="switchSubTab(\'legacy\',\'secrets\')" id="vstab-legacy-secrets" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">🔒 Secrets</button><button onclick="switchSubTab(\'legacy\',\'valuables\')" id="vstab-legacy-valuables" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">💎 Valuables</button>'
+        }
+
         function switchVaultTab(tab) {
             currentVaultTab = tab
             var tabs = ['memories','contacts','essentials','legacy']
@@ -3816,10 +3814,16 @@
                     btn.style.fontWeight = t === tab ? '700' : '600'
                 }
             })
+            // Swap sub-strip in sticky header
+            var strip = document.getElementById('sub-tab-strip')
+            if (strip) {
+                strip.innerHTML = subStripHTML[tab] || ''
+                strip.style.display = subStripHTML[tab] ? 'flex' : 'none'
+            }
             // Restore active sub-tab for this section
-            const subDefaults = { memories:'music', essentials:'finance', legacy:'inheritors' }
+            var subDefaults = { memories:'music', essentials:'finance', legacy:'inheritors' }
             if (subDefaults[tab]) {
-                const activeSub = (currentSubTabs && currentSubTabs[tab]) || subDefaults[tab]
+                var activeSub = (currentSubTabs && currentSubTabs[tab]) || subDefaults[tab]
                 switchSubTab(tab, activeSub)
             }
             window.scrollTo({top:0, behavior:'smooth'})
@@ -4197,7 +4201,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.19</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.20</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; align-items:center; justify-content:center; padding:1rem;" onclick="closePhotoLightbox()">
