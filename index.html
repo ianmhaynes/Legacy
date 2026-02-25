@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>We Love Life - Preserve Your Story, Music, Photos & Memories Forever</title>
+    <title>We Loved Life - Preserve Your Story, Music, Photos & Memories Forever</title>
     <style>
         * {
             margin: 0;
@@ -2115,7 +2115,7 @@
     <!-- Navigation -->
     <nav>
         <div class="container">
-            <div class="logo">📖 We Love Life</div>
+            <div class="logo">📖 We Loved Life</div>
             <button class="hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="Menu">
                 <span></span><span></span><span></span>
             </button>
@@ -2185,7 +2185,7 @@
         <!-- Solution Section -->
         <section class="solution-section">
             <h2>A Digital Time Capsule for Future Generations</h2>
-            <p class="intro">We Love Life preserves your digital life so your family can discover who you really were—decades after you're gone.</p>
+            <p class="intro">We Loved Life preserves your digital life so your family can discover who you really were—decades after you're gone.</p>
             <div class="feature-grid">
                 <div class="feature-card">
                     <div class="feature-icon">🎵</div>
@@ -2262,7 +2262,7 @@
             <h2>Stories from Families</h2>
             <div class="testimonial-grid">
                 <div class="testimonial">
-                    <p class="testimonial-text">"When my father passed, we couldn't access his phone. All his photos were locked forever. I created a We Love Life vault so my kids never experience that loss."</p>
+                    <p class="testimonial-text">"When my father passed, we couldn't access his phone. All his photos were locked forever. I created a We Loved Life vault so my kids never experience that loss."</p>
                     <p class="testimonial-author">Sarah M.</p>
                     <p class="testimonial-role">Mother of three</p>
                 </div>
@@ -2274,7 +2274,7 @@
                 <div class="testimonial">
                     <p class="testimonial-text">"This isn't just backup software—it's an heirloom. I'm creating something my great-great-grandchildren will treasure."</p>
                     <p class="testimonial-author">Maria R.</p>
-                    <p class="testimonial-role">We Love Life member</p>
+                    <p class="testimonial-role">We Loved Life member</p>
                 </div>
             </div>
         </section>
@@ -2491,7 +2491,9 @@
                     <!-- User's Saved Songs -->
                     <div id="my-songs-list" style="display:none;"></div>
             </div></div>
-                <div id="tab-stories" style="display:none; padding-top:1rem;"><div id="stories-prompts" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+            <!-- END tab-music -->
+
+            <div id="tab-stories" style="display:none; padding-top:1rem;"><div id="stories-prompts" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
                             
                             <div class="story-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer;"
                                  onclick="openStoryEditor('best_memory', '🌟 Best Memory', 'What is the single best memory of your life?')">
@@ -2653,27 +2655,27 @@
             <!-- TAB: ESSENTIALS -->
             <div id="tab-essentials" style="display:none; padding-top:1rem;">
                 
-                <div id="vstabcontent-essentials-finance">
+                <div id="vstabcontent-essentials-finance" style="margin-bottom:2rem;"><h3 style="color:#f59e0b; font-size:1rem; font-weight:700; margin-bottom:1rem;">💰 Financial</h3>
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;"><button onclick="showAddEssential('finance')" style="background:#f59e0b; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Entry</button></div>
                     <div id="essentials-finance-list"></div>
                     <p id="essentials-finance-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No entries yet. Add bank accounts, will location, insurance policies...</p>
                 </div>
-                <div id="vstabcontent-essentials-access" style="display:none;">
+                <div id="vstabcontent-essentials-access" style="margin-bottom:2rem; padding-top:1rem; border-top:2px solid #f3f4f6;"><h3 style="color:#10b981; font-size:1rem; font-weight:700; margin-bottom:1rem;">🔑 Access & Passwords</h3>
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;"><button onclick="showAddEssential('access')" style="background:#10b981; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Entry</button></div>
                     <div id="essentials-access-list"></div>
                     <p id="essentials-access-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No entries yet. Add safe combinations, storage unit details...</p>
                 </div>
-                <div id="vstabcontent-essentials-digital" style="display:none;">
+                <div id="vstabcontent-essentials-digital" style="margin-bottom:2rem; padding-top:1rem; border-top:2px solid #f3f4f6;"><h3 style="color:#6366f1; font-size:1rem; font-weight:700; margin-bottom:1rem;">💻 Digital Accounts</h3>
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;"><button onclick="showAddEssential('digital')" style="background:#6366f1; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Entry</button></div>
                     <div id="essentials-digital-list"></div>
                     <p id="essentials-digital-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No entries yet. Add password manager, email accounts, crypto wallets...</p>
                 </div>
-                <div id="vstabcontent-essentials-docs" style="display:none;">
+                <div id="vstabcontent-essentials-docs" style="margin-bottom:2rem; padding-top:1rem; border-top:2px solid #f3f4f6;"><h3 style="color:#ef4444; font-size:1rem; font-weight:700; margin-bottom:1rem;">📄 Documents</h3>
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;"><button onclick="showAddEssential('docs')" style="background:#ef4444; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Entry</button></div>
                     <div id="essentials-docs-list"></div>
                     <p id="essentials-docs-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No entries yet. Add passport, NHS number, birth certificate, NI number...</p>
                 </div>
-                <div id="vstabcontent-essentials-wishes" style="display:none;">
+                <div id="vstabcontent-essentials-wishes" style="margin-bottom:2rem; padding-top:1rem; border-top:2px solid #f3f4f6;"><h3 style="color:#8b5cf6; font-size:1rem; font-weight:700; margin-bottom:1rem;">🕊️ Final Wishes</h3>
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;"><button onclick="showAddEssential('wishes')" style="background:#8b5cf6; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Entry</button></div>
                     <div id="essentials-wishes-list"></div>
                     <p id="essentials-wishes-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No entries yet. Add funeral wishes, who to contact first...</p>
@@ -2698,7 +2700,7 @@
             <!-- TAB: LEGACY -->
             <div id="tab-legacy" style="display:none; padding-top:1rem;">
                 
-                <div id="vstabcontent-legacy-inheritors">
+                <div id="vstabcontent-legacy-inheritors" style="margin-bottom:2rem;"><h3 style="color:#ec4899; font-size:1rem; font-weight:700; margin-bottom:1rem;">👨‍👩‍👧 Inheritors</h3>
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
                         <button onclick="showAddInheritorForm()" style="background:#ec4899; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Inheritor</button>
                     </div>
@@ -2727,7 +2729,7 @@
                     <p id="inheritors-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No inheritors added yet. Add someone who will receive your digital legacy.</p>
                     <p id="inheritors-count-header" style="display:none;"></p>
                 </div>
-                <div id="vstabcontent-legacy-secrets" style="display:none;">
+                <div id="vstabcontent-legacy-secrets" style="margin-bottom:2rem; padding-top:1rem; border-top:2px solid #f3f4f6;"><h3 style="color:#7c3aed; font-size:1rem; font-weight:700; margin-bottom:1rem;">🔒 Secrets & Private Notes</h3>
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
                         <button onclick="showAddSecret()" style="background:#374151; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Secret</button>
                     </div>
@@ -2743,7 +2745,7 @@
                     <div id="secrets-list"></div>
                     <p id="secrets-empty" style="color:#9ca3af; text-align:center; padding:2rem; font-style:italic;">No secrets yet. Store private messages, combination codes, hidden notes...</p>
                 </div>
-                <div id="vstabcontent-legacy-valuables" style="display:none;">
+                <div id="vstabcontent-legacy-valuables" style="margin-bottom:2rem; padding-top:1rem; border-top:2px solid #f3f4f6;"><h3 style="color:#d97706; font-size:1rem; font-weight:700; margin-bottom:1rem;">💎 Valuables & Heirlooms</h3>
                     <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
                         <button onclick="showAddValuable()" style="background:#d97706; color:white; border:none; padding:0.5rem 1.1rem; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;">+ Add Valuable</button>
                     </div>
@@ -2769,7 +2771,7 @@
             <div id="login-plan-badge" style="text-align:center; margin-bottom:1.5rem; display:none;">
                 <span id="login-plan-label" style="background:#059669; color:white; padding:0.4rem 1.2rem; border-radius:980px; font-size:0.9rem; font-weight:500;"></span>
             </div>
-            <h2 id="login-modal-title">Start Your We Love Life</h2>
+            <h2 id="login-modal-title">Start Your We Loved Life</h2>
             <p style="color:#6b7280; font-size:0.9rem; margin-bottom:1.5rem;" id="login-modal-subtitle">Create your account to start preserving your story.</p>
 
             <!-- Beta tester notice -->
@@ -2851,7 +2853,7 @@
             <div style="text-align:center; margin-bottom:2rem;">
                 <div style="font-size:2.5rem; margin-bottom:0.5rem;">⚙️</div>
                 <h2 style="color:white; font-size:1.5rem; margin-bottom:0.25rem;">Admin Panel</h2>
-                <p style="color:#64748b; font-size:0.9rem;">We Love Life • Beta Dashboard</p>
+                <p style="color:#64748b; font-size:0.9rem;">We Loved Life • Beta Dashboard</p>
             </div>
             <div style="margin-bottom:1rem;">
                 <input type="password" id="admin-password-input" placeholder="Enter admin password" 
@@ -2871,7 +2873,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem;">
                 <div>
                     <h1 style="color:white; font-size:1.8rem; font-weight:700; margin-bottom:0.25rem;">⚙️ Admin Panel</h1>
-                    <p style="color:#64748b; font-size:0.9rem;">We Love Life Beta • <span id="admin-last-refresh"></span></p>
+                    <p style="color:#64748b; font-size:0.9rem;">We Loved Life Beta • <span id="admin-last-refresh"></span></p>
                 </div>
                 <div style="display:flex; gap:0.75rem;">
                     <button onclick="refreshAdminData()" style="background:#1e293b; color:#94a3b8; border:1px solid #334155; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer; font-size:0.9rem;">
@@ -2990,7 +2992,7 @@
     <div id="feedback-modal" class="modal">
         <div class="modal-content">
             <h2 style="margin-bottom:0.5rem;">💬 Beta Feedback</h2>
-            <p style="color:#6b7280; font-size:0.9rem; margin-bottom:1.5rem;">Help us improve We Love Life. What's working? What's broken?</p>
+            <p style="color:#6b7280; font-size:0.9rem; margin-bottom:1.5rem;">Help us improve We Loved Life. What's working? What's broken?</p>
             <div style="margin-bottom:1rem;">
                 <label style="display:block; font-weight:600; color:#4b5563; margin-bottom:0.5rem; font-size:0.9rem;">Rating</label>
                 <div id="feedback-stars" style="display:flex; gap:0.5rem; font-size:1.8rem; cursor:pointer;">
@@ -3030,7 +3032,7 @@
     <footer>
         <div class="footer-content">
             <div class="footer-section">
-                <h3>We Love Life</h3>
+                <h3>We Loved Life</h3>
                 <p style="color: #9ca3af; margin-top: 0.5rem;">Preserving your digital legacy for future generations.</p>
             </div>
             <div class="footer-section">
@@ -3058,7 +3060,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 We Love Life. Your memories, preserved forever.</p>
+            <p>&copy; 2026 We Loved Life. Your memories, preserved forever.</p>
         </div>
     </footer>
 
@@ -3077,7 +3079,7 @@
             document.getElementById('name-group').style.display = isSignup ? 'block' : 'none'
             document.getElementById('password-hint').style.display = isSignup ? 'block' : 'none'
             document.getElementById('login-submit-btn').textContent = isSignup ? 'Create My Vault' : 'Log In'
-            document.getElementById('login-modal-title').textContent = isSignup ? 'Start Your We Love Life' : 'Welcome Back'
+            document.getElementById('login-modal-title').textContent = isSignup ? 'Start Your We Loved Life' : 'Welcome Back'
             document.getElementById('login-modal-subtitle').textContent = isSignup
                 ? 'Create your account to start preserving your story.'
                 : 'Log in to access your vault.'
@@ -3324,7 +3326,7 @@
                 updateUIForLoggedIn();
                 closeLogin();
                 showSection('dashboard');
-                showNotification(authMode === 'signup' ? '🎉 Welcome to We Love Life!' : '👋 Welcome back, ' + user.name + '!');
+                showNotification(authMode === 'signup' ? '🎉 Welcome to We Loved Life!' : '👋 Welcome back, ' + user.name + '!');
 
             } catch(e) {
                 console.error('Auth error:', e, e.stack)
@@ -3753,6 +3755,24 @@
         // ===== ESSENTIALS =====
         let savedEssentials = []
 
+        function showAddEssential(category) {
+            const form = document.getElementById('add-essential-form')
+            const title = document.getElementById('add-essential-title')
+            const catInput = document.getElementById('essential-category')
+            if (!form) return
+            const labels = {
+                finance: '💰 Add Financial Entry',
+                access: '🔑 Add Access / Password',
+                digital: '💻 Add Digital Account',
+                docs: '📄 Add Document',
+                wishes: '🕊️ Add Final Wish'
+            }
+            if (title) title.textContent = labels[category] || 'Add Entry'
+            if (catInput) catInput.value = category
+            form.style.display = 'block'
+            form.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        }
+
         function loadEssentials() {
             savedEssentials = JSON.parse(localStorage.getItem('vault_essentials') || '[]')
             renderEssentials()
@@ -3813,6 +3833,10 @@
                     btn.style.fontWeight = t === tab ? '700' : '600'
                 }
             })
+            // Re-render tab-specific content on switch
+            if (tab === 'music') { try { updateSavedSongsDisplay() } catch(e){} }
+            if (tab === 'contacts') { try { renderContacts() } catch(e){} }
+            if (tab === 'photos') { try { loadSavedPhotos() } catch(e){} }
             window.scrollTo({top:0, behavior:'smooth'})
         }
 
@@ -4214,7 +4238,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.24</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.26</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
