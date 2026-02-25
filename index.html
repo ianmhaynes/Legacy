@@ -3332,6 +3332,7 @@
                     document.getElementById('dashboard-section').classList.add('active');
                     const fab = document.getElementById('feedback-fab')
                     if (fab) fab.style.display = 'block'
+                    try { maybeShowFooter() } catch(e) {}
                 } else {
                     showLogin();
                 }
@@ -4627,7 +4628,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.45</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.46</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
@@ -4670,5 +4671,123 @@
             </div>
         </div>
     </div>
+
+    <!-- FOOTER -->
+    <footer id="site-footer" style="display:none; background:#0f172a; color:#94a3b8; font-family:'Georgia',serif; margin-top:0;">
+
+        <!-- Nav strip -->
+        <div style="background:#1e293b; border-bottom:1px solid #334155;">
+            <div style="max-width:960px; margin:0 auto; padding:0.75rem 2rem; display:flex; gap:2rem; flex-wrap:wrap; align-items:center;">
+                <button onclick="showFooterSection('security')" id="footer-btn-security" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:0.8rem;font-family:inherit;padding:0.25rem 0; border-bottom:2px solid transparent;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">🔐 Security & Privacy</button>
+                <button onclick="showFooterSection('about')" id="footer-btn-about" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:0.8rem;font-family:inherit;padding:0.25rem 0; border-bottom:2px solid transparent;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">💙 About Us</button>
+                <button onclick="showFooterSection('terms')" id="footer-btn-terms" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:0.8rem;font-family:inherit;padding:0.25rem 0; border-bottom:2px solid transparent;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">📄 Terms of Use</button>
+                <button onclick="showFooterSection('contact')" id="footer-btn-contact" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:0.8rem;font-family:inherit;padding:0.25rem 0; border-bottom:2px solid transparent;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">✉️ Contact</button>
+            </div>
+        </div>
+
+        <!-- Security section -->
+        <div id="footer-section-security" style="display:none; max-width:960px; margin:0 auto; padding:2.5rem 2rem;">
+            <h2 style="color:#f1f5f9; font-size:1.4rem; font-weight:700; margin:0 0 0.3rem;">Security & Data Protection</h2>
+            <p style="color:#64748b; font-size:0.8rem; margin:0 0 2rem; letter-spacing:0.05em; text-transform:uppercase;">Enterprise-grade infrastructure on AWS and Google Cloud</p>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1rem; margin-bottom:2rem;">
+                <div style="background:#1e293b; border:1px solid #334155; border-radius:10px; padding:1.25rem;">
+                    <div style="font-size:1.5rem; margin-bottom:0.5rem;">🔒</div>
+                    <div style="color:#e2e8f0; font-weight:700; font-size:0.95rem; margin-bottom:0.5rem;">Encryption by Default</div>
+                    <div style="font-size:0.82rem; line-height:1.6; color:#94a3b8;">
+                        <div style="margin-bottom:0.3rem;"><span style="color:#38bdf8; font-weight:600;">In Transit —</span> TLS 1.2/1.3 HTTPS on all data in motion</div>
+                        <div><span style="color:#38bdf8; font-weight:600;">At Rest —</span> AES-256 encryption on all stored data and backups</div>
+                    </div>
+                </div>
+                <div style="background:#1e293b; border:1px solid #334155; border-radius:10px; padding:1.25rem;">
+                    <div style="font-size:1.5rem; margin-bottom:0.5rem;">🏢</div>
+                    <div style="color:#e2e8f0; font-weight:700; font-size:0.95rem; margin-bottom:0.5rem;">Enterprise Infrastructure</div>
+                    <div style="font-size:0.82rem; line-height:1.8; color:#94a3b8;">
+                        SOC 2 Type 2 &nbsp;·&nbsp; ISO 27001 certified<br>
+                        Automatic HTTPS &nbsp;·&nbsp; AES-256 databases<br>
+                        Row Level Security &nbsp;·&nbsp; AWS / GCP hosted
+                    </div>
+                </div>
+                <div style="background:#1e293b; border:1px solid #334155; border-radius:10px; padding:1.25rem;">
+                    <div style="font-size:1.5rem; margin-bottom:0.5rem;">🛡️</div>
+                    <div style="color:#e2e8f0; font-weight:700; font-size:0.95rem; margin-bottom:0.5rem;">Access Controls</div>
+                    <div style="font-size:0.82rem; line-height:1.8; color:#94a3b8;">
+                        Role-based access control<br>
+                        Fine-grained database policies<br>
+                        Secure auth &nbsp;·&nbsp; Continuous monitoring
+                    </div>
+                </div>
+            </div>
+
+            <div style="background:linear-gradient(135deg, #1e3a5f, #1e293b); border:1px solid #334155; border-left:3px solid #38bdf8; border-radius:8px; padding:1rem 1.25rem;">
+                <p style="margin:0; font-size:0.875rem; color:#cbd5e1; line-height:1.6;">
+                    <strong style="color:#f1f5f9;">What this means for you —</strong> Your data is encrypted, access-controlled and hosted on infrastructure trusted by global enterprises. We never sell your data. We never read your vault.
+                </p>
+            </div>
+        </div>
+
+        <!-- About section -->
+        <div id="footer-section-about" style="display:none; max-width:960px; margin:0 auto; padding:2.5rem 2rem;">
+            <h2 style="color:#f1f5f9; font-size:1.4rem; font-weight:700; margin:0 0 0.3rem;">About We Loved Life</h2>
+            <p style="color:#64748b; font-size:0.8rem; margin:0 0 2rem; letter-spacing:0.05em; text-transform:uppercase;">A vault for everything that matters</p>
+            <div style="max-width:600px;">
+                <p style="font-size:0.9rem; line-height:1.8; color:#cbd5e1; margin:0 0 1rem;">We Loved Life was built for one reason — to make sure the people you love know what matters to you, long after you're gone.</p>
+                <p style="font-size:0.9rem; line-height:1.8; color:#94a3b8; margin:0 0 1rem;">Store your contacts, memories, music, stories, essential documents, passwords, and final wishes in one secure place. Designate who gets access. Rest easy.</p>
+                <p style="font-size:0.9rem; line-height:1.8; color:#94a3b8; margin:0;">Currently in free beta. We'd love your feedback.</p>
+            </div>
+        </div>
+
+        <!-- Terms section -->
+        <div id="footer-section-terms" style="display:none; max-width:960px; margin:0 auto; padding:2.5rem 2rem;">
+            <h2 style="color:#f1f5f9; font-size:1.4rem; font-weight:700; margin:0 0 0.3rem;">Terms of Use</h2>
+            <p style="color:#64748b; font-size:0.8rem; margin:0 0 2rem; letter-spacing:0.05em; text-transform:uppercase;">Beta — last updated February 2026</p>
+            <div style="max-width:600px; font-size:0.875rem; line-height:1.8; color:#94a3b8;">
+                <p style="color:#cbd5e1; font-weight:600; margin:0 0 0.5rem;">Free Beta</p>
+                <p style="margin:0 0 1rem;">We Loved Life is currently free. We reserve the right to introduce pricing in future. We will always give you advance notice and the ability to export your data.</p>
+                <p style="color:#cbd5e1; font-weight:600; margin:0 0 0.5rem;">Your Data</p>
+                <p style="margin:0 0 1rem;">You own everything you store. We do not access, sell, or share your vault contents. You can delete your account and all data at any time.</p>
+                <p style="color:#cbd5e1; font-weight:600; margin:0 0 0.5rem;">No Guarantees</p>
+                <p style="margin:0;">This is a beta product. While we take security seriously, we recommend keeping copies of critical information in multiple places. We are not liable for data loss.</p>
+            </div>
+        </div>
+
+        <!-- Contact section -->
+        <div id="footer-section-contact" style="display:none; max-width:960px; margin:0 auto; padding:2.5rem 2rem;">
+            <h2 style="color:#f1f5f9; font-size:1.4rem; font-weight:700; margin:0 0 0.3rem;">Get in Touch</h2>
+            <p style="color:#64748b; font-size:0.8rem; margin:0 0 2rem; letter-spacing:0.05em; text-transform:uppercase;">We read every message</p>
+            <div style="max-width:480px; font-size:0.875rem; line-height:1.8; color:#94a3b8;">
+                <p style="margin:0 0 1rem;">For support, feedback, or anything else — use the <strong style="color:#cbd5e1;">Give Feedback</strong> button in the app, or email us directly.</p>
+                <a href="mailto:hello@welovedlife.com" style="color:#38bdf8; text-decoration:none; font-weight:600;">hello@welovedlife.com</a>
+            </div>
+        </div>
+
+        <!-- Bottom bar -->
+        <div style="border-top:1px solid #1e293b; padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+            <span style="font-size:0.75rem; color:#475569;">© 2026 We Loved Life · All rights reserved</span>
+            <span style="font-size:0.75rem; color:#334155;">Free Beta</span>
+        </div>
+    </footer>
+
+    <script>
+        // Footer visibility - show when logged in
+        function showFooterSection(section) {
+            ['security','about','terms','contact'].forEach(s => {
+                document.getElementById('footer-section-' + s).style.display = 'none'
+                const btn = document.getElementById('footer-btn-' + s)
+                if (btn) { btn.style.borderBottomColor = 'transparent'; btn.style.color = '#94a3b8' }
+            })
+            const el = document.getElementById('footer-section-' + section)
+            const btn = document.getElementById('footer-btn-' + section)
+            if (el) el.style.display = 'block'
+            if (btn) { btn.style.borderBottomColor = '#38bdf8'; btn.style.color = '#e2e8f0' }
+            document.getElementById('site-footer').scrollIntoView({ behavior: 'smooth' })
+        }
+
+        // Show footer once user is in dashboard
+        function maybeShowFooter() {
+            const footer = document.getElementById('site-footer')
+            if (footer) footer.style.display = 'block'
+        }
+    </script>
 </body>
 </html>
