@@ -1000,7 +1000,7 @@
     <!-- Spotify Configuration -->
     <script>
         const SPOTIFY_CLIENT_ID = '26e87baf40af41e18e088c0359a30537'
-        const SPOTIFY_REDIRECT_URI = 'https://www.welovedlife.com'
+        const SPOTIFY_REDIRECT_URI = 'https://welovedlife.com'
         const SPOTIFY_SCOPES = 'user-read-private user-read-email user-library-read playlist-read-private playlist-read-collaborative user-read-recently-played user-top-read'
 
         // PKCE Helper Functions
@@ -3218,6 +3218,15 @@
                 </div>
             </div>
 
+            <!-- Diagnostics Panel -->
+            <div id="admin-diagnostics" style="background:#0f172a; border:1px solid #334155; border-radius:10px; padding:1rem 1.25rem; margin-bottom:1.5rem; font-family:monospace; font-size:0.75rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                    <span style="color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; font-family:inherit;">🔍 Supabase Diagnostics</span>
+                    <button onclick="runDiagnostics()" style="background:#1e293b; border:1px solid #334155; color:#94a3b8; padding:0.25rem 0.75rem; border-radius:6px; cursor:pointer; font-size:0.72rem;">Run</button>
+                </div>
+                <div id="diagnostics-output" style="color:#94a3b8; line-height:1.8; white-space:pre-wrap;">Click Run to check Supabase connection and see all rows.</div>
+            </div>
+
             <!-- Stats Row -->
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-bottom:2rem;">
                 <div style="background:#1e293b; border-radius:12px; padding:1.25rem; border:1px solid #334155;">
@@ -3300,6 +3309,9 @@
             <div style="background:#1e293b; border-radius:12px; border:1px solid #7f1d1d; padding:1.5rem;">
                 <h3 style="color:#f87171; font-size:1rem; font-weight:600; margin-bottom:1rem;">⚠️ Danger Zone</h3>
                 <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                    <button onclick="manualAddTester()" style="background:#1e3a8a; color:#93c5fd; border:1px solid #1d4ed8; padding:0.6rem 1.2rem; border-radius:6px; font-size:0.9rem; cursor:pointer;">
+                        ➕ Manually Add Tester
+                    </button>
                     <button onclick="clearAllTesters()" style="background:#7f1d1d; color:#fca5a5; border:1px solid #991b1b; padding:0.6rem 1.2rem; border-radius:6px; font-size:0.9rem; cursor:pointer;">
                         🗑️ Clear All Tester Accounts
                     </button>
@@ -4134,6 +4146,67 @@
             a.download = 'welovedlife-testers-' + new Date().toISOString().split('T')[0] + '.csv'
             a.click()
             URL.revokeObjectURL(url)
+        }
+
+        async function runDiagnostics() {
+            const out = document.getElementById('diagnostics-output')
+            out.style.color = '#94a3b8'
+            out.textContent = 'Connecting to Supabase...\n'
+            try {
+                // 1. Test basic connection + count
+                const { count, error: pingError } = await supabaseClient
+                    .from('vault_data')
+                    .select('*', { count: 'exact', head: true })
+                if (pingError) {
+                    out.textContent += `❌ Connection error: ${pingError.message}\n   Code: ${pingError.code||'none'}\n`
+                    out.style.color = '#f87171'; return
+                }
+                out.textContent += `✅ Connected. Total rows in vault_data: ${count ?? '?'}\n\n`
+
+                // 2. Get all unique emails + keys
+                const { data: allRows, error: rowsError } = await supabaseClient
+                    .from('vault_data').select('user_email, data_key').order('user_email')
+                if (rowsError) {
+                    out.textContent += `❌ Row fetch error: ${rowsError.message}\n`
+                    out.style.color = '#f87171'; return
+                }
+                const emailMap = {}
+                allRows.forEach(r => {
+                    if (!emailMap[r.user_email]) emailMap[r.user_email] = []
+                    emailMap[r.user_email].push(r.data_key)
+                })
+                const emails = Object.keys(emailMap)
+                out.textContent += `👥 Unique users: ${emails.length}\n\n`
+                emails.forEach(email => {
+                    out.textContent += `  📧 ${email}\n     Keys: ${emailMap[email].join(', ')}\n`
+                })
+                if (emails.length === 0) {
+                    out.textContent += `\n⚠️  No rows found. Likely cause: RLS policy blocking reads.\n`
+                    out.textContent += `Fix: In Supabase → vault_data table → RLS → add policy:\n`
+                    out.textContent += `  SELECT allowed for all (or service_role)\n`
+                    out.style.color = '#fbbf24'
+                }
+            } catch(e) {
+                out.textContent += `❌ Exception: ${e.message}`
+                out.style.color = '#f87171'
+            }
+        }
+
+        async function manualAddTester(emailIn, nameIn) {
+            const email = emailIn || prompt('Enter tester email:')
+            if (!email) return
+            const name = nameIn || prompt('Name (optional):') || email.split('@')[0]
+            try {
+                const { error } = await supabaseClient.from('vault_data').upsert({
+                    user_email: email.trim().toLowerCase(),
+                    data_key: '_registration',
+                    data_value: JSON.stringify({ name, plan: 'monthly', registeredAt: new Date().toISOString(), manuallyAdded: true }),
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'user_email,data_key' })
+                if (error) { showNotification('❌ ' + error.message); return }
+                showNotification('✅ Added: ' + email)
+                refreshAdminData()
+            } catch(e) { showNotification('❌ ' + e.message) }
         }
 
         function showAdminNotification(msg) {
@@ -5167,7 +5240,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.61</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.63</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
