@@ -3603,7 +3603,7 @@
             try { updateDashboardStats(); } catch(e) { console.error('updateDashboardStats fail',e) }
             
             setTimeout(() => {
-                switchTab('contacts')
+                try { showVaultHero() } catch(e) {}
                 loadContacts()
                 loadEssentials()
                 loadSavedPhotos()
@@ -4941,7 +4941,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.49</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.50</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
