@@ -2860,6 +2860,7 @@
 
             </div><!-- end legacy flex column -->
         
+            </div><!-- end tab-legacy -->
         </div>
     </section>
     <!-- Login Modal -->
@@ -4164,6 +4165,8 @@
             if (tab === 'music') { try { updateSavedSongsDisplay() } catch(e){} }
             if (tab === 'contacts') { try { renderContacts() } catch(e){} }
             if (tab === 'photos') { try { loadSavedPhotos() } catch(e){} }
+            if (tab === 'legacy') { try { loadInheritors() } catch(e){} }
+            if (tab === 'essentials') { try { loadEssentials(); loadKeys(); loadCustomEssentials() } catch(e){} }
             window.scrollTo({top:0, behavior:'smooth'})
         }
 
@@ -4565,7 +4568,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.32</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.33</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
