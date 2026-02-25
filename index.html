@@ -4339,12 +4339,16 @@
             if (!list) return
             if (savedSecrets.length === 0) { if(empty) empty.style.display='block'; list.innerHTML=''; return }
             if(empty) empty.style.display='none'
-            list.innerHTML = savedSecrets.map(s =>
-                '<div style="background:white;border:1px solid #e5e7eb;border-radius:6px;padding:0.45rem 0.75rem;margin-bottom:0.3rem;display:flex;justify-content:space-between;align-items:center;">' +
-                '<span style="font-size:0.875rem;font-weight:600;color:#7c3aed;">🔒 ' + s.title + '</span>' +
-                '<button onclick="deleteSecret(' + s.id + ')" style="background:none;border:none;color:#d1d5db;cursor:pointer;font-size:0.8rem;padding:0;">🗑️</button>' +
-                '</div>'
-            ).join('')
+            list.innerHTML = savedSecrets.map(s => {
+                const bodyId = 'sec-body-' + s.id
+                return '<div style="background:white;border:1px solid #e5e7eb;border-radius:6px;margin-bottom:0.3rem;overflow:hidden;">' +
+                    '<div onclick="var b=document.getElementById(\'' + bodyId + '\');b.style.display=b.style.display===\'block\'?\'none\':\'block\';" style="padding:0.45rem 0.75rem;display:flex;justify-content:space-between;align-items:center;cursor:pointer;">' +
+                    '<span style="font-size:0.875rem;font-weight:600;color:#7c3aed;">🔒 ' + s.title + '</span>' +
+                    '<button onclick="event.stopPropagation();deleteSecret(' + s.id + ')" style="background:none;border:none;color:#d1d5db;cursor:pointer;font-size:0.8rem;padding:0;">🗑️</button>' +
+                    '</div>' +
+                    '<div id="' + bodyId + '" style="display:none;padding:0.5rem 0.75rem;border-top:1px solid #f3f4f6;color:#4b5563;font-size:0.8rem;white-space:pre-wrap;">' + (s.content || '') + '</div>' +
+                    '</div>'
+            }).join('')
         }
 
 
@@ -4372,12 +4376,17 @@
             if (!list) return
             if (savedValuables.length === 0) { if(empty) empty.style.display='block'; list.innerHTML=''; return }
             if(empty) empty.style.display='none'
-            list.innerHTML = savedValuables.map(v =>
-                '<div style="background:white;border:1px solid #e5e7eb;border-radius:6px;padding:0.45rem 0.75rem;margin-bottom:0.3rem;display:flex;justify-content:space-between;align-items:center;">' +
-                '<span style="font-size:0.875rem;font-weight:600;color:#d97706;">💎 ' + (v.title || v.name || 'Untitled') + '</span>' +
-                '<button onclick="deleteValuable(' + v.id + ')" style="background:none;border:none;color:#d1d5db;cursor:pointer;font-size:0.8rem;padding:0;">🗑️</button>' +
-                '</div>'
-            ).join('')
+            list.innerHTML = savedValuables.map(v => {
+                const bodyId = 'val-body-' + v.id
+                const detail = v.detail || ''
+                return '<div style="background:white;border:1px solid #e5e7eb;border-radius:6px;margin-bottom:0.3rem;overflow:hidden;">' +
+                    '<div onclick="var b=document.getElementById(\'' + bodyId + '\');b.style.display=b.style.display===\'block\'?\'none\':\'block\';" style="padding:0.45rem 0.75rem;display:flex;justify-content:space-between;align-items:center;cursor:pointer;">' +
+                    '<span style="font-size:0.875rem;font-weight:600;color:#d97706;">💎 ' + (v.title || v.name || 'Untitled') + '</span>' +
+                    '<button onclick="event.stopPropagation();deleteValuable(' + v.id + ')" style="background:none;border:none;color:#d1d5db;cursor:pointer;font-size:0.8rem;padding:0;">🗑️</button>' +
+                    '</div>' +
+                    (detail ? '<div id="' + bodyId + '" style="display:none;padding:0.5rem 0.75rem;border-top:1px solid #f3f4f6;color:#4b5563;font-size:0.8rem;">' + detail + '</div>' : '<div id="' + bodyId + '" style="display:none;"></div>') +
+                    '</div>'
+            }).join('')
         }
 
 
@@ -4591,7 +4600,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.41</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.42</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
