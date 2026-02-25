@@ -1867,9 +1867,11 @@
         // Inheritors Management
         let savedInheritors = JSON.parse(localStorage.getItem('vault_inheritors') || '[]')
 
-        function showAddInheritorForm() {
+                function showAddInheritorForm() {
+            const panel = document.getElementById('inheritors-panel')
+            if (panel) panel.style.display = 'block'
             const form = document.getElementById('add-inheritor-form')
-            form.style.display = form.style.display === 'none' ? 'block' : 'none'
+            if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none'
         }
 
         function saveInheritor() {
@@ -2892,33 +2894,35 @@
 
             <!-- INHERITORS -->
             <div id="vstabcontent-legacy-inheritors" class="ess-section" style="border-top:none; padding-top:0;">
-                <div class="ess-header">
+                <div class="ess-header" onclick="var p=document.getElementById('inheritors-panel');p.style.display=p.style.display==='none'?'block':'none';" style="cursor:pointer;">
                     <span style="color:#ec4899; font-size:0.875rem; font-weight:700;">👨‍👩‍👧 Inheritors</span>
-                    <button onclick="showAddInheritorForm()" class="ess-add-btn" style="background:#ec4899;">+ Add</button>
+                    <button onclick="event.stopPropagation();showAddInheritorForm()" class="ess-add-btn" style="background:#ec4899;">+ Add</button>
                 </div>
-                <div id="add-inheritor-form" style="display:none; background:white; border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin-bottom:0.5rem;">
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:0.4rem;">
-                        <input id="inheritor-name" placeholder="Full Name *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem;">
-                        <input id="inheritor-email" placeholder="Email Address" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem;">
+                <div id="inheritors-panel" style="display:none;">
+                    <div id="add-inheritor-form" style="display:none; background:white; border:1px solid #e5e7eb; border-radius:8px; padding:1rem; margin-bottom:0.5rem;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:0.4rem;">
+                            <input id="inheritor-name" placeholder="Full Name *" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem;">
+                            <input id="inheritor-email" placeholder="Email Address" style="padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem;">
+                        </div>
+                        <select id="inheritor-relation" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; margin-bottom:0.4rem;">
+                            <option value="">Relationship</option>
+                            <option value="Child">Child</option>
+                            <option value="Grandchild">Grandchild</option>
+                            <option value="Spouse">Spouse</option>
+                            <option value="Sibling">Sibling</option>
+                            <option value="Friend">Friend</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <textarea id="inheritor-note" placeholder="Special instructions or message..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; height:60px; resize:vertical; box-sizing:border-box; margin-bottom:0.4rem;"></textarea>
+                        <div style="display:flex; gap:0.4rem;">
+                            <button onclick="saveInheritor()" style="background:#ec4899; color:white; border:none; padding:0.4rem 0.9rem; border-radius:6px; cursor:pointer; font-weight:600; font-size:0.8rem;">Save</button>
+                            <button onclick="document.getElementById('add-inheritor-form').style.display='none'" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.4rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.8rem;">Cancel</button>
+                        </div>
                     </div>
-                    <select id="inheritor-relation" style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; margin-bottom:0.4rem;">
-                        <option value="">Relationship</option>
-                        <option value="Child">Child</option>
-                        <option value="Grandchild">Grandchild</option>
-                        <option value="Spouse">Spouse</option>
-                        <option value="Sibling">Sibling</option>
-                        <option value="Friend">Friend</option>
-                        <option value="Other">Other</option>
-                    </select>
-                    <textarea id="inheritor-note" placeholder="Special instructions or message..." style="width:100%; padding:0.5rem; border:1px solid #e5e7eb; border-radius:6px; font-size:0.875rem; height:60px; resize:vertical; box-sizing:border-box; margin-bottom:0.4rem;"></textarea>
-                    <div style="display:flex; gap:0.4rem;">
-                        <button onclick="saveInheritor()" style="background:#ec4899; color:white; border:none; padding:0.4rem 0.9rem; border-radius:6px; cursor:pointer; font-weight:600; font-size:0.8rem;">Save</button>
-                        <button onclick="document.getElementById('add-inheritor-form').style.display='none'" style="background:#f3f4f6; border:1px solid #e5e7eb; padding:0.4rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.8rem;">Cancel</button>
-                    </div>
+                    <div id="inheritors-list" style="display:flex; flex-direction:column; gap:0.35rem;"></div>
+                    <p id="inheritors-empty" class="ess-empty">No inheritors yet — add someone who will receive your digital legacy</p>
+                    <p id="inheritors-count-header" style="display:none;"></p>
                 </div>
-                <div id="inheritors-list" style="display:flex; flex-direction:column; gap:0.35rem;"></div>
-                <p id="inheritors-empty" class="ess-empty">No inheritors yet — add someone who will receive your digital legacy</p>
-                <p id="inheritors-count-header" style="display:none;"></p>
             </div>
 
             <!-- SECRETS -->
@@ -4941,7 +4945,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.50</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.51</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
