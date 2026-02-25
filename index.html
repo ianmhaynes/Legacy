@@ -2375,6 +2375,9 @@
                     <button onclick="switchTab('photos')" id="vtab-photos" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
                         📸 Photos <span id="vtab-photos-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
+                    <button onclick="switchTab('videos')" id="vtab-videos" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        🎬 Videos <span id="vtab-videos-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    </button>
                     <button onclick="switchTab('music')" id="vtab-music" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
                         🎵 Music <span id="vtab-music-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
@@ -2489,6 +2492,75 @@
                 </div>
                 <div id="photo-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:0.5rem;"></div>
                 <p id="photo-count" style="color:#6b7280; font-size:0.85rem; margin-top:1rem; text-align:center;">No photos uploaded yet</p>
+            </div>
+
+            <!-- TAB: VIDEOS -->
+            <div id="tab-videos" style="display:none; padding-top:0.75rem;">
+                <!-- Vault Hero / Opening Screen -->
+                <div id="vault-hero" style="background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%); border-radius:14px; padding:2rem; margin-bottom:1.5rem; position:relative; overflow:hidden;">
+                    <div style="position:absolute;inset:0;background:radial-gradient(circle at 70% 50%,rgba(99,102,241,0.15) 0%,transparent 60%);pointer-events:none;"></div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;position:relative;">
+                        <div>
+                            <div style="font-size:0.7rem;letter-spacing:0.15em;color:#6366f1;text-transform:uppercase;font-weight:600;margin-bottom:0.4rem;">Opening Screen</div>
+                            <h3 style="color:#f1f5f9;font-size:1.1rem;font-weight:700;margin:0 0 0.3rem;">What greets your loved ones</h3>
+                            <p style="color:#94a3b8;font-size:0.8rem;margin:0;">Choose what they see first when they open your vault</p>
+                        </div>
+                        <div style="display:flex;gap:0.6rem;flex-wrap:wrap;">
+                            <button onclick="setHeroMode('photo')" id="hero-btn-photo" style="padding:0.45rem 1rem;border-radius:20px;border:1px solid #6366f1;background:#1e1b4b;color:#a5b4fc;font-size:0.8rem;cursor:pointer;font-weight:600;">🖼️ Photo + Quote</button>
+                            <button onclick="setHeroMode('video')" id="hero-btn-video" style="padding:0.45rem 1rem;border-radius:20px;border:1px solid #334155;background:transparent;color:#64748b;font-size:0.8rem;cursor:pointer;font-weight:600;">🎬 Featured Video</button>
+                        </div>
+                    </div>
+
+                    <!-- Photo mode config -->
+                    <div id="hero-config-photo" style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid #1e293b;">
+                        <div style="display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap;">
+                            <div id="hero-photo-preview" style="width:80px;height:80px;background:#1e293b;border-radius:8px;border:2px dashed #334155;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;cursor:pointer;" onclick="document.getElementById('hero-photo-input').click()">
+                                <span id="hero-photo-placeholder" style="font-size:1.5rem;">🖼️</span>
+                                <img id="hero-photo-img" style="display:none;width:100%;height:100%;object-fit:cover;" src="">
+                            </div>
+                            <input type="file" id="hero-photo-input" accept="image/*" style="display:none;" onchange="loadHeroPhoto(this)">
+                            <div style="flex:1;min-width:200px;">
+                                <input id="hero-quote" placeholder="A quote, message, or dedication..." style="width:100%;padding:0.5rem 0.75rem;background:#1e293b;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:0.85rem;box-sizing:border-box;margin-bottom:0.5rem;" value="">
+                                <input id="hero-name" placeholder="Your name (e.g. With love, Dad)" style="width:100%;padding:0.5rem 0.75rem;background:#1e293b;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:0.85rem;box-sizing:border-box;margin-bottom:0.5rem;">
+                                <button onclick="saveHeroConfig()" style="background:#6366f1;color:white;border:none;padding:0.4rem 1rem;border-radius:8px;cursor:pointer;font-size:0.8rem;font-weight:600;">Save Opening Screen</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Video mode config -->
+                    <div id="hero-config-video" style="display:none;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid #1e293b;">
+                        <p style="color:#94a3b8;font-size:0.8rem;margin:0 0 0.75rem;">Select one of your videos below to feature as the opening screen, or record a new message.</p>
+                        <div id="hero-video-picker" style="color:#64748b;font-size:0.8rem;font-style:italic;">Add a video below first, then select it here.</div>
+                    </div>
+                </div>
+
+                <!-- Videos list -->
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+                    <h3 style="margin:0;font-size:0.95rem;font-weight:700;color:#1e3a8a;">🎬 Your Videos</h3>
+                    <div style="display:flex;gap:0.5rem;">
+                        <button onclick="document.getElementById('video-upload-input').click()" style="background:#1e3a8a;color:white;border:none;padding:0.4rem 0.9rem;border-radius:8px;cursor:pointer;font-size:0.8rem;font-weight:600;">📁 Upload</button>
+                        <button onclick="startVideoRecording()" style="background:#dc2626;color:white;border:none;padding:0.4rem 0.9rem;border-radius:8px;cursor:pointer;font-size:0.8rem;font-weight:600;">🔴 Record</button>
+                    </div>
+                </div>
+                <input type="file" id="video-upload-input" accept="video/*" multiple style="display:none;" onchange="handleVideoUpload(this)">
+
+                <!-- Webcam recorder -->
+                <div id="video-recorder" style="display:none;background:#0f172a;border-radius:12px;padding:1rem;margin-bottom:1rem;border:1px solid #334155;">
+                    <video id="recorder-preview" style="width:100%;max-height:240px;border-radius:8px;background:#000;" autoplay muted playsinline></video>
+                    <div style="display:flex;gap:0.5rem;margin-top:0.75rem;align-items:center;flex-wrap:wrap;">
+                        <button id="rec-start-btn" onclick="beginRecording()" style="background:#dc2626;color:white;border:none;padding:0.45rem 1rem;border-radius:8px;cursor:pointer;font-size:0.8rem;font-weight:600;">⏺ Start Recording</button>
+                        <button id="rec-stop-btn" onclick="stopRecording()" style="display:none;background:#f97316;color:white;border:none;padding:0.45rem 1rem;border-radius:8px;cursor:pointer;font-size:0.8rem;font-weight:600;">⏹ Stop</button>
+                        <button onclick="cancelRecording()" style="background:#334155;color:#94a3b8;border:none;padding:0.45rem 0.8rem;border-radius:8px;cursor:pointer;font-size:0.8rem;">Cancel</button>
+                        <span id="rec-timer" style="color:#f87171;font-size:0.8rem;font-weight:600;display:none;">● 0:00</span>
+                    </div>
+                    <div id="rec-save-area" style="display:none;margin-top:0.75rem;">
+                        <input id="rec-title" placeholder="Title for this recording..." style="width:100%;padding:0.45rem 0.7rem;background:#1e293b;border:1px solid #334155;border-radius:7px;color:#e2e8f0;font-size:0.8rem;box-sizing:border-box;margin-bottom:0.5rem;">
+                        <button onclick="saveRecording()" style="background:#16a34a;color:white;border:none;padding:0.4rem 1rem;border-radius:8px;cursor:pointer;font-size:0.8rem;font-weight:600;">💾 Save Recording</button>
+                    </div>
+                </div>
+
+                <div id="videos-empty" style="text-align:center;padding:2rem;color:#9ca3af;font-size:0.85rem;font-style:italic;">No videos yet — upload from your device or record a message</div>
+                <div id="videos-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;"></div>
             </div>
 
             <div id="tab-music" style="display:none; padding-top:1rem;"><div id="spotify-card">
@@ -3297,6 +3369,7 @@
                     })
                     // Reload all in-memory arrays from updated localStorage
                     try { loadInheritors() } catch(e) {}
+                    try { loadVideos() } catch(e){}
                     try { loadEssentials() } catch(e) {}
                     try { loadKeys() } catch(e) {}
                     try { loadCustomEssentials() } catch(e) {}
@@ -4192,7 +4265,7 @@
         }
 
 
-        var allTabs = ['contacts','photos','music','stories','lifebook','essentials','legacy']
+        var allTabs = ['contacts','photos','videos','music','stories','lifebook','essentials','legacy']
 
         function toggleRow(el) { el.closest('.acc-row').classList.toggle('open') }
         function switchTab(tab) {
@@ -4212,7 +4285,9 @@
             if (tab === 'contacts') { try { renderContacts() } catch(e){} }
             if (tab === 'photos') { try { loadSavedPhotos() } catch(e){} }
             if (tab === 'legacy') { try { loadInheritors() } catch(e){} }
-            if (tab === 'essentials') { try { loadEssentials(); loadKeys(); loadCustomEssentials() } catch(e){} }
+            if (tab === 'videos') { try { loadVideos() } catch(e){} }
+            if (tab === 'essentials') { try { loadVideos() } catch(e){}
+                    try { loadEssentials(); loadKeys(); loadCustomEssentials() } catch(e){} }
             window.scrollTo({top:0, behavior:'smooth'})
         }
 
@@ -4628,7 +4703,7 @@
             return contacts
         }
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.46</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.47</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
@@ -4791,3 +4866,267 @@
     </script>
 </body>
 </html>
+
+        // ===== VIDEOS & HERO =====
+        let savedVideos = JSON.parse(localStorage.getItem('vault_videos') || '[]')
+        let mediaRecorder = null
+        let recordedChunks = []
+        let recTimerInterval = null
+        let recSeconds = 0
+        let heroConfig = JSON.parse(localStorage.getItem('vault_hero') || '{"mode":"photo","quote":"","name":"","photo":"","videoId":null}')
+
+        function loadVideos() {
+            savedVideos = JSON.parse(localStorage.getItem('vault_videos') || '[]')
+            renderVideos()
+            loadHeroConfig()
+        }
+
+        function setHeroMode(mode) {
+            heroConfig.mode = mode
+            document.getElementById('hero-config-photo').style.display = mode === 'photo' ? 'block' : 'none'
+            document.getElementById('hero-config-video').style.display = mode === 'video' ? 'block' : 'none'
+            document.getElementById('hero-btn-photo').style.background = mode === 'photo' ? '#1e1b4b' : 'transparent'
+            document.getElementById('hero-btn-photo').style.borderColor = mode === 'photo' ? '#6366f1' : '#334155'
+            document.getElementById('hero-btn-photo').style.color = mode === 'photo' ? '#a5b4fc' : '#64748b'
+            document.getElementById('hero-btn-video').style.background = mode === 'video' ? '#1e1b4b' : 'transparent'
+            document.getElementById('hero-btn-video').style.borderColor = mode === 'video' ? '#6366f1' : '#334155'
+            document.getElementById('hero-btn-video').style.color = mode === 'video' ? '#a5b4fc' : '#64748b'
+            if (mode === 'video') updateHeroVideoPicker()
+        }
+
+        function loadHeroConfig() {
+            heroConfig = JSON.parse(localStorage.getItem('vault_hero') || '{"mode":"photo","quote":"","name":"","photo":"","videoId":null}')
+            const qi = document.getElementById('hero-quote')
+            const ni = document.getElementById('hero-name')
+            if (qi) qi.value = heroConfig.quote || ''
+            if (ni) ni.value = heroConfig.name || ''
+            if (heroConfig.photo) {
+                const img = document.getElementById('hero-photo-img')
+                const ph = document.getElementById('hero-photo-placeholder')
+                if (img) { img.src = heroConfig.photo; img.style.display = 'block' }
+                if (ph) ph.style.display = 'none'
+            }
+            setHeroMode(heroConfig.mode || 'photo')
+        }
+
+        function loadHeroPhoto(input) {
+            const file = input.files[0]
+            if (!file) return
+            const reader = new FileReader()
+            reader.onload = function(e) {
+                heroConfig.photo = e.target.result
+                const img = document.getElementById('hero-photo-img')
+                const ph = document.getElementById('hero-photo-placeholder')
+                if (img) { img.src = e.target.result; img.style.display = 'block' }
+                if (ph) ph.style.display = 'none'
+            }
+            reader.readAsDataURL(file)
+        }
+
+        function saveHeroConfig() {
+            heroConfig.quote = document.getElementById('hero-quote').value.trim()
+            heroConfig.name = document.getElementById('hero-name').value.trim()
+            localStorage.setItem('vault_hero', JSON.stringify(heroConfig))
+            syncVaultToSupabase('vault_hero', heroConfig)
+            showNotification('✨ Opening screen saved!')
+        }
+
+        function updateHeroVideoPicker() {
+            const picker = document.getElementById('hero-video-picker')
+            if (!picker) return
+            if (savedVideos.length === 0) {
+                picker.innerHTML = '<span style="color:#64748b;font-size:0.8rem;font-style:italic;">Add a video below first, then select it here.</span>'
+                return
+            }
+            picker.innerHTML = savedVideos.map(v =>
+                '<div onclick="selectHeroVideo(' + v.id + ')" style="display:inline-flex;align-items:center;gap:0.5rem;background:' + (heroConfig.videoId === v.id ? '#1e1b4b' : '#1e293b') + ';border:1px solid ' + (heroConfig.videoId === v.id ? '#6366f1' : '#334155') + ';border-radius:8px;padding:0.4rem 0.75rem;margin:0.25rem;cursor:pointer;">' +
+                '<span style="font-size:0.75rem;">🎬</span>' +
+                '<span style="color:#e2e8f0;font-size:0.8rem;">' + v.title + '</span>' +
+                (heroConfig.videoId === v.id ? '<span style="color:#6366f1;font-size:0.7rem;">✓ Selected</span>' : '') +
+                '</div>'
+            ).join('')
+        }
+
+        function selectHeroVideo(id) {
+            heroConfig.videoId = id
+            localStorage.setItem('vault_hero', JSON.stringify(heroConfig))
+            syncVaultToSupabase('vault_hero', heroConfig)
+            updateHeroVideoPicker()
+            showNotification('🎬 Featured video set!')
+        }
+
+        function handleVideoUpload(input) {
+            const files = Array.from(input.files)
+            if (!files.length) return
+            let processed = 0
+            files.forEach(file => {
+                const reader = new FileReader()
+                reader.onload = function(e) {
+                    const video = {
+                        id: Date.now() + processed,
+                        title: file.name.replace(/\.[^.]+$/, ''),
+                        data: e.target.result,
+                        type: file.type,
+                        size: file.size,
+                        addedAt: new Date().toISOString(),
+                        source: 'upload'
+                    }
+                    savedVideos.push(video)
+                    processed++
+                    if (processed === files.length) {
+                        localStorage.setItem('vault_videos', JSON.stringify(savedVideos))
+                        syncVaultToSupabase('vault_videos', savedVideos)
+                        renderVideos()
+                        updateVaultCounts()
+                        showNotification('🎬 ' + files.length + ' video' + (files.length > 1 ? 's' : '') + ' added!')
+                    }
+                }
+                reader.readAsDataURL(file)
+            })
+            input.value = ''
+        }
+
+        async function startVideoRecording() {
+            const recorder = document.getElementById('video-recorder')
+            if (!recorder) return
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                const preview = document.getElementById('recorder-preview')
+                if (preview) { preview.srcObject = stream; preview.play() }
+                recorder.style.display = 'block'
+                recorder.dataset.stream = 'active'
+                window._recStream = stream
+            } catch(e) {
+                showNotification('Camera access denied — please allow camera & mic permissions')
+            }
+        }
+
+        function beginRecording() {
+            if (!window._recStream) return
+            recordedChunks = []
+            recSeconds = 0
+            const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm'
+            mediaRecorder = new MediaRecorder(window._recStream, { mimeType })
+            mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data) }
+            mediaRecorder.onstop = function() {
+                const blob = new Blob(recordedChunks, { type: 'video/webm' })
+                const reader = new FileReader()
+                reader.onload = function(e) {
+                    window._recordedData = e.target.result
+                    window._recordedBlob = blob
+                }
+                reader.readAsDataURL(blob)
+                const saveArea = document.getElementById('rec-save-area')
+                if (saveArea) saveArea.style.display = 'block'
+            }
+            mediaRecorder.start(100)
+            document.getElementById('rec-start-btn').style.display = 'none'
+            document.getElementById('rec-stop-btn').style.display = 'inline-block'
+            const timer = document.getElementById('rec-timer')
+            if (timer) timer.style.display = 'inline'
+            recTimerInterval = setInterval(function() {
+                recSeconds++
+                const m = Math.floor(recSeconds / 60)
+                const s = recSeconds % 60
+                if (timer) timer.textContent = '● ' + m + ':' + (s < 10 ? '0' : '') + s
+            }, 1000)
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop()
+            clearInterval(recTimerInterval)
+            document.getElementById('rec-stop-btn').style.display = 'none'
+            const timer = document.getElementById('rec-timer')
+            if (timer) timer.style.display = 'none'
+        }
+
+        function cancelRecording() {
+            stopRecording()
+            if (window._recStream) { window._recStream.getTracks().forEach(t => t.stop()); window._recStream = null }
+            const recorder = document.getElementById('video-recorder')
+            if (recorder) recorder.style.display = 'none'
+            document.getElementById('rec-start-btn').style.display = 'inline-block'
+            document.getElementById('rec-stop-btn').style.display = 'none'
+            document.getElementById('rec-save-area').style.display = 'none'
+            document.getElementById('rec-title').value = ''
+        }
+
+        function saveRecording() {
+            const title = document.getElementById('rec-title').value.trim() || ('Recording ' + new Date().toLocaleDateString())
+            if (!window._recordedData) { showNotification('No recording found'); return }
+            const video = {
+                id: Date.now(),
+                title: title,
+                data: window._recordedData,
+                type: 'video/webm',
+                addedAt: new Date().toISOString(),
+                source: 'recording',
+                duration: recSeconds
+            }
+            savedVideos.push(video)
+            localStorage.setItem('vault_videos', JSON.stringify(savedVideos))
+            syncVaultToSupabase('vault_videos', savedVideos)
+            renderVideos()
+            updateVaultCounts()
+            cancelRecording()
+            showNotification('🔴 Recording saved!')
+        }
+
+        function deleteVideo(id) {
+            if (!confirm('Delete this video?')) return
+            savedVideos = savedVideos.filter(v => v.id !== id)
+            localStorage.setItem('vault_videos', JSON.stringify(savedVideos))
+            syncVaultToSupabase('vault_videos', savedVideos)
+            if (heroConfig.videoId === id) { heroConfig.videoId = null; localStorage.setItem('vault_hero', JSON.stringify(heroConfig)) }
+            renderVideos()
+            updateVaultCounts()
+            showNotification('Deleted')
+        }
+
+        function editVideoTitle(id) {
+            const v = savedVideos.find(v => v.id === id)
+            if (!v) return
+            const newTitle = prompt('Rename video:', v.title)
+            if (newTitle && newTitle.trim()) {
+                v.title = newTitle.trim()
+                localStorage.setItem('vault_videos', JSON.stringify(savedVideos))
+                syncVaultToSupabase('vault_videos', savedVideos)
+                renderVideos()
+            }
+        }
+
+        function renderVideos() {
+            const grid = document.getElementById('videos-grid')
+            const empty = document.getElementById('videos-empty')
+            if (!grid) return
+            if (savedVideos.length === 0) {
+                if (empty) empty.style.display = 'block'
+                grid.innerHTML = ''
+                const vc = document.getElementById('vtab-videos-count')
+                if (vc) vc.textContent = ''
+                return
+            }
+            if (empty) empty.style.display = 'none'
+            const vc = document.getElementById('vtab-videos-count')
+            if (vc) vc.textContent = '(' + savedVideos.length + ')'
+            grid.innerHTML = savedVideos.map(v => {
+                const isFeatured = heroConfig.videoId === v.id
+                const mins = v.duration ? Math.floor(v.duration/60) + ':' + String(v.duration%60).padStart(2,'0') : ''
+                return '<div style="background:white;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;position:relative;">' +
+                    (isFeatured ? '<div style="position:absolute;top:0.5rem;left:0.5rem;background:#6366f1;color:white;font-size:0.65rem;padding:0.2rem 0.5rem;border-radius:10px;font-weight:700;z-index:2;">✨ Featured</div>' : '') +
+                    '<video src="' + v.data + '" style="width:100%;height:160px;object-fit:cover;display:block;background:#0f172a;" controls preload="metadata"></video>' +
+                    '<div style="padding:0.6rem 0.75rem;">' +
+                    '<div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;">' +
+                    '<span style="font-weight:600;font-size:0.85rem;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;" title="' + v.title + '">' + v.title + '</span>' +
+                    '<div style="display:flex;gap:0.3rem;flex-shrink:0;">' +
+                    '<button onclick="editVideoTitle(' + v.id + ')" style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:0.75rem;padding:0.15rem;" title="Rename">✏️</button>' +
+                    '<button onclick="deleteVideo(' + v.id + ')" style="background:none;border:none;color:#d1d5db;cursor:pointer;font-size:0.75rem;padding:0.15rem;" title="Delete">🗑️</button>' +
+                    '</div></div>' +
+                    '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.3rem;">' +
+                    '<span style="font-size:0.72rem;color:#9ca3af;">' + (v.source === 'recording' ? '🔴 Recorded' : '📁 Uploaded') + (mins ? ' · ' + mins : '') + '</span>' +
+                    '<button onclick="selectHeroVideo(' + v.id + ')" style="font-size:0.7rem;padding:0.2rem 0.5rem;border-radius:6px;border:1px solid ' + (isFeatured ? '#6366f1' : '#e5e7eb') + ';background:' + (isFeatured ? '#eef2ff' : 'none') + ';color:' + (isFeatured ? '#6366f1' : '#9ca3af') + ';cursor:pointer;">' + (isFeatured ? '✓ Featured' : '⭐ Feature') + '</button>' +
+                    '</div></div></div>'
+            }).join('')
+            updateHeroVideoPicker()
+        }
+
