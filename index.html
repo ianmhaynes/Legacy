@@ -3393,29 +3393,22 @@
         <div class="footer-content">
             <div class="footer-section">
                 <h3>We Loved Life</h3>
-                <p style="color: #9ca3af; margin-top: 0.5rem;">Preserving your digital legacy for future generations.</p>
-            </div>
-            <div class="footer-section">
-                <h3>Product</h3>
-                <ul>
-                    <li><a href="#pricing">Pricing</a></li>
-                    <li><a href="#how-it-works">How It Works</a></li>
-                    <li><a href="#">Security</a></li>
-                </ul>
+                <p style="color: #9ca3af; margin-top: 0.5rem; font-family:'Georgia',serif; font-style:italic;">A time capsule for the people you'll never meet.</p>
             </div>
             <div class="footer-section">
                 <h3>Support</h3>
                 <ul>
-                    <li><a href="#">Help Center</a></li>
-                    <li><a href="#">Contact Us</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#" onclick="showFooterSection('security'); document.getElementById('site-footer').scrollIntoView({behavior:'smooth'}); return false;">🔐 Security</a></li>
+                    <li><a href="mailto:admin@welovedlife.com">💬 Help Center</a></li>
+                    <li><a href="mailto:admin@welovedlife.com">✉️ Contact Us</a></li>
+                    <li><a href="#" onclick="showFooterSection('privacy'); document.getElementById('site-footer').scrollIntoView({behavior:'smooth'}); return false;">📄 Privacy Policy</a></li>
                 </ul>
             </div>
             <div class="footer-section">
                 <h3>Company</h3>
                 <ul>
-                    <li><a href="#">About Us</a></li>
-                    <li><a href="#">Press</a></li>
+                    <li><a href="#" onclick="showFooterSection('about'); document.getElementById('site-footer').scrollIntoView({behavior:'smooth'}); return false;">💙 About Us</a></li>
+                    <li><a href="mailto:admin@welovedlife.com">📰 Press</a></li>
                 </ul>
             </div>
         </div>
@@ -5267,7 +5260,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.67</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.68</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
@@ -5321,6 +5314,7 @@
                 <button onclick="showFooterSection('about')" id="footer-btn-about" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:0.8rem;font-family:inherit;padding:0.25rem 0; border-bottom:2px solid transparent;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">💙 About Us</button>
                 <button onclick="showFooterSection('terms')" id="footer-btn-terms" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:0.8rem;font-family:inherit;padding:0.25rem 0; border-bottom:2px solid transparent;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">📄 Terms of Use</button>
                 <button onclick="showFooterSection('contact')" id="footer-btn-contact" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:0.8rem;font-family:inherit;padding:0.25rem 0; border-bottom:2px solid transparent;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">✉️ Contact</button>
+                <button onclick="showFooterSection('privacy')" id="footer-btn-privacy" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:0.8rem;font-family:inherit;padding:0.25rem 0; border-bottom:2px solid transparent;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">📄 Privacy</button>
             </div>
         </div>
 
@@ -5390,6 +5384,38 @@
             </div>
         </div>
 
+        <!-- Privacy Policy section -->
+        <div id="footer-section-privacy" style="display:none; max-width:960px; margin:0 auto; padding:2.5rem 2rem;">
+            <h2 style="color:#f1f5f9; font-size:1.4rem; font-weight:700; margin:0 0 0.3rem;">Privacy Policy</h2>
+            <p style="color:#64748b; font-size:0.8rem; margin:0 0 2rem; letter-spacing:0.05em; text-transform:uppercase;">Last updated February 2026</p>
+            <div style="max-width:680px; font-size:0.875rem; line-height:1.9; color:#94a3b8; font-family:'Georgia',serif;">
+
+                <p style="color:#cbd5e1; font-weight:600; margin:0 0 0.4rem; font-family:sans-serif;">1. What We Collect</p>
+                <p style="margin:0 0 1.25rem;">We collect your name, email address, and the personal content you choose to store — contacts, photos, stories, music preferences, documents and messages. We also collect standard technical data such as device type and approximate location for security purposes.</p>
+
+                <p style="color:#cbd5e1; font-weight:600; margin:0 0 0.4rem; font-family:sans-serif;">2. How We Use Your Data</p>
+                <p style="margin:0 0 1.25rem;">Your data is used solely to provide the We Loved Life service — storing your memories and making them available to the people you designate. We do not use your content for advertising, AI training, or any commercial purpose. We never read your personal entries.</p>
+
+                <p style="color:#cbd5e1; font-weight:600; margin:0 0 0.4rem; font-family:sans-serif;">3. Who Can See Your Data</p>
+                <p style="margin:0 0 1.25rem;">Only you and the inheritors you explicitly designate can access your capsule. We Loved Life staff cannot read your capsule contents. Anonymised, aggregated statistics (e.g. number of users) may be used internally to improve the product.</p>
+
+                <p style="color:#cbd5e1; font-weight:600; margin:0 0 0.4rem; font-family:sans-serif;">4. Data Storage & Security</p>
+                <p style="margin:0 0 1.25rem;">Your data is stored on enterprise-grade infrastructure (AWS and Google Cloud) with AES-256 encryption at rest and TLS 1.3 in transit. We use Supabase as our database provider, which is SOC 2 Type 2 certified.</p>
+
+                <p style="color:#cbd5e1; font-weight:600; margin:0 0 0.4rem; font-family:sans-serif;">5. Data Retention</p>
+                <p style="margin:0 0 1.25rem;">We retain your data for as long as your account is active. If you delete your account, all your data is permanently deleted within 30 days. You can request a full export of your data at any time by emailing admin@welovedlife.com.</p>
+
+                <p style="color:#cbd5e1; font-weight:600; margin:0 0 0.4rem; font-family:sans-serif;">6. Third Parties</p>
+                <p style="margin:0 0 1.25rem;">We use Supabase (database), Google Analytics (anonymous site usage statistics), and optionally Spotify (music data you choose to import). We do not sell your data to any third party.</p>
+
+                <p style="color:#cbd5e1; font-weight:600; margin:0 0 0.4rem; font-family:sans-serif;">7. Your Rights</p>
+                <p style="margin:0 0 1.25rem;">You have the right to access, correct, export or delete your personal data at any time. To exercise these rights, email <a href="mailto:admin@welovedlife.com" style="color:#38bdf8;">admin@welovedlife.com</a>. If you are in the EU or UK, you also have the right to lodge a complaint with your local data protection authority.</p>
+
+                <p style="color:#cbd5e1; font-weight:600; margin:0 0 0.4rem; font-family:sans-serif;">8. Changes</p>
+                <p style="margin:0 0 0;">We may update this policy from time to time. We will notify registered users of any material changes by email. Continued use of the service after changes constitutes acceptance.</p>
+            </div>
+        </div>
+
         <!-- Contact section -->
         <div id="footer-section-contact" style="display:none; max-width:960px; margin:0 auto; padding:2.5rem 2rem;">
             <h2 style="color:#f1f5f9; font-size:1.4rem; font-weight:700; margin:0 0 0.3rem;">Get in Touch</h2>
@@ -5410,7 +5436,7 @@
     <script>
         // Footer visibility - show when logged in
         function showFooterSection(section) {
-            ['security','about','terms','contact'].forEach(s => {
+            ['security','about','terms','contact','privacy'].forEach(s => {
                 document.getElementById('footer-section-' + s).style.display = 'none'
                 const btn = document.getElementById('footer-btn-' + s)
                 if (btn) { btn.style.borderBottomColor = 'transparent'; btn.style.color = '#94a3b8' }
