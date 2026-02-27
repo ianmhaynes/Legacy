@@ -3726,7 +3726,7 @@
         }
 
         // Save vault data to Supabase (with localStorage fallback)
-        async function syncVaultToSupabase(key, data) {
+        async async function syncVaultToSupabase(key, data) {
             if (!user) return
             try {
                 await supabaseClient.from('vault_data').upsert({
@@ -3806,15 +3806,26 @@
 
         async function manualSync() {
             if (!user) { showNotification('Please log in to sync'); return }
-            // Push everything local to Supabase first
-            syncVaultToSupabase('vault_inheritors', savedInheritors)
-            syncVaultToSupabase('vault_secrets', savedSecrets)
-            syncVaultToSupabase('vault_valuables', savedValuables)
-            syncVaultToSupabase('vault_essentials', savedEssentials)
-            syncVaultToSupabase('vault_keys', savedKeys)
-            syncVaultToSupabase('vault_custom_essentials', savedCustomEssentials)
             showNotification('☁️ Syncing...')
-            await loadAllVaultData()
+            try {
+                await Promise.all([
+                    syncVaultToSupabase('vault_contacts', savedContacts),
+                    syncVaultToSupabase('vault_inheritors', savedInheritors),
+                    syncVaultToSupabase('vault_secrets', savedSecrets),
+                    syncVaultToSupabase('vault_valuables', savedValuables),
+                    syncVaultToSupabase('vault_essentials', savedEssentials),
+                    syncVaultToSupabase('vault_keys', savedKeys),
+                    syncVaultToSupabase('vault_custom_essentials', savedCustomEssentials),
+                    syncVaultToSupabase('vault_stories', savedStories || []),
+                    syncVaultToSupabase('spotify_music_data', savedSongs || []),
+                    syncVaultToSupabase('vault_photo_captions', uploadedPhotos || []),
+                ])
+                await loadAllVaultData()
+                showNotification('✅ Capsule fully synced!')
+            } catch(e) {
+                console.error('Sync failed:', e)
+                showNotification('❌ Sync failed — check connection')
+            }
         }
 
         function showSection(section) {
@@ -5514,7 +5525,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.80</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.81</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
