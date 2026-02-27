@@ -1042,42 +1042,7 @@
         .acc-row.open .acc-body { display:block !important; }
         .acc-row.open .acc-chevron { transform:rotate(180deg); }
 
-        /* ── MOBILE DASHBOARD ── */
-        @media (max-width: 768px) {
-            .dashboard .container { padding: 0 !important; }
-
-            /* Tab bar: horizontally scrollable, no clipping */
-            #vault-tabs {
-                overflow-x: auto !important;
-                -webkit-overflow-scrolling: touch;
-                flex-wrap: nowrap !important;
-                padding: 0 0.25rem !important;
-                scrollbar-width: none;
-            }
-            #vault-tabs::-webkit-scrollbar { display: none; }
-            #vault-tabs button {
-                flex-shrink: 0 !important;
-                padding: 0.45rem 0.65rem !important;
-                font-size: 0.76rem !important;
-                white-space: nowrap;
-            }
-
-            /* Search row */
-            #vault-search { font-size: 0.85rem !important; }
-
-            /* Tab content */
-            [id^="tab-"] { padding: 0.75rem !important; }
-
-            /* Feedback FAB */
-            #feedback-fab { bottom: 0.75rem !important; right: 0.75rem !important; }
-            #feedback-fab button { padding: 0.55rem 0.9rem !important; font-size: 0.8rem !important; }
-
-            /* Add/Import buttons stack vertically */
-            #tab-contacts > div[style*="gap:0.75rem"] { flex-direction: column !important; }
-            #tab-contacts > div[style*="gap:0.75rem"] button { width: 100% !important; }
-        }
         </style>
-
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -2616,7 +2581,7 @@
 
             <!-- Sticky nav - single flat row -->
             <div style="position:sticky; top:60px; background:linear-gradient(to bottom,rgba(253,252,255,0.98),rgba(245,243,255,0.97)); z-index:100; box-shadow:0 2px 12px rgba(99,102,241,0.08); margin:0 -1rem; padding:0.6rem 1rem 0; backdrop-filter:blur(8px);">
-                <div id="vault-search-row" style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap;">
+                <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.6rem;">
                     <input id="vault-search" placeholder="🔍 Search capsule..."
                         style="flex:1; padding:0.4rem 0.9rem; border:1px solid rgba(99,102,241,0.2); border-radius:8px; background:rgba(255,255,255,0.8); border-radius:980px; font-size:0.85rem; outline:none;"
                         oninput="searchVault(this.value)">
@@ -2626,30 +2591,30 @@
                     </div>
                     <button onclick="manualSync()" style="background:#3730a3; color:white; border:none; border-radius:980px; padding:0.35rem 0.85rem; font-size:0.78rem; cursor:pointer; white-space:nowrap;">☁️ Sync</button>
                 </div>
-                <div id="vault-tabs" style="display:flex; flex-wrap:nowrap; border-bottom:2px solid rgba(99,102,241,0.15); overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; -ms-overflow-style:none; background:rgba(255,255,255,0.6); border-radius:12px 12px 0 0; padding:0 0.5rem;">
-                    <button onclick="switchTab('contacts')" id="vtab-contacts" style="flex-shrink:0; white-space:nowrap; padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                        👥 Contacts <span id="vtab-contacts-count" style="flex-shrink:0; white-space:nowrap; font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                <div id="vault-tabs" style="display:flex; border-bottom:2px solid rgba(99,102,241,0.15); overflow-x:auto; background:rgba(255,255,255,0.6); border-radius:12px 12px 0 0; padding:0 0.5rem;">
+                    <button onclick="switchTab('contacts')" id="vtab-contacts" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        👥 Contacts <span id="vtab-contacts-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchTab('videos')" id="vtab-videos" style="flex-shrink:0; white-space:nowrap; padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                        🎬 Videos <span id="vtab-videos-count" style="flex-shrink:0; white-space:nowrap; font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    <button onclick="switchTab('videos')" id="vtab-videos" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        🎬 Videos <span id="vtab-videos-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchTab('photos')" id="vtab-photos" style="flex-shrink:0; white-space:nowrap; padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                        📸 Photos <span id="vtab-photos-count" style="flex-shrink:0; white-space:nowrap; font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    <button onclick="switchTab('photos')" id="vtab-photos" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        📸 Photos <span id="vtab-photos-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchTab('music')" id="vtab-music" style="flex-shrink:0; white-space:nowrap; padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                        🎵 Music <span id="vtab-music-count" style="flex-shrink:0; white-space:nowrap; font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    <button onclick="switchTab('music')" id="vtab-music" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        🎵 Music <span id="vtab-music-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchTab('stories')" id="vtab-stories" style="flex-shrink:0; white-space:nowrap; padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                        ✨ Stories <span id="vtab-stories-count" style="flex-shrink:0; white-space:nowrap; font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    <button onclick="switchTab('stories')" id="vtab-stories" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        ✨ Stories <span id="vtab-stories-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchTab('lifebook')" id="vtab-lifebook" style="flex-shrink:0; white-space:nowrap; padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                        📖 Life Book <span id="vtab-lifebook-count" style="flex-shrink:0; white-space:nowrap; font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    <button onclick="switchTab('lifebook')" id="vtab-lifebook" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        📖 Life Book <span id="vtab-lifebook-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchTab('essentials')" id="vtab-essentials" style="flex-shrink:0; white-space:nowrap; padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                        🗝️ Essentials <span id="vtab-essentials-count" style="flex-shrink:0; white-space:nowrap; font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    <button onclick="switchTab('essentials')" id="vtab-essentials" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        🗝️ Essentials <span id="vtab-essentials-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchTab('legacy')" id="vtab-legacy" style="flex-shrink:0; white-space:nowrap; padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                        🏛️ Legacy <span id="vtab-legacy-count" style="flex-shrink:0; white-space:nowrap; font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    <button onclick="switchTab('legacy')" id="vtab-legacy" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        🏛️ Legacy <span id="vtab-legacy-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
                 </div>
             </div>
@@ -3789,14 +3754,6 @@
                     try { loadEssentials() } catch(e) {}
                     try { loadKeys() } catch(e) {}
                     try { loadCustomEssentials() } catch(e) {}
-                    try { loadContacts() } catch(e) {}
-                    try { loadSavedMusic() } catch(e) {}
-                    try { loadSavedPhotos() } catch(e) {}
-                    try { loadStories() } catch(e) {}
-                    try { loadLifebook() } catch(e) {}
-                    try { loadVideos() } catch(e) {}
-                    try { loadHeroConfig() } catch(e) {}
-                    try { refreshDashboardStats() } catch(e) {}
                     showNotification('☁️ Capsule synced from cloud!')
                 }
             } catch(e) {
@@ -3806,26 +3763,15 @@
 
         async function manualSync() {
             if (!user) { showNotification('Please log in to sync'); return }
+            // Push everything local to Supabase first
+            syncVaultToSupabase('vault_inheritors', savedInheritors)
+            syncVaultToSupabase('vault_secrets', savedSecrets)
+            syncVaultToSupabase('vault_valuables', savedValuables)
+            syncVaultToSupabase('vault_essentials', savedEssentials)
+            syncVaultToSupabase('vault_keys', savedKeys)
+            syncVaultToSupabase('vault_custom_essentials', savedCustomEssentials)
             showNotification('☁️ Syncing...')
-            try {
-                await Promise.all([
-                    syncVaultToSupabase('vault_contacts', savedContacts),
-                    syncVaultToSupabase('vault_inheritors', savedInheritors),
-                    syncVaultToSupabase('vault_secrets', savedSecrets),
-                    syncVaultToSupabase('vault_valuables', savedValuables),
-                    syncVaultToSupabase('vault_essentials', savedEssentials),
-                    syncVaultToSupabase('vault_keys', savedKeys),
-                    syncVaultToSupabase('vault_custom_essentials', savedCustomEssentials),
-                    syncVaultToSupabase('vault_stories', savedStories || []),
-                    syncVaultToSupabase('spotify_music_data', savedSongs || []),
-                    syncVaultToSupabase('vault_photo_captions', uploadedPhotos || []),
-                ])
-                await loadAllVaultData()
-                showNotification('✅ Capsule fully synced!')
-            } catch(e) {
-                console.error('Sync failed:', e)
-                showNotification('❌ Sync failed — check connection')
-            }
+            await loadAllVaultData()
         }
 
         function showSection(section) {
@@ -4055,16 +4001,6 @@
                     } catch(e) {}
                     await loadAllVaultData()
                     updateUIForLoggedIn()
-                    // Re-render all tabs after Supabase data is loaded
-                    setTimeout(() => {
-                        try { loadContacts() } catch(e) {}
-                        try { loadSavedMusic() } catch(e) {}
-                        try { loadSavedPhotos() } catch(e) {}
-                        try { loadStories() } catch(e) {}
-                        try { loadLifebook() } catch(e) {}
-                        try { loadVideos() } catch(e) {}
-                        try { refreshDashboardStats() } catch(e) {}
-                    }, 500)
                     return
                 }
             } catch(e) {
@@ -5525,7 +5461,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.82</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.76</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
@@ -5794,5 +5730,578 @@
             // Do NOT auto-scroll or open a section — footer just becomes visible
         }
     </script>
-</body>
+
+<!-- ============================================================
+     WE LOVED LIFE — VIDEO + SHARE PATCH  v1.0
+     Drop this block just before </body>
+     ============================================================ -->
+<script>
+// ─── 1. updateVaultCounts (was missing, caused ReferenceErrors) ───────────────
+function updateVaultCounts() {
+    refreshDashboardStats()
+}
+
+// ─── 2. VIDEO: Supabase-backed upload ────────────────────────────────────────
+async function handleVideoUpload(input) {
+    var files = Array.from(input.files)
+    if (!files.length) return
+    input.value = ''
+
+    const MAX_SIZE = 45 * 1024 * 1024 // 45 MB (free-tier safe)
+    const oversized = files.filter(f => f.size > MAX_SIZE)
+    if (oversized.length) {
+        showNotification('⚠️ ' + oversized.length + ' file(s) over 45 MB skipped')
+        files = files.filter(f => f.size <= MAX_SIZE)
+        if (!files.length) return
+    }
+
+    const currentUser = JSON.parse(localStorage.getItem('user') || 'null')
+    if (!currentUser) { showNotification('Please log in first'); return }
+    const userFolder = currentUser.email.replace('@','_').replace(/\./g,'_')
+
+    // Show progress bar
+    const prog = document.getElementById('video-upload-progress')
+    const progBar = document.getElementById('video-progress-bar')
+    const progText = document.getElementById('video-progress-text')
+    if (prog) prog.style.display = 'block'
+
+    let done = 0
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+        const fileName = userFolder + '/' + Date.now() + '_' + i + '_' + safeName
+
+        if (progText) progText.textContent = 'Uploading ' + (i+1) + ' of ' + files.length + ': ' + file.name
+
+        try {
+            const { data, error } = await supabaseClient.storage
+                .from('vault-videos')
+                .upload(fileName, file, { cacheControl: '3600', upsert: false, contentType: file.type || 'video/mp4' })
+
+            if (error) { console.error('Video upload error:', error); showNotification('Error: ' + error.message); continue }
+
+            const { data: urlData } = supabaseClient.storage.from('vault-videos').getPublicUrl(fileName)
+
+            savedVideos.push({
+                id: Date.now() + i,
+                title: file.name.replace(/[.][^.]+$/, ''),
+                url: urlData.publicUrl,
+                fileName: fileName,
+                type: file.type,
+                size: file.size,
+                addedAt: new Date().toISOString(),
+                source: 'upload'
+            })
+        } catch (err) {
+            console.error('Upload failed:', err)
+            showNotification('Upload failed: ' + err.message)
+        }
+
+        done++
+        if (progBar) progBar.style.width = Math.round((done / files.length) * 100) + '%'
+    }
+
+    if (prog) setTimeout(() => { prog.style.display = 'none'; if(progBar) progBar.style.width = '0%' }, 1200)
+
+    await syncVaultToSupabase('vault_videos_meta', savedVideos)
+    renderVideos()
+    updateVaultCounts()
+    showNotification('✅ ' + done + ' video' + (done !== 1 ? 's' : '') + ' uploaded!')
+}
+
+// ─── 3. VIDEO: Save recording to Supabase ────────────────────────────────────
+async function saveRecording() {
+    if (!window._recordedBlob) { showNotification('No recording found'); return }
+    const currentUser = JSON.parse(localStorage.getItem('user') || 'null')
+    if (!currentUser) { showNotification('Please log in first'); return }
+
+    var ti = document.getElementById('rec-title')
+    var title = (ti && ti.value.trim()) ? ti.value.trim() : ('Recording ' + new Date().toLocaleDateString())
+
+    showNotification('Saving recording...')
+
+    const userFolder = currentUser.email.replace('@','_').replace(/\./g,'_')
+    const fileName = userFolder + '/rec_' + Date.now() + '.webm'
+
+    try {
+        const { data, error } = await supabaseClient.storage
+            .from('vault-videos')
+            .upload(fileName, window._recordedBlob, { cacheControl: '3600', upsert: false, contentType: 'video/webm' })
+
+        if (error) { showNotification('Save failed: ' + error.message); return }
+
+        const { data: urlData } = supabaseClient.storage.from('vault-videos').getPublicUrl(fileName)
+
+        savedVideos.push({
+            id: Date.now(),
+            title: title,
+            url: urlData.publicUrl,
+            fileName: fileName,
+            type: 'video/webm',
+            addedAt: new Date().toISOString(),
+            source: 'recording',
+            duration: recSeconds
+        })
+
+        await syncVaultToSupabase('vault_videos_meta', savedVideos)
+        renderVideos()
+        updateVaultCounts()
+        cancelRecording()
+        showNotification('🔴 Recording saved!')
+    } catch (err) {
+        showNotification('Save failed: ' + err.message)
+    }
+}
+
+// ─── 4. VIDEO: Load from Supabase ─────────────────────────────────────────────
+async function loadVideos() {
+    const currentUser = JSON.parse(localStorage.getItem('user') || 'null')
+    if (!currentUser) { savedVideos = []; renderVideos(); loadHeroConfig(); return }
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('vault_data')
+            .select('data_value')
+            .eq('user_email', currentUser.email)
+            .eq('data_key', 'vault_videos_meta')
+            .single()
+
+        if (data && data.data_value) {
+            savedVideos = JSON.parse(data.data_value)
+        } else {
+            // fallback: try localStorage cache
+            savedVideos = JSON.parse(localStorage.getItem('vault_videos_meta') || '[]')
+        }
+    } catch(e) {
+        savedVideos = JSON.parse(localStorage.getItem('vault_videos_meta') || '[]')
+    }
+
+    renderVideos()
+    loadHeroConfig()
+}
+
+// ─── 5. VIDEO: Delete from Supabase storage + metadata ───────────────────────
+async function deleteVideo(id) {
+    if (!confirm('Delete this video?')) return
+
+    const video = savedVideos.find(v => v.id === id)
+    if (video && video.fileName) {
+        try {
+            await supabaseClient.storage.from('vault-videos').remove([video.fileName])
+        } catch(e) { console.warn('Storage delete failed:', e) }
+    }
+
+    savedVideos = savedVideos.filter(v => v.id !== id)
+    await syncVaultToSupabase('vault_videos_meta', savedVideos)
+
+    if (heroConfig.videoId === id) {
+        heroConfig.videoId = null
+        localStorage.setItem('vault_hero', JSON.stringify(heroConfig))
+        syncVaultToSupabase('vault_hero', heroConfig)
+    }
+    renderVideos()
+    updateVaultCounts()
+    showNotification('Video deleted')
+}
+
+// ─── 6. VIDEO: Render (supports both Supabase URL + legacy IndexedDB blob) ───
+function renderVideos() {
+    var grid = document.getElementById('videos-grid')
+    var empty = document.getElementById('videos-empty')
+    if (!grid) return
+    var vc = document.getElementById('vtab-videos-count')
+    if (!savedVideos.length) {
+        if (empty) empty.style.display = 'block'
+        grid.innerHTML = ''
+        if (vc) vc.textContent = ''
+        return
+    }
+    if (empty) empty.style.display = 'none'
+    if (vc) vc.textContent = '(' + savedVideos.length + ')'
+
+    grid.innerHTML = savedVideos.map(function(v) {
+        var isFeatured = heroConfig.videoId === v.id
+        // Support URL (Supabase) OR blob (legacy IndexedDB)
+        var videoSrc = v.url || (v.blob ? URL.createObjectURL(v.blob) : '')
+        var mins = v.duration ? Math.floor(v.duration/60) + ':' + String(v.duration%60).padStart(2,'0') : ''
+        return '<div style="background:white;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">' +
+            (isFeatured ? '<div style="background:#6366f1;color:white;font-size:0.65rem;padding:0.2rem 0.5rem;font-weight:700;">✨ Featured Opening</div>' : '') +
+            '<video src="' + videoSrc + '" style="width:100%;height:160px;display:block;background:#0f172a;" controls preload="metadata" playsinline></video>' +
+            '<div style="padding:0.55rem 0.75rem;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;gap:0.4rem;">' +
+            '<span style="font-weight:600;font-size:0.85rem;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">' + v.title + '</span>' +
+            '<button onclick="editVideoTitle(' + v.id + ')" style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:0.75rem;padding:0.1rem;">✏️</button>' +
+            '<button onclick="deleteVideo(' + v.id + ')" style="background:none;border:none;color:#d1d5db;cursor:pointer;font-size:0.75rem;padding:0.1rem;">🗑️</button>' +
+            '</div>' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.25rem;">' +
+            '<span style="font-size:0.7rem;color:#9ca3af;">' + (v.source==='recording'?'🔴 Recorded':'📁 Uploaded') + (mins?' · '+mins:'') + '</span>' +
+            '<button onclick="selectHeroVideo(' + v.id + ')" style="font-size:0.7rem;padding:0.15rem 0.45rem;border-radius:6px;border:1px solid ' + (isFeatured?'#6366f1':'#e5e7eb') + ';background:' + (isFeatured?'#eef2ff':'none') + ';color:' + (isFeatured?'#6366f1':'#9ca3af') + ';cursor:pointer;">' + (isFeatured?'✓ Featured':'⭐ Feature') + '</button>' +
+            '</div></div></div>'
+    }).join('')
+    updateHeroVideoPicker()
+}
+
+// ─── 7. VIDEO: editVideoTitle (sync to Supabase) ──────────────────────────────
+async function editVideoTitle(id) {
+    var v = savedVideos.find(function(v){return v.id===id})
+    if (!v) return
+    var t = prompt('Rename:', v.title)
+    if (!t || !t.trim()) return
+    v.title = t.trim()
+    await syncVaultToSupabase('vault_videos_meta', savedVideos)
+    renderVideos()
+}
+
+// ─── 8. showVaultHero: use URL instead of IndexedDB blob ─────────────────────
+function showVaultHero() {
+    allTabs.forEach(function(t) {
+        var btn = document.getElementById('vtab-' + t)
+        if (btn) { btn.style.borderBottomColor = 'transparent'; btn.style.color = '#6b7280'; btn.style.fontWeight = '600' }
+        var content = document.getElementById('tab-' + t)
+        if (content) content.style.display = 'none'
+    })
+    var hero = document.getElementById('vault-hero-screen')
+    if (hero) hero.style.display = 'block'
+    window.currentVaultTab = ''
+
+    var hConfig = JSON.parse(localStorage.getItem('vault_hero') || '{"mode":"photo","quote":"","name":"","photo":"","videoId":null}')
+    var hasPhoto = hConfig.photo && hConfig.photo.length > 10
+    var hasVideo = hConfig.videoId !== null && hConfig.videoId !== undefined
+
+    var emptyEl = document.getElementById('vault-hero-empty')
+    var photoWrap = document.getElementById('vault-hero-photo-wrap')
+    var videoWrap = document.getElementById('vault-hero-video-wrap')
+
+    if (hConfig.mode === 'video' && hasVideo) {
+        if (emptyEl) emptyEl.style.display = 'none'
+        if (photoWrap) photoWrap.style.display = 'none'
+        if (videoWrap) videoWrap.style.display = 'block'
+
+        // Use Supabase URL first, fallback to IndexedDB blob
+        var featuredVideo = savedVideos.find(function(v) { return v.id === hConfig.videoId })
+        if (featuredVideo) {
+            var vid = document.getElementById('vault-hero-video')
+            var titleEl = document.getElementById('vault-hero-video-title')
+            if (featuredVideo.url) {
+                if (vid) vid.src = featuredVideo.url
+                if (titleEl) titleEl.textContent = featuredVideo.title
+            } else if (featuredVideo.blob) {
+                // Legacy IndexedDB blob fallback
+                if (vid) vid.src = URL.createObjectURL(featuredVideo.blob)
+                if (titleEl) titleEl.textContent = featuredVideo.title
+            }
+        } else {
+            // Try IndexedDB as last resort
+            getAllVideosDB().then(function(vids) {
+                var v = vids.find(function(v) { return v.id === hConfig.videoId })
+                if (v) {
+                    var vid = document.getElementById('vault-hero-video')
+                    var titleEl = document.getElementById('vault-hero-video-title')
+                    if (vid) vid.src = v.url || (v.blob ? URL.createObjectURL(v.blob) : '')
+                    if (titleEl) titleEl.textContent = v.title
+                }
+            }).catch(function() {})
+        }
+    } else if (hConfig.mode === 'photo' && hasPhoto) {
+        if (emptyEl) emptyEl.style.display = 'none'
+        if (videoWrap) videoWrap.style.display = 'none'
+        if (photoWrap) { photoWrap.style.display = 'flex' }
+        var bg = document.getElementById('vault-hero-photo-bg')
+        var qt = document.getElementById('vault-hero-quote-text')
+        var nm = document.getElementById('vault-hero-name-text')
+        if (bg) bg.src = hConfig.photo
+        if (qt) qt.textContent = hConfig.quote || ''
+        if (nm) nm.textContent = hConfig.name || ''
+    } else {
+        if (photoWrap) photoWrap.style.display = 'none'
+        if (videoWrap) videoWrap.style.display = 'none'
+        if (emptyEl) emptyEl.style.display = 'block'
+    }
+}
+
+// ─── 9. loadAllVaultData: include vault_videos_meta ──────────────────────────
+// Override the original loadAllVaultData to include videos
+const _origLoadAllVaultData = loadAllVaultData
+async function loadAllVaultData() {
+    if (!user) return
+    const vaultKeys = ['vault_contacts','vault_essentials','vault_custom_essentials',
+        'vault_keys','vault_secrets','vault_valuables','vault_inheritors',
+        'vault_stories','vault_lifebook','vault_hero','vault_photo_captions',
+        'spotify_music_data','vault_videos_meta']
+    vaultKeys.forEach(k => localStorage.removeItem(k))
+    // Reset all in-memory arrays
+    savedContacts=[]; savedEssentials=[]; savedCustomEssentials=[]; savedKeys=[]
+    savedSecrets=[]; savedValuables=[]; savedInheritors=[]; savedSongs=[]
+    uploadedPhotos=[]; savedVideos=[]
+    try {
+        const { data, error } = await supabaseClient
+            .from('vault_data')
+            .select('data_key, data_value')
+            .eq('user_email', user.email)
+        if (data && data.length > 0) {
+            data.forEach(row => { localStorage.setItem(row.data_key, row.data_value) })
+            try { loadInheritors() } catch(e) {}
+            try { loadEssentials() } catch(e) {}
+            try { loadKeys() } catch(e) {}
+            try { loadCustomEssentials() } catch(e) {}
+            try { loadContacts() } catch(e) {}
+            try { loadSavedMusic() } catch(e) {}
+            try { loadSavedPhotos() } catch(e) {}
+            try { loadStories() } catch(e) {}
+            try { loadLifebook() } catch(e) {}
+            try { loadVideos() } catch(e) {}
+            try { loadHeroConfig() } catch(e) {}
+            try { refreshDashboardStats() } catch(e) {}
+            showNotification('☁️ Capsule synced!')
+        }
+    } catch(e) {
+        console.warn('Supabase load failed, using local data:', e)
+    }
+}
+
+// ─── 10. SHARE VIEW: handle ?share= param ────────────────────────────────────
+async function checkShareParam() {
+    const urlParams = new URLSearchParams(window.location.search)
+    const shareCode = urlParams.get('share')
+    if (!shareCode) return false
+
+    // Decode email from share code
+    // Share code is: btoa(email).replace(/=/g,'').substring(0,12) — can't reverse this
+    // So we look up all users and find the one whose share code matches
+    showShareView(shareCode)
+    return true
+}
+
+async function showShareView(shareCode) {
+    // Hide everything
+    document.getElementById('home-section').classList.add('hidden')
+    document.getElementById('dashboard-section').classList.remove('active')
+    document.getElementById('admin-section').style.display = 'none'
+    document.querySelectorAll('.home-page-section').forEach(s => s.style.display = 'none')
+
+    // Find the user whose share code matches by scanning vault_data
+    let capsuleData = null
+    let ownerEmail = null
+    try {
+        const { data, error } = await supabaseClient
+            .from('vault_data')
+            .select('user_email, data_key, data_value')
+        if (data) {
+            // Group by email
+            const byUser = {}
+            data.forEach(row => {
+                if (!byUser[row.user_email]) byUser[row.user_email] = {}
+                byUser[row.user_email][row.data_key] = row.data_value
+            })
+            // Find matching share code
+            for (const [email, rows] of Object.entries(byUser)) {
+                const code = btoa(email).replace(/=/g,'').substring(0,12)
+                if (code === shareCode) {
+                    capsuleData = rows
+                    ownerEmail = email
+                    break
+                }
+            }
+        }
+    } catch(e) { console.error('Share lookup failed:', e) }
+
+    // Render the share view
+    const container = document.getElementById('share-view-container') || createShareContainer()
+    container.style.display = 'block'
+
+    if (!capsuleData) {
+        container.innerHTML = shareNotFoundHTML()
+        return
+    }
+
+    // Parse data
+    const reg = safeJSON(capsuleData['_registration'], {})
+    const name = reg.name || ownerEmail.split('@')[0]
+    const songs = safeJSON(capsuleData['spotify_music_data'], [])
+    const contacts = safeJSON(capsuleData['vault_contacts'], [])
+    const stories = safeJSON(capsuleData['vault_stories'], {})
+    const lifebook = safeJSON(capsuleData['vault_lifebook'], {})
+    const hero = safeJSON(capsuleData['vault_hero'], {})
+    const inheritors = safeJSON(capsuleData['vault_inheritors'], [])
+    const videos = safeJSON(capsuleData['vault_videos_meta'], [])
+
+    container.innerHTML = shareViewHTML(name, ownerEmail, songs, contacts, stories, lifebook, hero, inheritors, videos)
+    
+    // Clear the share param from URL (clean it up)
+    window.history.replaceState({}, document.title, window.location.pathname)
+}
+
+function safeJSON(str, fallback) {
+    try { return str ? JSON.parse(str) : fallback } catch(e) { return fallback }
+}
+
+function createShareContainer() {
+    const div = document.createElement('div')
+    div.id = 'share-view-container'
+    div.style.cssText = 'min-height:100vh; background:#0a0a0f;'
+    document.body.insertBefore(div, document.querySelector('footer'))
+    return div
+}
+
+function shareNotFoundHTML() {
+    return `<div style="min-height:100vh;background:#0a0a0f;display:flex;align-items:center;justify-content:center;padding:2rem;">
+        <div style="text-align:center;color:white;">
+            <div style="font-size:3rem;margin-bottom:1rem;">🔍</div>
+            <h2 style="font-family:Georgia,serif;font-size:1.8rem;margin-bottom:0.5rem;">Capsule not found</h2>
+            <p style="color:#64748b;margin-bottom:2rem;">This link may have expired or the capsule has been removed.</p>
+            <button onclick="window.location.href=window.location.pathname" style="background:#6366f1;color:white;border:none;padding:0.75rem 2rem;border-radius:10px;cursor:pointer;font-size:1rem;">← Go Home</button>
+        </div>
+    </div>`
+}
+
+function shareViewHTML(name, email, songs, contacts, stories, lifebook, hero, inheritors, videos) {
+    const storyCount = Object.keys(stories).length + Object.keys(lifebook).length
+    const allStories = { ...stories, ...lifebook }
+
+    const storyTitles = {
+        best_memory: '🌟 Best Memory', proudest_moment: '🏆 Proudest Moment',
+        most_important_person: '❤️ Most Important Person', letter_to_grandchildren: '📝 Letter to Future Generations',
+        childhood: '👶 Childhood', school_years: '🎓 School Years', first_love: '💕 First Love',
+        career: '💼 Career Journey', family: '👨‍👩‍👧‍👦 Family Life', travels: '✈️ Adventures & Travels',
+        challenges: '⛰️ Overcoming Challenges', wisdom: '🧠 Life Lessons'
+    }
+
+    return `
+    <div style="min-height:100vh; background:#0a0a0f; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#0f172a,#1e1b4b); padding:3rem 2rem; text-align:center; border-bottom:1px solid #1e293b;">
+            <div style="font-size:0.7rem;letter-spacing:0.15em;color:#6366f1;text-transform:uppercase;font-weight:600;margin-bottom:0.75rem;">We Loved Life · Time Capsule</div>
+            <div style="width:80px;height:80px;background:linear-gradient(135deg,#6366f1,#a78bfa);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:2rem;font-weight:400;color:white;margin:0 auto 1rem;font-style:italic;">${name.charAt(0).toUpperCase()}</div>
+            <h1 style="font-family:Georgia,serif;color:#f8fafc;font-size:2.2rem;font-weight:400;margin:0 0 0.5rem;font-style:italic;">${name}'s Capsule</h1>
+            <p style="color:#94a3b8;font-size:0.9rem;margin:0;">Shared with you · Read-only</p>
+            <div style="display:flex;gap:1.5rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap;">
+                ${songs.length ? `<div style="text-align:center;"><div style="color:#1db954;font-size:1.5rem;font-weight:700;">${songs.length}</div><div style="color:#64748b;font-size:0.75rem;">Songs</div></div>` : ''}
+                ${contacts.length ? `<div style="text-align:center;"><div style="color:#8b5cf6;font-size:1.5rem;font-weight:700;">${contacts.length}</div><div style="color:#64748b;font-size:0.75rem;">Contacts</div></div>` : ''}
+                ${storyCount ? `<div style="text-align:center;"><div style="color:#f59e0b;font-size:1.5rem;font-weight:700;">${storyCount}</div><div style="color:#64748b;font-size:0.75rem;">Stories</div></div>` : ''}
+                ${videos.length ? `<div style="text-align:center;"><div style="color:#ef4444;font-size:1.5rem;font-weight:700;">${videos.length}</div><div style="color:#64748b;font-size:0.75rem;">Videos</div></div>` : ''}
+            </div>
+        </div>
+
+        <div style="max-width:800px;margin:0 auto;padding:2rem;">
+
+            <!-- Hero photo/quote if set -->
+            ${hero.photo ? `
+            <div style="border-radius:16px;overflow:hidden;margin-bottom:2rem;position:relative;min-height:200px;background:#1e293b;">
+                <img src="${hero.photo}" style="width:100%;max-height:320px;object-fit:cover;opacity:0.6;">
+                <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.8),transparent);display:flex;flex-direction:column;justify-content:flex-end;padding:1.5rem;">
+                    ${hero.quote ? `<p style="color:white;font-family:Georgia,serif;font-size:1.2rem;font-style:italic;margin:0 0 0.5rem;">"${hero.quote}"</p>` : ''}
+                    ${hero.name ? `<p style="color:#94a3b8;font-size:0.85rem;margin:0;">— ${hero.name}</p>` : ''}
+                </div>
+            </div>` : ''}
+
+            <!-- Videos -->
+            ${videos.length ? `
+            <div style="margin-bottom:2rem;">
+                <h2 style="font-family:Georgia,serif;color:#f1f5f9;font-size:1.3rem;font-weight:400;margin:0 0 1rem;border-bottom:1px solid #1e293b;padding-bottom:0.75rem;">🎬 Videos</h2>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;">
+                    ${videos.map(v => `
+                    <div style="background:#1e293b;border-radius:10px;overflow:hidden;">
+                        <video src="${v.url}" style="width:100%;height:160px;display:block;background:#0f172a;" controls preload="metadata" playsinline></video>
+                        <div style="padding:0.75rem;">
+                            <div style="color:#e2e8f0;font-weight:600;font-size:0.9rem;">${v.title}</div>
+                            <div style="color:#475569;font-size:0.75rem;margin-top:0.2rem;">${v.source==='recording'?'🔴 Recorded':'📁 Uploaded'} · ${new Date(v.addedAt).toLocaleDateString()}</div>
+                        </div>
+                    </div>`).join('')}
+                </div>
+            </div>` : ''}
+
+            <!-- Stories -->
+            ${storyCount ? `
+            <div style="margin-bottom:2rem;">
+                <h2 style="font-family:Georgia,serif;color:#f1f5f9;font-size:1.3rem;font-weight:400;margin:0 0 1rem;border-bottom:1px solid #1e293b;padding-bottom:0.75rem;">✨ Stories & Life Book</h2>
+                ${Object.entries(allStories).map(([key, text]) => `
+                <div style="background:#1e293b;border-radius:10px;padding:1.25rem;margin-bottom:0.75rem;">
+                    <h3 style="color:#a5b4fc;font-size:1rem;font-weight:600;margin:0 0 0.75rem;">${storyTitles[key] || key}</h3>
+                    <p style="color:#cbd5e1;font-size:0.9rem;line-height:1.8;white-space:pre-wrap;margin:0;font-family:Georgia,serif;">${text}</p>
+                </div>`).join('')}
+            </div>` : ''}
+
+            <!-- Music -->
+            ${songs.length ? `
+            <div style="margin-bottom:2rem;">
+                <h2 style="font-family:Georgia,serif;color:#f1f5f9;font-size:1.3rem;font-weight:400;margin:0 0 1rem;border-bottom:1px solid #1e293b;padding-bottom:0.75rem;">🎵 Music</h2>
+                <div style="background:#1e293b;border-radius:10px;overflow:hidden;max-height:400px;overflow-y:auto;">
+                    ${songs.map((s,i) => `
+                    <div style="display:flex;align-items:center;padding:0.75rem 1rem;border-bottom:1px solid #0f172a;gap:0.75rem;">
+                        <div style="color:#475569;font-size:0.8rem;width:24px;text-align:right;flex-shrink:0;">${i+1}</div>
+                        ${s.image ? `<img src="${s.image}" style="width:40px;height:40px;border-radius:5px;flex-shrink:0;" onerror="this.style.display='none'">` : `<div style="width:40px;height:40px;background:#1db954;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem;">🎵</div>`}
+                        <div style="flex:1;min-width:0;">
+                            <div style="color:#e2e8f0;font-weight:600;font-size:0.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.name}</div>
+                            <div style="color:#64748b;font-size:0.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.artist}${s.album?' · '+s.album:''}</div>
+                            ${s.why ? `<div style="color:#a78bfa;font-size:0.72rem;font-style:italic;margin-top:0.15rem;">💜 ${s.why}${s.period?' · '+s.period:''}</div>` : ''}
+                        </div>
+                        <a href="https://www.youtube.com/results?search_query=${encodeURIComponent((s.artist||'')+' '+(s.name||''))}" target="_blank" style="background:#1e293b;color:#94a3b8;border:1px solid #334155;padding:0.25rem 0.5rem;border-radius:5px;font-size:0.7rem;text-decoration:none;flex-shrink:0;">▶ YT</a>
+                    </div>`).join('')}
+                </div>
+            </div>` : ''}
+
+            <!-- Contacts -->
+            ${contacts.length ? `
+            <div style="margin-bottom:2rem;">
+                <h2 style="font-family:Georgia,serif;color:#f1f5f9;font-size:1.3rem;font-weight:400;margin:0 0 1rem;border-bottom:1px solid #1e293b;padding-bottom:0.75rem;">👥 Contacts (${contacts.length})</h2>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.75rem;">
+                    ${contacts.slice(0,30).map(c => `
+                    <div style="background:#1e293b;border-radius:8px;padding:0.75rem;display:flex;align-items:center;gap:0.75rem;">
+                        <div style="width:36px;height:36px;background:linear-gradient(135deg,#6366f1,#a78bfa);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.9rem;flex-shrink:0;">${c.name.charAt(0).toUpperCase()}</div>
+                        <div style="min-width:0;">
+                            <div style="color:#e2e8f0;font-weight:600;font-size:0.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.name}</div>
+                            ${c.relation ? `<div style="color:#6366f1;font-size:0.72rem;">${c.relation}</div>` : ''}
+                        </div>
+                    </div>`).join('')}
+                    ${contacts.length > 30 ? `<div style="color:#475569;font-size:0.82rem;padding:0.75rem;font-style:italic;">+ ${contacts.length-30} more contacts</div>` : ''}
+                </div>
+            </div>` : ''}
+
+            <!-- Footer -->
+            <div style="text-align:center;padding:3rem 1rem;border-top:1px solid #1e293b;margin-top:2rem;">
+                <p style="color:#334155;font-size:0.78rem;letter-spacing:0.1em;text-transform:uppercase;margin:0 0 1rem;">Preserved with</p>
+                <a href="${window.location.pathname}" style="font-family:Georgia,serif;color:#6366f1;font-size:1.1rem;text-decoration:none;font-style:italic;">We Loved Life</a>
+                <p style="color:#1e293b;font-size:0.75rem;margin-top:0.75rem;">A time capsule for the people you'll never meet.</p>
+            </div>
+        </div>
+    </div>`
+}
+
+// ─── 11. Wire up share check on DOMContentLoaded ──────────────────────────────
+// Override the existing DOMContentLoaded to add share check
+document.addEventListener('DOMContentLoaded', async function() {
+    // Check for share view first
+    const urlParams = new URLSearchParams(window.location.search)
+    const shareCode = urlParams.get('share')
+    if (shareCode) {
+        await showShareView(shareCode)
+        return
+    }
+    // Otherwise normal flow is already handled by existing DOMContentLoaded
+}, true)  // useCapture:true so this runs before the existing listener
+
+</script>
+
+<!-- Video upload progress bar (inject into tab-videos) -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inject progress bar HTML into the videos tab
+    setTimeout(function() {
+        var tabVideos = document.getElementById('tab-videos')
+        if (!tabVideos) return
+        var existing = document.getElementById('video-upload-progress')
+        if (existing) return  // already there
+        var progDiv = document.createElement('div')
+        progDiv.id = 'video-upload-progress'
+        progDiv.style.cssText = 'display:none; margin-bottom:1rem;'
+        progDiv.innerHTML = '<div style="background:#e5e7eb;border-radius:10px;height:8px;overflow:hidden;">' +
+            '<div id="video-progress-bar" style="background:#6366f1;height:100%;width:0%;transition:width 0.3s;"></div></div>' +
+            '<p id="video-progress-text" style="color:#6b7280;font-size:0.82rem;margin-top:0.4rem;text-align:center;">Uploading...</p>'
+        // Insert after the upload/record buttons row
+        var firstChild = tabVideos.firstChild
+        tabVideos.insertBefore(progDiv, firstChild)
+    }, 500)
+})
+</script></body>
 </html>
