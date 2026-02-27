@@ -2625,30 +2625,30 @@
                     </div>
                     <button onclick="manualSync()" style="background:#3730a3; color:white; border:none; border-radius:980px; padding:0.35rem 0.85rem; font-size:0.78rem; cursor:pointer; white-space:nowrap;">☁️ Sync</button>
                 </div>
-                <div id="vault-tabs" style="display:flex; border-bottom:2px solid rgba(99,102,241,0.15); overflow-x:auto; background:rgba(255,255,255,0.6); border-radius:12px 12px 0 0; padding:0 0.5rem;">
-                    <button onclick="switchTab('contacts')" id="vtab-contacts" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                        👥 Contacts <span id="vtab-contacts-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                <div id="vault-tabs" style="display:flex; flex-wrap:nowrap; border-bottom:2px solid rgba(99,102,241,0.15); overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; background:rgba(255,255,255,0.6); border-radius:12px 12px 0 0; padding:0 0.5rem;">
+                    <button onclick="switchTab('contacts')" id="vtab-contacts" style="flex-shrink:0; white-space:nowrap; padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        👥 Contacts <span id="vtab-contacts-count" style="flex-shrink:0; white-space:nowrap; font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchTab('videos')" id="vtab-videos" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                        🎬 Videos <span id="vtab-videos-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    <button onclick="switchTab('videos')" id="vtab-videos" style="flex-shrink:0; white-space:nowrap; padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        🎬 Videos <span id="vtab-videos-count" style="flex-shrink:0; white-space:nowrap; font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchTab('photos')" id="vtab-photos" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                        📸 Photos <span id="vtab-photos-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    <button onclick="switchTab('photos')" id="vtab-photos" style="flex-shrink:0; white-space:nowrap; padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        📸 Photos <span id="vtab-photos-count" style="flex-shrink:0; white-space:nowrap; font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchTab('music')" id="vtab-music" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                        🎵 Music <span id="vtab-music-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    <button onclick="switchTab('music')" id="vtab-music" style="flex-shrink:0; white-space:nowrap; padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        🎵 Music <span id="vtab-music-count" style="flex-shrink:0; white-space:nowrap; font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchTab('stories')" id="vtab-stories" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                        ✨ Stories <span id="vtab-stories-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    <button onclick="switchTab('stories')" id="vtab-stories" style="flex-shrink:0; white-space:nowrap; padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        ✨ Stories <span id="vtab-stories-count" style="flex-shrink:0; white-space:nowrap; font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchTab('lifebook')" id="vtab-lifebook" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                        📖 Life Book <span id="vtab-lifebook-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    <button onclick="switchTab('lifebook')" id="vtab-lifebook" style="flex-shrink:0; white-space:nowrap; padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        📖 Life Book <span id="vtab-lifebook-count" style="flex-shrink:0; white-space:nowrap; font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchTab('essentials')" id="vtab-essentials" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                        🗝️ Essentials <span id="vtab-essentials-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    <button onclick="switchTab('essentials')" id="vtab-essentials" style="flex-shrink:0; white-space:nowrap; padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        🗝️ Essentials <span id="vtab-essentials-count" style="flex-shrink:0; white-space:nowrap; font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
-                    <button onclick="switchTab('legacy')" id="vtab-legacy" style="padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
-                        🏛️ Legacy <span id="vtab-legacy-count" style="font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
+                    <button onclick="switchTab('legacy')" id="vtab-legacy" style="flex-shrink:0; white-space:nowrap; padding:0.6rem 1.1rem; border:none; border-bottom:3px solid transparent; background:none; font-weight:600; font-size:0.88rem; color:#6b7280; cursor:pointer; white-space:nowrap; margin-bottom:-2px;">
+                        🏛️ Legacy <span id="vtab-legacy-count" style="flex-shrink:0; white-space:nowrap; font-size:0.75rem; color:#9ca3af; font-weight:400;"></span>
                     </button>
                 </div>
             </div>
@@ -5495,7 +5495,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.77</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.78</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
