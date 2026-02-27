@@ -5491,7 +5491,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.89</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.90</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
@@ -6053,6 +6053,8 @@ function showVaultHero() {
 // Override the original loadAllVaultData to include videos
 const _origLoadAllVaultData = loadAllVaultData
 async function loadAllVaultData() {
+    // Support both global user var and localStorage fallback
+    if (!user) user = JSON.parse(localStorage.getItem('user') || 'null')
     if (!user) return
     const vaultKeys = ['vault_contacts','vault_essentials','vault_custom_essentials',
         'vault_keys','vault_secrets','vault_valuables','vault_inheritors',
