@@ -2213,47 +2213,538 @@
             }
         }
 
-        function viewAllChapters() {
-            const chapters = [
-                { key: 'childhood', title: '👶 Childhood' },
-                { key: 'school_years', title: '🎓 School Years' },
-                { key: 'first_love', title: '💕 First Love' },
-                { key: 'career', title: '💼 Career Journey' },
-                { key: 'family', title: '👨‍👩‍👧‍👦 Family Life' },
-                { key: 'travels', title: '✈️ Adventures & Travels' },
-                { key: 'challenges', title: '⛰️ Overcoming Challenges' },
-                { key: 'wisdom', title: '🧠 Life Lessons' }
-            ]
+        // ── LIFEBOOK CHAPTER DEFINITIONS ──────────────────────────────
+        const LIFEBOOK_CHAPTERS = [
+            { key: 'childhood', title: '👶 Childhood' },
+            { key: 'school_years', title: '🎓 School Years' },
+            { key: 'first_love', title: '💕 First Love' },
+            { key: 'career', title: '💼 Career Journey' },
+            { key: 'family', title: '👨‍👩‍👧‍👦 Family Life' },
+            { key: 'travels', title: '✈️ Adventures & Travels' },
+            { key: 'challenges', title: '⛰️ Overcoming Challenges' },
+            { key: 'wisdom', title: '🧠 Life Lessons' }
+        ]
 
-            let html = '<div style="background:white; border-radius:10px; padding:2rem; max-width:800px; margin:0 auto;">'
-            html += '<h3 style="color:#1e3a8a; text-align:center; margin-bottom:2rem; font-size:2rem;">📖 My Life Book</h3>'
-            
-            chapters.forEach(chapter => {
-                if (savedLifebook[chapter.key]) {
-                    html += `<div style="margin-bottom:2rem; padding-bottom:2rem; border-bottom:1px solid #e5e7eb;">`
-                    html += `<h4 style="color:#8b5cf6; margin-bottom:1rem; font-size:1.5rem;">${chapter.title}</h4>`
-                    html += `<p style="white-space:pre-wrap; line-height:1.8; color:#374151;">${savedLifebook[chapter.key]}</p>`
-                    html += `</div>`
+        function getAllChapters() {
+            // Returns standard + custom chapters that have content
+            const chapters = []
+            LIFEBOOK_CHAPTERS.forEach(ch => {
+                if (savedLifebook[ch.key]) chapters.push({ key: ch.key, title: ch.title, text: savedLifebook[ch.key] })
+            })
+            // Custom chapters stored as custom_* keys
+            Object.keys(savedLifebook).forEach(key => {
+                if (key.startsWith('custom_')) {
+                    const title = savedLifebook[key + '_title'] || key.replace('custom_','')
+                    chapters.push({ key, title: '✍️ ' + title, text: savedLifebook[key] })
                 }
             })
+            return chapters
+        }
 
-            if (Object.keys(savedLifebook).length === 0) {
-                html += '<p style="text-align:center; color:#9ca3af; padding:2rem;">No chapters written yet. Start writing your life story!</p>'
-            }
-
-            html += '<div style="text-align:center; margin-top:2rem;">'
-            html += '<button class="action-button secondary" onclick="document.getElementById(\'lifebook-view-modal\').remove()">Close</button>'
+        function viewAllChapters() {
+            const chapters = getAllChapters()
+            let html = '<div style="background:white; border-radius:10px; padding:2rem; max-width:800px; margin:0 auto; max-height:85vh; overflow-y:auto;">'
+            html += '<h3 style="color:#1e3a8a; text-align:center; margin-bottom:0.5rem; font-size:2rem; font-family:Georgia,serif;">📖 My Life Book</h3>'
+            html += '<p style="text-align:center; color:#9ca3af; margin-bottom:2rem; font-size:0.9rem;">' + chapters.length + ' chapter' + (chapters.length!==1?'s':'') + ' written</p>'
+            chapters.forEach(ch => {
+                html += '<div style="margin-bottom:2rem; padding-bottom:2rem; border-bottom:1px solid #e5e7eb;">'
+                html += '<h4 style="color:#8b5cf6; margin-bottom:1rem; font-size:1.5rem; font-family:Georgia,serif;">' + ch.title + '</h4>'
+                html += '<p style="white-space:pre-wrap; line-height:1.8; color:#374151;">' + ch.text + '</p>'
+                html += '</div>'
+            })
+            if (!chapters.length) html += '<p style="text-align:center; color:#9ca3af; padding:2rem;">No chapters written yet.</p>'
+            html += '<div style="text-align:center; margin-top:2rem; display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">'
+            html += '<button class="action-button secondary" onclick="document.getElementById('lifebook-view-modal').remove()">Close</button>'
+            html += '<button class="action-button" onclick="compileAndExport()" style="background:#1e3a8a;">📤 Export Book</button>'
             html += '</div></div>'
-
             const modal = document.createElement('div')
             modal.id = 'lifebook-view-modal'
-            modal.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:10000; overflow-y:auto; padding:2rem; display:flex; align-items:center; justify-content:center;'
+            modal.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:10000; overflow-y:auto; padding:2rem;'
             modal.innerHTML = html
             document.body.appendChild(modal)
+            modal.onclick = (e) => { if (e.target === modal) modal.remove() }
+        }
 
-            modal.onclick = (e) => {
-                if (e.target === modal) modal.remove()
+        // ── CUSTOM CHAPTER ─────────────────────────────────────────────
+        function openCustomChapterModal() {
+            const existing = document.getElementById('custom-chapter-modal')
+            if (existing) existing.remove()
+            const modal = document.createElement('div')
+            modal.id = 'custom-chapter-modal'
+            modal.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:10000; padding:2rem; display:flex; align-items:center; justify-content:center;'
+            modal.innerHTML = `
+            <div style="background:white; border-radius:14px; padding:2rem; max-width:600px; width:100%; max-height:90vh; overflow-y:auto;">
+                <h3 style="color:#1e3a8a; margin-bottom:0.25rem; font-family:Georgia,serif;">✍️ Your Own Chapter</h3>
+                <p style="color:#9ca3af; font-size:0.9rem; margin-bottom:1.25rem;">Write about anything that matters to you.</p>
+                <label style="font-size:0.85rem; font-weight:600; color:#374151;">Chapter Title</label>
+                <input id="custom-chapter-title" type="text" placeholder="e.g. My Passions, Faith, Philosophy of Life..." 
+                    style="width:100%; padding:0.75rem; border:1px solid #e5e7eb; border-radius:8px; font-size:1rem; margin:0.4rem 0 1rem; box-sizing:border-box;">
+                <label style="font-size:0.85rem; font-weight:600; color:#374151;">Your Story</label>
+                <textarea id="custom-chapter-text" placeholder="Write this chapter of your life..." 
+                    style="width:100%; padding:1rem; border:1px solid #e5e7eb; border-radius:8px; font-size:1rem; min-height:280px; resize:vertical; line-height:1.8; margin:0.4rem 0 1rem; font-family:inherit; box-sizing:border-box;"></textarea>
+                <div style="display:flex; gap:0.5rem;">
+                    <button class="action-button" onclick="saveCustomChapter()" style="background:#8b5cf6;">📖 Save Chapter</button>
+                    <button class="action-button secondary" onclick="document.getElementById('custom-chapter-modal').remove()">Cancel</button>
+                </div>
+            </div>`
+            document.body.appendChild(modal)
+            modal.onclick = (e) => { if (e.target === modal) modal.remove() }
+        }
+
+        function saveCustomChapter() {
+            const title = document.getElementById('custom-chapter-title').value.trim()
+            const text = document.getElementById('custom-chapter-text').value.trim()
+            if (!title) { showNotification('Please enter a chapter title'); return }
+            if (!text) { showNotification('Please write something first!'); return }
+            const key = 'custom_' + Date.now()
+            savedLifebook[key] = text
+            savedLifebook[key + '_title'] = title
+            localStorage.setItem('vault_lifebook', JSON.stringify(savedLifebook))
+            syncVaultToSupabase('vault_lifebook', savedLifebook)
+            document.getElementById('custom-chapter-modal').remove()
+            const count = getAllChapters().length
+            const header = document.getElementById('lifebook-count-header')
+            if (header) header.textContent = count + ' chapter' + (count!==1?'s':'') + ' written'
+            const viewAll = document.getElementById('lifebook-view-all')
+            if (viewAll) viewAll.style.display = 'block'
+            refreshDashboardStats()
+            showNotification('✍️ Custom chapter saved!')
+        }
+
+        // ── COMPILE & EXPORT ───────────────────────────────────────────
+        // Cover image stored as base64
+        window._bookCoverImage = null
+
+        function compileAndExport() {
+            const existing = document.getElementById('export-modal')
+            if (existing) existing.remove()
+            const chapters = getAllChapters()
+            if (!chapters.length) { showNotification('Write some chapters first!'); return }
+            const userName = (JSON.parse(localStorage.getItem('user') || '{}').name || 'My')
+            const modal = document.createElement('div')
+            modal.id = 'export-modal'
+            modal.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:10000; overflow-y:auto; padding:1rem; display:flex; align-items:flex-start; justify-content:center;'
+            modal.innerHTML = `
+            <div style="background:white; border-radius:14px; padding:2rem; max-width:560px; width:100%; margin:1rem auto;">
+                <h3 style="color:#1e3a8a; margin-bottom:0.25rem; font-family:Georgia,serif;">📖 Design Your Book</h3>
+                <p style="color:#6b7280; font-size:0.9rem; margin-bottom:1.5rem;">${chapters.length} chapter${chapters.length!==1?'s':''} ready · Set up covers then export</p>
+
+                <!-- STEP 1: Book details -->
+                <div style="background:#f8fafc; border-radius:10px; padding:1.25rem; margin-bottom:1rem;">
+                    <p style="font-size:0.8rem; font-weight:700; color:#6366f1; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:0.75rem;">Book Details</p>
+                    <label style="font-size:0.82rem; font-weight:600; color:#374151; display:block; margin-bottom:0.3rem;">Title</label>
+                    <input id="export-book-title" type="text" value="${userName}'s Life Book" 
+                        style="width:100%; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem; margin-bottom:0.75rem; box-sizing:border-box;">
+                    <label style="font-size:0.82rem; font-weight:600; color:#374151; display:block; margin-bottom:0.3rem;">Subtitle <span style="font-weight:400; color:#9ca3af;">(optional)</span></label>
+                    <input id="export-book-subtitle" type="text" placeholder="A memoir for my family" 
+                        style="width:100%; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem; box-sizing:border-box;">
+                </div>
+
+                <!-- STEP 2: Front cover -->
+                <div style="background:#f8fafc; border-radius:10px; padding:1.25rem; margin-bottom:1rem;">
+                    <p style="font-size:0.8rem; font-weight:700; color:#6366f1; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:0.75rem;">Front Cover Photo</p>
+                    <div style="display:flex; gap:1rem; align-items:flex-start;">
+                        <div id="cover-preview" style="width:100px; min-width:100px; height:140px; background:linear-gradient(135deg,#0f172a,#1e1b4b); border-radius:6px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:2px solid #e5e7eb;">
+                            <span id="cover-preview-placeholder" style="color:white; font-size:2rem; opacity:0.4;">📷</span>
+                            <img id="cover-preview-img" style="width:100%; height:100%; object-fit:cover; display:none;">
+                        </div>
+                        <div style="flex:1;">
+                            <p style="font-size:0.82rem; color:#6b7280; margin-bottom:0.75rem; line-height:1.5;">Upload a portrait photo for the front cover. A face shot or meaningful image works best.</p>
+                            <label style="background:#6366f1; color:white; padding:0.6rem 1rem; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer; display:inline-block;">
+                                📷 Choose Photo
+                                <input type="file" accept="image/*" onchange="loadCoverImage(this)" style="display:none;">
+                            </label>
+                            <button onclick="clearCoverImage()" id="cover-clear-btn" style="display:none; background:none; border:1px solid #e5e7eb; color:#6b7280; padding:0.6rem 1rem; border-radius:8px; font-size:0.85rem; cursor:pointer; margin-left:0.5rem;">Remove</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Back cover bio -->
+                <div style="background:#f8fafc; border-radius:10px; padding:1.25rem; margin-bottom:1.5rem;">
+                    <p style="font-size:0.8rem; font-weight:700; color:#6366f1; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:0.75rem;">Back Cover — About the Author</p>
+                    <textarea id="export-book-bio" placeholder="Write a short description about yourself for the back cover. 2–3 sentences works well. e.g. 'Born in 1952 in rural Ireland, Ian Haynes spent 40 years building businesses and raising a family. This is his story, written for the grandchildren he hopes to one day meet.'" 
+                        style="width:100%; padding:0.75rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.9rem; min-height:100px; resize:vertical; line-height:1.6; font-family:inherit; box-sizing:border-box;"></textarea>
+                </div>
+
+                <!-- Export buttons -->
+                <p style="font-size:0.85rem; font-weight:600; color:#374151; margin-bottom:0.75rem;">Choose format:</p>
+                <div style="display:flex; flex-direction:column; gap:0.6rem; margin-bottom:1.25rem;">
+                    <button onclick="exportBookPDF()" style="background:#dc2626; color:white; border:none; padding:0.9rem 1.25rem; border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer; text-align:left; display:flex; align-items:center; gap:0.75rem;">
+                        <span style="font-size:1.4rem;">📄</span>
+                        <div><div>Download as PDF</div><div style="font-size:0.72rem; font-weight:400; opacity:0.85;">Print-ready · Share anywhere</div></div>
+                    </button>
+                    <button onclick="exportBookEPUB()" style="background:#f59e0b; color:white; border:none; padding:0.9rem 1.25rem; border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer; text-align:left; display:flex; align-items:center; gap:0.75rem;">
+                        <span style="font-size:1.4rem;">📱</span>
+                        <div><div>Download as EPUB</div><div style="font-size:0.72rem; font-weight:400; opacity:0.85;">For Kindle, iBooks, Kobo · Upload to KDP</div></div>
+                    </button>
+                    <button onclick="exportBookDOCX()" style="background:#2563eb; color:white; border:none; padding:0.9rem 1.25rem; border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer; text-align:left; display:flex; align-items:center; gap:0.75rem;">
+                        <span style="font-size:1.4rem;">📝</span>
+                        <div><div>Download as Word (.docx)</div><div style="font-size:0.72rem; font-weight:400; opacity:0.85;">Edit further · Send to publisher</div></div>
+                    </button>
+                </div>
+                <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:0.75rem; font-size:0.78rem; color:#166534; margin-bottom:1rem;">
+                    💡 <strong>Kindle:</strong> Download EPUB → kdp.amazon.com → Create New Title → Upload your file.
+                </div>
+                <button class="action-button secondary" onclick="document.getElementById('export-modal').remove()" style="width:100%;">Cancel</button>
+            </div>`
+            document.body.appendChild(modal)
+            modal.onclick = (e) => { if (e.target === modal) modal.remove() }
+        }
+
+        function loadCoverImage(input) {
+            const file = input.files[0]
+            if (!file) return
+            const reader = new FileReader()
+            reader.onload = (e) => {
+                window._bookCoverImage = e.target.result
+                const img = document.getElementById('cover-preview-img')
+                const placeholder = document.getElementById('cover-preview-placeholder')
+                const clearBtn = document.getElementById('cover-clear-btn')
+                if (img) { img.src = e.target.result; img.style.display = 'block' }
+                if (placeholder) placeholder.style.display = 'none'
+                if (clearBtn) clearBtn.style.display = 'inline-block'
             }
+            reader.readAsDataURL(file)
+        }
+
+        function clearCoverImage() {
+            window._bookCoverImage = null
+            const img = document.getElementById('cover-preview-img')
+            const placeholder = document.getElementById('cover-preview-placeholder')
+            const clearBtn = document.getElementById('cover-clear-btn')
+            if (img) { img.src = ''; img.style.display = 'none' }
+            if (placeholder) placeholder.style.display = 'block'
+            if (clearBtn) clearBtn.style.display = 'none'
+        }
+
+        function getExportData() {
+            return {
+                title: document.getElementById('export-book-title')?.value || 'My Life Book',
+                subtitle: document.getElementById('export-book-subtitle')?.value || '',
+                bio: document.getElementById('export-book-bio')?.value || '',
+                coverImage: window._bookCoverImage || null,
+                chapters: getAllChapters(),
+                author: JSON.parse(localStorage.getItem('user') || '{}').name || 'Unknown',
+                date: new Date().getFullYear()
+            }
+        }
+
+        // ── PDF EXPORT ─────────────────────────────────────────────────
+        function exportBookPDF() {
+            const d = getExportData()
+            const win = window.open('', '_blank')
+            const chaptersHTML = d.chapters.map((ch, i) => `
+                <div class="chapter">
+                    <div class="chapter-num">Chapter ${i+1}</div>
+                    <h2 class="chapter-title">${ch.title}</h2>
+                    <div class="chapter-text">${ch.text.replace(/\n/g, '<br>')}</div>
+                </div>`).join('')
+
+            const frontCoverHTML = d.coverImage ? `
+                <div class="cover" style="padding:0; position:relative;">
+                    <img src="${d.coverImage}" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; opacity:0.5;">
+                    <div style="position:relative; z-index:1; padding:4rem; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center;">
+                        <div class="cover-title">${d.title}</div>
+                        ${d.subtitle ? `<div class="cover-subtitle">${d.subtitle}</div>` : ''}
+                        <div class="cover-author">By ${d.author}</div>
+                        <div class="cover-year">${d.date}</div>
+                    </div>
+                </div>` : `
+                <div class="cover">
+                    <div class="cover-title">${d.title}</div>
+                    ${d.subtitle ? `<div class="cover-subtitle">${d.subtitle}</div>` : ''}
+                    <div class="cover-author">By ${d.author}</div>
+                    <div class="cover-year">${d.date}</div>
+                </div>`
+
+            const backCoverHTML = `
+                <div class="back-cover">
+                    ${d.coverImage ? `<img src="${d.coverImage}" style="width:120px; height:120px; object-fit:cover; border-radius:50%; margin-bottom:2rem; border:4px solid rgba(255,255,255,0.3);">` : `<div style="width:80px; height:80px; background:rgba(255,255,255,0.1); border-radius:50%; margin-bottom:2rem; display:flex; align-items:center; justify-content:center; font-size:2rem;">${d.author.charAt(0).toUpperCase()}</div>`}
+                    <div class="back-author">About the Author</div>
+                    <div class="back-bio">${d.bio || d.author + ' wrote this memoir to preserve their story for future generations.'}</div>
+                    <div class="back-branding">Preserved with We Loved Life</div>
+                    <div class="back-tagline">A time capsule for the people you'll never meet.</div>
+                </div>`
+
+            win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${d.title}</title>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&display=swap');
+                * { margin:0; padding:0; box-sizing:border-box; }
+                body { font-family:'Lora',Georgia,serif; color:#1a1a1a; background:white; }
+                .cover { page-break-after:always; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:4rem; background:linear-gradient(160deg,#0f172a,#1e1b4b); color:white; }
+                .cover-title { font-size:3rem; font-weight:700; margin-bottom:1rem; line-height:1.2; }
+                .cover-subtitle { font-size:1.3rem; font-style:italic; opacity:0.8; margin-bottom:2rem; }
+                .cover-author { font-size:1rem; opacity:0.6; letter-spacing:0.1em; text-transform:uppercase; }
+                .cover-year { font-size:0.9rem; opacity:0.4; margin-top:0.5rem; }
+                .toc { page-break-after:always; padding:4rem; }
+                .toc h2 { font-size:1.8rem; margin-bottom:2rem; color:#1e3a8a; }
+                .toc-item { padding:0.5rem 0; border-bottom:1px dotted #e5e7eb; font-size:1rem; }
+                .chapter { page-break-before:always; padding:4rem; max-width:680px; margin:0 auto; }
+                .chapter-num { font-size:0.85rem; letter-spacing:0.15em; text-transform:uppercase; color:#8b5cf6; margin-bottom:0.5rem; }
+                .chapter-title { font-size:2.2rem; color:#1e3a8a; margin-bottom:2rem; line-height:1.3; }
+                .chapter-text { font-size:1.05rem; line-height:1.9; color:#374151; white-space:pre-wrap; }
+                .back-cover { page-break-before:always; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:4rem; background:linear-gradient(160deg,#1e1b4b,#0f172a); color:white; }
+                .back-author { font-size:0.8rem; letter-spacing:0.15em; text-transform:uppercase; color:#a5b4fc; margin-bottom:1rem; }
+                .back-bio { font-size:1.1rem; line-height:1.8; max-width:480px; opacity:0.9; font-style:italic; margin-bottom:3rem; }
+                .back-branding { font-size:0.85rem; opacity:0.4; letter-spacing:0.1em; }
+                .back-tagline { font-size:0.75rem; opacity:0.3; margin-top:0.3rem; font-style:italic; }
+                @media print { body { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }
+            </style></head><body>
+            ${frontCoverHTML}
+            <div class="toc">
+                <h2>Table of Contents</h2>
+                ${d.chapters.map((ch,i) => `<div class="toc-item">Chapter ${i+1} — ${ch.title}</div>`).join('')}
+            </div>
+            ${chaptersHTML}
+            ${backCoverHTML}
+            <script>window.onload=()=>{ setTimeout(()=>window.print(), 500) }<\/script>
+            </body></html>`)
+            win.document.close()
+        }
+
+        // ── EPUB EXPORT ────────────────────────────────────────────────
+        async function exportBookEPUB() {
+            const d = getExportData()
+            showNotification('Building EPUB...')
+            
+            // Build EPUB structure as a ZIP using JSZip loaded dynamically
+            const script = document.createElement('script')
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'
+            document.head.appendChild(script)
+            await new Promise(r => script.onload = r)
+
+            const zip = new JSZip()
+
+            // mimetype (must be first, uncompressed)
+            zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' })
+
+            // META-INF/container.xml
+            zip.folder('META-INF').file('container.xml', `<?xml version="1.0"?>
+<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+  <rootfiles>
+    <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
+  </rootfiles>
+</container>`)
+
+            const oebps = zip.folder('OEBPS')
+
+            // content.opf
+            const hasCover = !!d.coverImage
+            const coverExt = d.coverImage && d.coverImage.includes('png') ? 'png' : 'jpg'
+            const manifestItems = [
+                hasCover ? `<item id="cover-img" href="cover.${coverExt}" media-type="image/${coverExt === 'png' ? 'png' : 'jpeg'}" properties="cover-image"/>` : '',
+                hasCover ? `<item id="cover-page" href="cover.xhtml" media-type="application/xhtml+xml"/>` : '',
+                ...d.chapters.map((ch,i) => `<item id="ch${i}" href="ch${i}.xhtml" media-type="application/xhtml+xml"/>`),
+                `<item id="back-cover" href="back-cover.xhtml" media-type="application/xhtml+xml"/>`
+            ].filter(Boolean).join('\n    ')
+            const spineItems = [
+                hasCover ? `<itemref idref="cover-page"/>` : '',
+                ...d.chapters.map((_,i) => `<itemref idref="ch${i}"/>`),
+                `<itemref idref="back-cover"/>`
+            ].filter(Boolean).join('\n    ')
+            oebps.file('content.opf', `<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>${d.title}</dc:title>
+    <dc:creator>${d.author}</dc:creator>
+    <dc:language>en</dc:language>
+    <dc:date>${d.date}-01-01</dc:date>
+    <dc:identifier id="uid">urn:uuid:${crypto.randomUUID()}</dc:identifier>
+    <meta property="dcterms:modified">${new Date().toISOString().split('.')[0]}Z</meta>
+  </metadata>
+  <manifest>
+    <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
+    <item id="toc" href="toc.xhtml" media-type="application/xhtml+xml" properties="nav"/>
+    ${manifestItems}
+  </manifest>
+  <spine toc="ncx">
+    <itemref idref="toc"/>
+    ${spineItems}
+  </spine>
+</package>`)
+
+            // toc.ncx
+            const navPoints = d.chapters.map((ch,i) => `<navPoint id="np${i}" playOrder="${i+2}">
+    <navLabel><text>${ch.title}</text></navLabel>
+    <content src="ch${i}.xhtml"/>
+  </navPoint>`).join('\n  ')
+            oebps.file('toc.ncx', `<?xml version="1.0" encoding="UTF-8"?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
+  <head><meta name="dtb:uid" content="uid"/></head>
+  <docTitle><text>${d.title}</text></docTitle>
+  <navMap>
+    <navPoint id="np0" playOrder="1"><navLabel><text>Table of Contents</text></navLabel><content src="toc.xhtml"/></navPoint>
+    ${navPoints}
+  </navMap>
+</ncx>`)
+
+            // Cover image
+            if (d.coverImage) {
+                const base64Data = d.coverImage.split(',')[1]
+                const mimeType = d.coverImage.split(';')[0].split(':')[1]
+                const ext = mimeType.includes('png') ? 'png' : 'jpg'
+                oebps.file('cover.' + ext, base64Data, { base64: true })
+                // cover.xhtml
+                oebps.file('cover.xhtml', `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta charset="UTF-8"/><title>Cover</title>
+<style>body{margin:0;padding:0;} img{width:100%;height:100vh;object-fit:cover;display:block;}</style>
+</head><body>
+<img src="cover.${ext}" alt="${d.title}"/>
+</body></html>`)
+            }
+
+            // back-cover.xhtml
+            oebps.file('back-cover.xhtml', `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta charset="UTF-8"/><title>About the Author</title>
+<style>
+  body{font-family:Georgia,serif;padding:3em;background:#0f172a;color:white;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+  h2{font-size:1.2em;letter-spacing:0.1em;text-transform:uppercase;color:#a5b4fc;margin-bottom:1em;font-weight:400;}
+  p{font-size:1em;line-height:1.8;max-width:480px;font-style:italic;opacity:0.9;margin-bottom:2em;}
+  .brand{font-size:0.75em;opacity:0.4;letter-spacing:0.1em;}
+  .tagline{font-size:0.65em;opacity:0.3;font-style:italic;margin-top:0.3em;}
+</style>
+</head><body>
+<h2>About the Author</h2>
+<p>${d.bio || d.author + ' wrote this memoir to preserve their story for future generations.'}</p>
+<div class="brand">We Loved Life</div>
+<div class="tagline">A time capsule for the people you'll never meet.</div>
+</body></html>`)
+
+            // toc.xhtml
+            const tocLinks = d.chapters.map((ch,i) => `<li><a href="ch${i}.xhtml">${ch.title}</a></li>`).join('\n      ')
+            oebps.file('toc.xhtml', `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+<head><meta charset="UTF-8"/><title>Table of Contents</title>
+<style>body{font-family:Georgia,serif;padding:2em;} h1{color:#1e3a8a;margin-bottom:1em;} ol{line-height:2;} a{color:#8b5cf6;}</style>
+</head><body>
+<h1>Table of Contents</h1>
+<nav epub:type="toc"><ol>${tocLinks}</ol></nav>
+</body></html>`)
+
+            // Chapter files
+            d.chapters.forEach((ch, i) => {
+                const paragraphs = ch.text.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('\n    ')
+                oebps.file(`ch${i}.xhtml`, `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta charset="UTF-8"/><title>${ch.title}</title>
+<style>
+  body{font-family:Georgia,serif;padding:2em;max-width:600px;margin:0 auto;line-height:1.9;color:#1a1a1a;}
+  h1{color:#1e3a8a;font-size:2em;margin-bottom:1.5em;padding-bottom:0.5em;border-bottom:1px solid #e5e7eb;}
+  p{margin-bottom:1em;text-indent:1.5em;}
+  p:first-of-type{text-indent:0;}
+</style>
+</head><body>
+<h1>${ch.title}</h1>
+${paragraphs}
+</body></html>`)
+            })
+
+            // Generate and download
+            const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = d.title.replace(/[^a-zA-Z0-9 ]/g,'_') + '.epub'
+            a.click()
+            URL.revokeObjectURL(url)
+            showNotification('📱 EPUB downloaded! Upload to kdp.amazon.com to publish on Kindle.')
+        }
+
+        // ── DOCX EXPORT ────────────────────────────────────────────────
+        async function exportBookDOCX() {
+            const d = getExportData()
+            showNotification('Building Word document...')
+
+            // Use docx.js from CDN
+            const script = document.createElement('script')
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js'
+            document.head.appendChild(script)
+            await new Promise(r => script.onload = r)
+
+            const { Document, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak, Packer } = docx
+
+            const children = []
+
+            // Cover page
+            children.push(new Paragraph({
+                children: [new TextRun({ text: d.title, bold: true, size: 72, color: '1e3a8a' })],
+                heading: HeadingLevel.TITLE,
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 2000, after: 400 }
+            }))
+            if (d.subtitle) children.push(new Paragraph({
+                children: [new TextRun({ text: d.subtitle, italics: true, size: 36, color: '6b7280' })],
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 400 }
+            }))
+            children.push(new Paragraph({
+                children: [new TextRun({ text: 'By ' + d.author, size: 28, color: '374151' })],
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 200 }
+            }))
+            children.push(new Paragraph({
+                children: [new TextRun({ text: String(d.date), size: 24, color: '9ca3af' })],
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 2000 }
+            }))
+            children.push(new Paragraph({ children: [new PageBreak()] }))
+
+            // Table of Contents header
+            children.push(new Paragraph({
+                text: 'Table of Contents',
+                heading: HeadingLevel.HEADING_1,
+                spacing: { before: 400, after: 400 }
+            }))
+            d.chapters.forEach((ch, i) => {
+                children.push(new Paragraph({
+                    children: [new TextRun({ text: `Chapter ${i+1}  —  ${ch.title}`, size: 24 })],
+                    spacing: { after: 200 }
+                }))
+            })
+            children.push(new Paragraph({ children: [new PageBreak()] }))
+
+            // Chapters
+            d.chapters.forEach((ch, i) => {
+                children.push(new Paragraph({
+                    children: [new TextRun({ text: 'Chapter ' + (i+1), size: 22, color: '8b5cf6', italics: true })],
+                    spacing: { before: 400, after: 100 }
+                }))
+                children.push(new Paragraph({
+                    text: ch.title,
+                    heading: HeadingLevel.HEADING_1,
+                    spacing: { before: 0, after: 600 }
+                }))
+                ch.text.split('\n').filter(p => p.trim()).forEach(para => {
+                    children.push(new Paragraph({
+                        children: [new TextRun({ text: para, size: 24 })],
+                        spacing: { after: 240 },
+                        indent: { firstLine: 720 }
+                    }))
+                })
+                children.push(new Paragraph({ children: [new PageBreak()] }))
+            })
+
+            const doc = new Document({
+                creator: d.author,
+                title: d.title,
+                description: d.subtitle,
+                sections: [{ children }]
+            })
+
+            const blob = await Packer.toBlob(doc)
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = d.title.replace(/[^a-zA-Z0-9 ]/g,'_') + '.docx'
+            a.click()
+            URL.revokeObjectURL(url)
+            showNotification('📝 Word document downloaded!')
         }
 
         function checkExistingSpotifyData() {
@@ -3044,10 +3535,23 @@
                             </div>
                         </div>
 
+                        <!-- Custom chapter card -->
+                        <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:2px dashed #8b5cf6; cursor:pointer; margin-top:0;"
+                             onclick="openCustomChapterModal()">
+                            <div style="font-size:2rem; margin-bottom:0.5rem;">✍️</div>
+                            <h5 style="color:#8b5cf6; margin-bottom:0.3rem;">Your Own Chapter</h5>
+                            <p style="color:#9ca3af; font-size:0.85rem;">Add a custom topic</p>
+                        </div>
+
                         <div id="lifebook-view-all" style="display:none; margin-top:1.5rem; text-align:center;">
-                            <button class="action-button" onclick="viewAllChapters()" style="background:#8b5cf6;">
-                                📚 View All Chapters
-                            </button>
+                            <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
+                                <button class="action-button" onclick="viewAllChapters()" style="background:#8b5cf6;">
+                                    📚 View All Chapters
+                                </button>
+                                <button class="action-button" onclick="compileAndExport()" style="background:#1e3a8a;">
+                                    📤 Compile &amp; Export Book
+                                </button>
+                            </div>
                         </div></div>
 
             <!-- TAB: ESSENTIALS -->
@@ -5516,7 +6020,7 @@
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.92</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.94</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
