@@ -2182,13 +2182,13 @@
             const indicator = document.getElementById('indicator-lb-' + currentLifebookKey)
             if (indicator) indicator.style.display = 'block'
 
-            const indicator = document.getElementById('indicator-lb-' + currentLifebookKey)
-            if (indicator) indicator.style.display = 'block'
-            const count = getAllChapters().length
+            const count = Object.keys(savedLifebook).length
             const header = document.getElementById('lifebook-count-header')
             if (header) header.textContent = count + ' chapter' + (count !== 1 ? 's' : '') + ' written'
+
             const viewAll = document.getElementById('lifebook-view-all')
-            if (viewAll) viewAll.style.display = 'block'
+            if (viewAll && count > 0) viewAll.style.display = 'block'
+
             closeLifebookEditor()
             refreshDashboardStats()
             showNotification('📖 Chapter saved!')
@@ -2196,12 +2196,10 @@
 
         function loadLifebook() {
             savedLifebook = JSON.parse(localStorage.getItem('vault_lifebook') || '{}')
-            renderCustomChapterCards()
             const count = getAllChapters().length
             if (count > 0) {
                 const header = document.getElementById('lifebook-count-header')
                 if (header) header.textContent = count + ' chapter' + (count !== 1 ? 's' : '') + ' written'
-                // Show written indicators and restore renamed titles
                 Object.keys(savedLifebook).forEach(key => {
                     if (key.endsWith('_title') || key.startsWith('custom_')) return
                     const indicator = document.getElementById('indicator-lb-' + key)
@@ -2209,35 +2207,16 @@
                     const customTitle = savedLifebook[key + '_title']
                     if (customTitle) {
                         const titleEl = document.getElementById('lb-title-' + key)
-                        if (titleEl) titleEl.textContent = customTitle.replace(/^[^\u0041-\u005A\u0061-\u007A0-9]+/, '').trim() || customTitle
+                        if (titleEl) titleEl.textContent = customTitle.replace(/^[^a-zA-Z0-9]+/, '').trim() || customTitle
                     }
                 })
                 const viewAll = document.getElementById('lifebook-view-all')
                 if (viewAll) viewAll.style.display = 'block'
+                const body = document.getElementById('lifebook-body')
+                const arrow = document.getElementById('lifebook-arrow')
+                if (body) body.style.display = 'block'
+                if (arrow) arrow.textContent = '▼'
             }
-        }
-
-        function renderCustomChapterCards() {
-            // Render saved custom chapters as cards in the grid
-            const container = document.getElementById('custom-chapters-grid')
-            if (!container) return
-            container.innerHTML = ''
-            Object.keys(savedLifebook).forEach(key => {
-                if (!key.startsWith('custom_') || key.endsWith('_title')) return
-                const title = savedLifebook[key + '_title'] || 'My Chapter'
-                const chNum = getAllChapters().findIndex(c => c.key === key) + 1
-                const card = document.createElement('div')
-                card.className = 'lifebook-prompt'
-                card.style.cssText = 'background:white; border-radius:10px; padding:1.25rem; border:1px solid #8b5cf6; cursor:pointer; position:relative; margin-top:0;'
-                card.innerHTML = `
-                    <button onclick="event.stopPropagation(); window.renameChapter('${key}', '${title}')"
-                        style="position:absolute;top:0.6rem;right:0.6rem;background:none;border:none;color:#d1d5db;cursor:pointer;font-size:0.75rem;padding:0.2rem 0.3rem;border-radius:4px;" title="Rename">✏️</button>
-                    <div style="font-size:2rem;margin-bottom:0.5rem;">✍️</div>
-                    <h5 style="color:#8b5cf6;margin-bottom:0.3rem;" id="lb-title-${key}">${title}</h5>
-                    <div style="margin-top:0.5rem;"><span style="background:#ede9fe;color:#5b21b6;padding:0.2rem 0.5rem;border-radius:4px;font-size:0.75rem;">✓ Written</span></div>`
-                card.onclick = () => openLifebookEditor(key, title, 'Edit your chapter')
-                container.appendChild(card)
-            })
         }
 
         // ── LIFEBOOK CHAPTER DEFINITIONS ──────────────────────────────
@@ -2246,7 +2225,7 @@
             { key: 'school_years', title: '🎓 School Years' },
             { key: 'first_love', title: '💕 First Love' },
             { key: 'career', title: '💼 Career Journey' },
-            { key: 'family', title: '👪 Family Life' },
+            { key: 'family', title: '👨‍👩‍👧‍👦 Family Life' },
             { key: 'travels', title: '✈️ Adventures & Travels' },
             { key: 'challenges', title: '⛰️ Overcoming Challenges' },
             { key: 'wisdom', title: '🧠 Life Lessons' }
@@ -2262,8 +2241,8 @@
             })
             Object.keys(savedLifebook).forEach(key => {
                 if (key.startsWith('custom_') && !key.endsWith('_title')) {
-                    const title = savedLifebook[key + '_title'] || 'My Chapter'
-                    chapters.push({ key, title, text: savedLifebook[key] })
+                    const title = savedLifebook[key + '_title'] || key.replace('custom_','').replace(/_/g,' ')
+                    chapters.push({ key, title: '✍️ ' + title, text: savedLifebook[key] })
                 }
             })
             return chapters
@@ -2271,24 +2250,23 @@
 
         function viewAllChapters() {
             const chapters = getAllChapters()
-            let html = '<div style="background:white;border-radius:10px;padding:2rem;max-width:800px;margin:0 auto;max-height:85vh;overflow-y:auto;">'
-            html += '<h3 style="color:#1e3a8a;text-align:center;margin-bottom:0.5rem;font-size:2rem;font-family:Georgia,serif;">📖 My Life Book</h3>'
-            html += '<p style="text-align:center;color:#9ca3af;margin-bottom:2rem;font-size:0.9rem;">' + chapters.length + ' chapter' + (chapters.length!==1?'s':'') + ' written</p>'
-            chapters.forEach((ch, i) => {
-                html += '<div style="margin-bottom:2rem;padding-bottom:2rem;border-bottom:1px solid #e5e7eb;">'
-                html += '<div style="font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:#8b5cf6;margin-bottom:0.3rem;">Chapter ' + (i+1) + '</div>'
-                html += '<h4 style="color:#1e3a8a;margin-bottom:1rem;font-size:1.5rem;font-family:Georgia,serif;">' + ch.title + '</h4>'
-                html += '<p style="white-space:pre-wrap;line-height:1.8;color:#374151;">' + ch.text + '</p>'
+            let html = '<div style="background:white; border-radius:10px; padding:2rem; max-width:800px; margin:0 auto; max-height:85vh; overflow-y:auto;">'
+            html += '<h3 style="color:#1e3a8a; text-align:center; margin-bottom:0.5rem; font-size:2rem; font-family:Georgia,serif;">📖 My Life Book</h3>'
+            html += '<p style="text-align:center; color:#9ca3af; margin-bottom:2rem; font-size:0.9rem;">' + chapters.length + ' chapter' + (chapters.length!==1?'s':'') + ' written</p>'
+            chapters.forEach(ch => {
+                html += '<div style="margin-bottom:2rem; padding-bottom:2rem; border-bottom:1px solid #e5e7eb;">'
+                html += '<h4 style="color:#8b5cf6; margin-bottom:1rem; font-size:1.5rem; font-family:Georgia,serif;">' + ch.title + '</h4>'
+                html += '<p style="white-space:pre-wrap; line-height:1.8; color:#374151;">' + ch.text + '</p>'
                 html += '</div>'
             })
-            if (!chapters.length) html += '<p style="text-align:center;color:#9ca3af;padding:2rem;">No chapters written yet.</p>'
-            html += '<div style="text-align:center;margin-top:2rem;display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;">'
+            if (!chapters.length) html += '<p style="text-align:center; color:#9ca3af; padding:2rem;">No chapters written yet.</p>'
+            html += '<div style="text-align:center; margin-top:2rem; display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">'
             html += '<button class="action-button secondary" onclick="document.getElementById('lifebook-view-modal').remove()">Close</button>'
-            html += '<button class="action-button" onclick="window.compileAndExport()" style="background:#1e3a8a;">📤 Export Book</button>'
+            html += '<button class="action-button" onclick="compileAndExport()" style="background:#1e3a8a;">📤 Export Book</button>'
             html += '</div></div>'
             const modal = document.createElement('div')
             modal.id = 'lifebook-view-modal'
-            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;overflow-y:auto;padding:2rem;'
+            modal.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:10000; overflow-y:auto; padding:2rem;'
             modal.innerHTML = html
             document.body.appendChild(modal)
             modal.onclick = (e) => { if (e.target === modal) modal.remove() }
@@ -2300,18 +2278,18 @@
             if (existing) existing.remove()
             const modal = document.createElement('div')
             modal.id = 'custom-chapter-modal'
-            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;padding:1rem;display:flex;align-items:center;justify-content:center;'
+            modal.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:10000; padding:2rem; display:flex; align-items:center; justify-content:center;'
             modal.innerHTML = `
-            <div style="background:white;border-radius:14px;padding:2rem;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;">
-                <h3 style="color:#1e3a8a;margin-bottom:0.25rem;font-family:Georgia,serif;">✍️ Your Own Chapter</h3>
-                <p style="color:#9ca3af;font-size:0.9rem;margin-bottom:1.25rem;">Write about anything that matters to you.</p>
-                <label style="font-size:0.85rem;font-weight:600;color:#374151;display:block;margin-bottom:0.3rem;">Chapter Title</label>
-                <input id="custom-chapter-title" type="text" placeholder="e.g. My Faith, My Philosophy, Growing Up..."
-                    style="width:100%;padding:0.75rem;border:1px solid #e5e7eb;border-radius:8px;font-size:1rem;margin-bottom:1rem;box-sizing:border-box;">
-                <label style="font-size:0.85rem;font-weight:600;color:#374151;display:block;margin-bottom:0.3rem;">Your Story</label>
-                <textarea id="custom-chapter-text" placeholder="Write this chapter of your life..."
-                    style="width:100%;padding:1rem;border:1px solid #e5e7eb;border-radius:8px;font-size:1rem;min-height:280px;resize:vertical;line-height:1.8;margin-bottom:1rem;font-family:inherit;box-sizing:border-box;"></textarea>
-                <div style="display:flex;gap:0.5rem;">
+            <div style="background:white; border-radius:14px; padding:2rem; max-width:600px; width:100%; max-height:90vh; overflow-y:auto;">
+                <h3 style="color:#1e3a8a; margin-bottom:0.25rem; font-family:Georgia,serif;">✍️ Your Own Chapter</h3>
+                <p style="color:#9ca3af; font-size:0.9rem; margin-bottom:1.25rem;">Write about anything that matters to you.</p>
+                <label style="font-size:0.85rem; font-weight:600; color:#374151;">Chapter Title</label>
+                <input id="custom-chapter-title" type="text" placeholder="e.g. My Passions, Faith, Philosophy of Life..." 
+                    style="width:100%; padding:0.75rem; border:1px solid #e5e7eb; border-radius:8px; font-size:1rem; margin:0.4rem 0 1rem; box-sizing:border-box;">
+                <label style="font-size:0.85rem; font-weight:600; color:#374151;">Your Story</label>
+                <textarea id="custom-chapter-text" placeholder="Write this chapter of your life..." 
+                    style="width:100%; padding:1rem; border:1px solid #e5e7eb; border-radius:8px; font-size:1rem; min-height:280px; resize:vertical; line-height:1.8; margin:0.4rem 0 1rem; font-family:inherit; box-sizing:border-box;"></textarea>
+                <div style="display:flex; gap:0.5rem;">
                     <button class="action-button" onclick="saveCustomChapter()" style="background:#8b5cf6;">📖 Save Chapter</button>
                     <button class="action-button secondary" onclick="document.getElementById('custom-chapter-modal').remove()">Cancel</button>
                 </div>
@@ -2331,7 +2309,6 @@
             localStorage.setItem('vault_lifebook', JSON.stringify(savedLifebook))
             syncVaultToSupabase('vault_lifebook', savedLifebook)
             document.getElementById('custom-chapter-modal').remove()
-            renderCustomChapterCards()
             const count = getAllChapters().length
             const header = document.getElementById('lifebook-count-header')
             if (header) header.textContent = count + ' chapter' + (count!==1?'s':'') + ' written'
@@ -2341,50 +2318,8 @@
             showNotification('✍️ Custom chapter saved!')
         }
 
-        function renameChapter(key, defaultTitle) {
-            const current = savedLifebook[key + '_title'] || defaultTitle
-            const existing = document.getElementById('rename-chapter-modal')
-            if (existing) existing.remove()
-            const modal = document.createElement('div')
-            modal.id = 'rename-chapter-modal'
-            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:20000;display:flex;align-items:center;justify-content:center;padding:1rem;'
-            modal.innerHTML = `
-            <div style="background:white;border-radius:14px;padding:2rem;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-                <h4 style="color:#1e3a8a;margin-bottom:0.5rem;font-family:Georgia,serif;">✏️ Rename Chapter</h4>
-                <p style="color:#9ca3af;font-size:0.85rem;margin-bottom:1rem;">Give this chapter your own title</p>
-                <input id="rename-chapter-input" type="text" value="${current}"
-                    style="width:100%;padding:0.75rem;border:2px solid #6366f1;border-radius:8px;font-size:1rem;box-sizing:border-box;margin-bottom:1rem;outline:none;">
-                <div style="display:flex;gap:0.5rem;">
-                    <button onclick="doRenameChapter('${key}')" style="flex:1;background:#6366f1;color:white;border:none;padding:0.75rem;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.95rem;">Save</button>
-                    <button onclick="document.getElementById('rename-chapter-modal').remove()" style="flex:1;background:#f1f5f9;color:#374151;border:none;padding:0.75rem;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
-                </div>
-            </div>`
-            document.body.appendChild(modal)
-            setTimeout(() => {
-                const inp = document.getElementById('rename-chapter-input')
-                if (inp) { inp.focus(); inp.select() }
-            }, 50)
-            modal.onclick = (e) => { if (e.target === modal) modal.remove() }
-            // Allow Enter key to save
-            const inp = modal.querySelector('#rename-chapter-input')
-            if (inp) inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') doRenameChapter(key) })
-        }
-
-        function doRenameChapter(key) {
-            const inp = document.getElementById('rename-chapter-input')
-            if (!inp) return
-            const newName = inp.value.trim()
-            if (!newName) return
-            savedLifebook[key + '_title'] = newName
-            localStorage.setItem('vault_lifebook', JSON.stringify(savedLifebook))
-            syncVaultToSupabase('vault_lifebook', savedLifebook)
-            const titleEl = document.getElementById('lb-title-' + key)
-            if (titleEl) titleEl.textContent = newName
-            document.getElementById('rename-chapter-modal').remove()
-            showNotification('✏️ Chapter renamed!')
-        }
-
         // ── COMPILE & EXPORT ───────────────────────────────────────────
+        // Cover image stored as base64
         window._bookCoverImage = null
 
         function compileAndExport() {
@@ -2392,88 +2327,75 @@
             if (existing) existing.remove()
             const chapters = getAllChapters()
             if (!chapters.length) { showNotification('Write some chapters first!'); return }
-            const userName = JSON.parse(localStorage.getItem('user') || '{}').name || 'My'
+            const userName = (JSON.parse(localStorage.getItem('user') || '{}').name || 'My')
             const modal = document.createElement('div')
             modal.id = 'export-modal'
-            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:10000;overflow-y:auto;padding:1rem;'
+            modal.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:10000; overflow-y:auto; padding:1rem; display:flex; align-items:flex-start; justify-content:center;'
             modal.innerHTML = `
-            <div style="background:white;border-radius:14px;padding:2rem;max-width:560px;width:100%;margin:1rem auto;">
-                <h3 style="color:#1e3a8a;margin-bottom:0.25rem;font-family:Georgia,serif;">📖 Design Your Book</h3>
-                <p style="color:#6b7280;font-size:0.9rem;margin-bottom:1.5rem;">${chapters.length} chapter${chapters.length!==1?'s':''} ready · Fill in details then choose export format</p>
+            <div style="background:white; border-radius:14px; padding:2rem; max-width:560px; width:100%; margin:1rem auto;">
+                <h3 style="color:#1e3a8a; margin-bottom:0.25rem; font-family:Georgia,serif;">📖 Design Your Book</h3>
+                <p style="color:#6b7280; font-size:0.9rem; margin-bottom:1.5rem;">${chapters.length} chapter${chapters.length!==1?'s':''} ready · Set up covers then export</p>
 
-                <div style="background:#f8fafc;border-radius:10px;padding:1.25rem;margin-bottom:1rem;">
-                    <p style="font-size:0.75rem;font-weight:700;color:#6366f1;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.75rem;">📚 Chapters included</p>
-                    ${chapters.map((ch,i) => `<div style="padding:0.3rem 0;border-bottom:1px solid #f1f5f9;font-size:0.85rem;color:#374151;display:flex;gap:0.5rem;align-items:center;"><span style="color:#8b5cf6;font-size:0.7rem;min-width:65px;">Chapter ${i+1}</span> ${ch.title}</div>`).join('')}
+                <!-- STEP 1: Book details -->
+                <div style="background:#f8fafc; border-radius:10px; padding:1.25rem; margin-bottom:1rem;">
+                    <p style="font-size:0.8rem; font-weight:700; color:#6366f1; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:0.75rem;">Book Details</p>
+                    <label style="font-size:0.82rem; font-weight:600; color:#374151; display:block; margin-bottom:0.3rem;">Title</label>
+                    <input id="export-book-title" type="text" value="${userName}'s Life Book" 
+                        style="width:100%; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem; margin-bottom:0.75rem; box-sizing:border-box;">
+                    <label style="font-size:0.82rem; font-weight:600; color:#374151; display:block; margin-bottom:0.3rem;">Subtitle <span style="font-weight:400; color:#9ca3af;">(optional)</span></label>
+                    <input id="export-book-subtitle" type="text" placeholder="A memoir for my family" 
+                        style="width:100%; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem; box-sizing:border-box;">
                 </div>
 
-                <div style="background:#f8fafc;border-radius:10px;padding:1.25rem;margin-bottom:1rem;">
-                    <p style="font-size:0.75rem;font-weight:700;color:#6366f1;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.75rem;">Book Details</p>
-                    <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:0.3rem;">Title</label>
-                    <input id="export-book-title" type="text" value="${userName}'s Life Book"
-                        style="width:100%;padding:0.7rem;border:1px solid #e5e7eb;border-radius:8px;font-size:0.95rem;margin-bottom:0.75rem;box-sizing:border-box;">
-                    <label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:0.3rem;">Subtitle <span style="font-weight:400;color:#9ca3af;">(optional)</span></label>
-                    <input id="export-book-subtitle" type="text" placeholder="A memoir for my family"
-                        style="width:100%;padding:0.7rem;border:1px solid #e5e7eb;border-radius:8px;font-size:0.95rem;box-sizing:border-box;">
-                </div>
-
-                <div style="background:#f8fafc;border-radius:10px;padding:1.25rem;margin-bottom:1rem;">
-                    <p style="font-size:0.75rem;font-weight:700;color:#6366f1;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.75rem;">Front Cover Photo</p>
-                    <div style="display:flex;gap:1rem;align-items:flex-start;">
-                        <div id="cover-preview" style="width:90px;min-width:90px;height:126px;background:linear-gradient(135deg,#0f172a,#1e1b4b);border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid #e5e7eb;">
-                            <span id="cover-preview-placeholder" style="color:white;font-size:2rem;opacity:0.4;">📷</span>
-                            <img id="cover-preview-img" style="width:100%;height:100%;object-fit:cover;display:none;">
+                <!-- STEP 2: Front cover -->
+                <div style="background:#f8fafc; border-radius:10px; padding:1.25rem; margin-bottom:1rem;">
+                    <p style="font-size:0.8rem; font-weight:700; color:#6366f1; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:0.75rem;">Front Cover Photo</p>
+                    <div style="display:flex; gap:1rem; align-items:flex-start;">
+                        <div id="cover-preview" style="width:100px; min-width:100px; height:140px; background:linear-gradient(135deg,#0f172a,#1e1b4b); border-radius:6px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:2px solid #e5e7eb;">
+                            <span id="cover-preview-placeholder" style="color:white; font-size:2rem; opacity:0.4;">📷</span>
+                            <img id="cover-preview-img" style="width:100%; height:100%; object-fit:cover; display:none;">
                         </div>
                         <div style="flex:1;">
-                            <p style="font-size:0.82rem;color:#6b7280;margin-bottom:0.75rem;line-height:1.5;">Upload a photo for the front cover. Portrait or landscape, meaningful image.</p>
-                            <label style="background:#6366f1;color:white;padding:0.6rem 1rem;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;display:inline-block;">
+                            <p style="font-size:0.82rem; color:#6b7280; margin-bottom:0.75rem; line-height:1.5;">Upload a portrait photo for the front cover. A face shot or meaningful image works best.</p>
+                            <label style="background:#6366f1; color:white; padding:0.6rem 1rem; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer; display:inline-block;">
                                 📷 Choose Photo
                                 <input type="file" accept="image/*" onchange="loadCoverImage(this)" style="display:none;">
                             </label>
-                            <button onclick="clearCoverImage()" id="cover-clear-btn" style="display:none;background:none;border:1px solid #e5e7eb;color:#6b7280;padding:0.6rem 1rem;border-radius:8px;font-size:0.85rem;cursor:pointer;margin-left:0.5rem;">Remove</button>
+                            <button onclick="clearCoverImage()" id="cover-clear-btn" style="display:none; background:none; border:1px solid #e5e7eb; color:#6b7280; padding:0.6rem 1rem; border-radius:8px; font-size:0.85rem; cursor:pointer; margin-left:0.5rem;">Remove</button>
                         </div>
                     </div>
                 </div>
 
-                <div style="background:#f8fafc;border-radius:10px;padding:1.25rem;margin-bottom:1.5rem;">
-                    <p style="font-size:0.75rem;font-weight:700;color:#6366f1;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.75rem;">Back Cover — About the Author</p>
-                    <textarea id="export-book-bio" placeholder="2–3 sentences about yourself, e.g. 'Born in Cork in 1952, Ian spent 40 years building businesses and raising a family. This memoir was written for the grandchildren he hopes to one day meet.'"
-                        style="width:100%;padding:0.75rem;border:1px solid #e5e7eb;border-radius:8px;font-size:0.9rem;min-height:90px;resize:vertical;line-height:1.6;font-family:inherit;box-sizing:border-box;"></textarea>
+                <!-- STEP 3: Back cover bio -->
+                <div style="background:#f8fafc; border-radius:10px; padding:1.25rem; margin-bottom:1.5rem;">
+                    <p style="font-size:0.8rem; font-weight:700; color:#6366f1; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:0.75rem;">Back Cover — About the Author</p>
+                    <textarea id="export-book-bio" placeholder="Write a short description about yourself for the back cover. 2–3 sentences works well. e.g. 'Born in 1952 in rural Ireland, Ian Haynes spent 40 years building businesses and raising a family. This is his story, written for the grandchildren he hopes to one day meet.'" 
+                        style="width:100%; padding:0.75rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.9rem; min-height:100px; resize:vertical; line-height:1.6; font-family:inherit; box-sizing:border-box;"></textarea>
                 </div>
 
-                <p style="font-size:0.85rem;font-weight:600;color:#374151;margin-bottom:0.75rem;">Choose format:</p>
-                <div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1.25rem;">
-                    <button onclick="exportBookPDF()" style="background:#dc2626;color:white;border:none;padding:0.9rem 1.25rem;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:0.75rem;">
+                <!-- Export buttons -->
+                <p style="font-size:0.85rem; font-weight:600; color:#374151; margin-bottom:0.75rem;">Choose format:</p>
+                <div style="display:flex; flex-direction:column; gap:0.6rem; margin-bottom:1.25rem;">
+                    <button onclick="exportBookPDF()" style="background:#dc2626; color:white; border:none; padding:0.9rem 1.25rem; border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer; text-align:left; display:flex; align-items:center; gap:0.75rem;">
                         <span style="font-size:1.4rem;">📄</span>
-                        <div><div>Download as PDF</div><div style="font-size:0.72rem;font-weight:400;opacity:0.85;">Front cover · All chapters · Back cover</div></div>
+                        <div><div>Download as PDF</div><div style="font-size:0.72rem; font-weight:400; opacity:0.85;">Print-ready · Share anywhere</div></div>
                     </button>
-                    <button onclick="exportBookEPUB()" style="background:#f59e0b;color:white;border:none;padding:0.9rem 1.25rem;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:0.75rem;">
+                    <button onclick="exportBookEPUB()" style="background:#f59e0b; color:white; border:none; padding:0.9rem 1.25rem; border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer; text-align:left; display:flex; align-items:center; gap:0.75rem;">
                         <span style="font-size:1.4rem;">📱</span>
-                        <div><div>Download as EPUB</div><div style="font-size:0.72rem;font-weight:400;opacity:0.85;">Kindle, iBooks, Kobo · Upload to KDP</div></div>
+                        <div><div>Download as EPUB</div><div style="font-size:0.72rem; font-weight:400; opacity:0.85;">For Kindle, iBooks, Kobo · Upload to KDP</div></div>
                     </button>
-                    <button onclick="exportBookDOCX()" style="background:#2563eb;color:white;border:none;padding:0.9rem 1.25rem;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:0.75rem;">
+                    <button onclick="exportBookDOCX()" style="background:#2563eb; color:white; border:none; padding:0.9rem 1.25rem; border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer; text-align:left; display:flex; align-items:center; gap:0.75rem;">
                         <span style="font-size:1.4rem;">📝</span>
-                        <div><div>Download as Word (.docx)</div><div style="font-size:0.72rem;font-weight:400;opacity:0.85;">Edit further · Send to publisher</div></div>
+                        <div><div>Download as Word (.docx)</div><div style="font-size:0.72rem; font-weight:400; opacity:0.85;">Edit further · Send to publisher</div></div>
                     </button>
                 </div>
-                <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:0.75rem;font-size:0.78rem;color:#166534;margin-bottom:1rem;">
+                <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:0.75rem; font-size:0.78rem; color:#166534; margin-bottom:1rem;">
                     💡 <strong>Kindle:</strong> Download EPUB → kdp.amazon.com → Create New Title → Upload your file.
                 </div>
                 <button class="action-button secondary" onclick="document.getElementById('export-modal').remove()" style="width:100%;">Cancel</button>
             </div>`
             document.body.appendChild(modal)
             modal.onclick = (e) => { if (e.target === modal) modal.remove() }
-            // Restore cover preview if image already uploaded previously
-            if (savedLifebook['_cover_image']) {
-                window._bookCoverImage = savedLifebook['_cover_image']
-                setTimeout(() => {
-                    const img = document.getElementById('cover-preview-img')
-                    const ph = document.getElementById('cover-preview-placeholder')
-                    const btn = document.getElementById('cover-clear-btn')
-                    if (img) { img.src = savedLifebook['_cover_image']; img.style.display = 'block' }
-                    if (ph) ph.style.display = 'none'
-                    if (btn) btn.style.display = 'inline-block'
-                }, 50)
-            }
         }
 
         function loadCoverImage(input) {
@@ -2482,40 +2404,31 @@
             const reader = new FileReader()
             reader.onload = (e) => {
                 window._bookCoverImage = e.target.result
-                // Persist cover image in savedLifebook so it survives modal reopen
-                savedLifebook['_cover_image'] = e.target.result
-                localStorage.setItem('vault_lifebook', JSON.stringify(savedLifebook))
                 const img = document.getElementById('cover-preview-img')
-                const ph = document.getElementById('cover-preview-placeholder')
-                const btn = document.getElementById('cover-clear-btn')
+                const placeholder = document.getElementById('cover-preview-placeholder')
+                const clearBtn = document.getElementById('cover-clear-btn')
                 if (img) { img.src = e.target.result; img.style.display = 'block' }
-                if (ph) ph.style.display = 'none'
-                if (btn) btn.style.display = 'inline-block'
+                if (placeholder) placeholder.style.display = 'none'
+                if (clearBtn) clearBtn.style.display = 'inline-block'
             }
             reader.readAsDataURL(file)
         }
 
         function clearCoverImage() {
             window._bookCoverImage = null
-            delete savedLifebook['_cover_image']
-            localStorage.setItem('vault_lifebook', JSON.stringify(savedLifebook))
             const img = document.getElementById('cover-preview-img')
-            const ph = document.getElementById('cover-preview-placeholder')
-            const btn = document.getElementById('cover-clear-btn')
-            if (img) { img.src=''; img.style.display='none' }
-            if (ph) ph.style.display = 'block'
-            if (btn) btn.style.display = 'none'
+            const placeholder = document.getElementById('cover-preview-placeholder')
+            const clearBtn = document.getElementById('cover-clear-btn')
+            if (img) { img.src = ''; img.style.display = 'none' }
+            if (placeholder) placeholder.style.display = 'block'
+            if (clearBtn) clearBtn.style.display = 'none'
         }
 
         function getExportData() {
-            // Restore cover image from storage if not in memory
-            if (!window._bookCoverImage && savedLifebook['_cover_image']) {
-                window._bookCoverImage = savedLifebook['_cover_image']
-            }
             return {
-                title: document.getElementById('export-book-title')?.value.trim() || 'My Life Book',
-                subtitle: document.getElementById('export-book-subtitle')?.value.trim() || '',
-                bio: document.getElementById('export-book-bio')?.value.trim() || '',
+                title: document.getElementById('export-book-title')?.value || 'My Life Book',
+                subtitle: document.getElementById('export-book-subtitle')?.value || '',
+                bio: document.getElementById('export-book-bio')?.value || '',
                 coverImage: window._bookCoverImage || null,
                 chapters: getAllChapters(),
                 author: JSON.parse(localStorage.getItem('user') || '{}').name || 'Unknown',
@@ -2523,291 +2436,536 @@
             }
         }
 
+        // ── PDF EXPORT ─────────────────────────────────────────────────
         function exportBookPDF() {
             const d = getExportData()
             if (!d.chapters.length) { showNotification('No chapters to export!'); return }
 
-            const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            // Build full book HTML and render in an overlay - avoids window.open popup block
+            const existing = document.getElementById('pdf-preview-overlay')
+            if (existing) existing.remove()
 
             const chaptersHTML = d.chapters.map((ch, i) => `
-                <div class="bk-chapter">
-                    <div class="bk-chnum">Chapter ${i + 1}</div>
-                    <h2 class="bk-chtitle">${esc(ch.title)}</h2>
-                    <div class="bk-chbody">${esc(ch.text).replace(/\n\n/g,'</p><p class="bk-para">').replace(/\n/g,'<br>')}</div>
+                <div class="pdf-chapter">
+                    <div class="pdf-chnum">Chapter ${i + 1}</div>
+                    <h2 class="pdf-chtitle">${ch.title}</h2>
+                    <div class="pdf-chtext">${ch.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'</p><p class="pdf-para">')}</div>
                 </div>`).join('')
 
-            const tocRows = d.chapters.map((ch,i) =>
-                `<div class="bk-toc-row"><span class="bk-toc-num">Chapter ${i+1}</span><span class="bk-toc-title">${esc(ch.title)}</span></div>`
+            const tocHTML = d.chapters.map((ch,i) =>
+                `<div class="pdf-toc-row"><span class="pdf-toc-num">Chapter ${i+1}</span><span class="pdf-toc-title">${ch.title}</span></div>`
             ).join('')
 
-            const coverStyle = d.coverImage
-                ? `background: linear-gradient(rgba(5,5,20,0.6),rgba(5,5,20,0.7)), url('${d.coverImage}') center/cover no-repeat;`
-                : `background: linear-gradient(160deg,#0f172a,#1e1b4b);`
+            const coverBg = d.coverImage
+                ? `background:linear-gradient(rgba(10,10,30,0.55),rgba(10,10,30,0.75)), url('${d.coverImage}') center/cover no-repeat;`
+                : `background:linear-gradient(160deg,#0f172a,#1e1b4b);`
 
-            const backThumb = d.coverImage
-                ? `<img src="${d.coverImage}" style="width:110px;height:110px;object-fit:cover;border-radius:50%;border:4px solid rgba(255,255,255,0.25);margin-bottom:1.5rem;">`
-                : `<div style="width:90px;height:90px;background:rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin-bottom:1.5rem;">${d.author.charAt(0).toUpperCase()}</div>`
+            const authorThumb = d.coverImage
+                ? `<img src="${d.coverImage}" style="width:110px;height:110px;object-fit:cover;border-radius:50%;border:4px solid rgba(255,255,255,0.3);margin-bottom:1.5rem;">`
+                : `<div style="width:90px;height:90px;background:rgba(255,255,255,0.12);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin-bottom:1.5rem;">${d.author.charAt(0).toUpperCase()}</div>`
 
-            const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${esc(d.title)}</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&display=swap');
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Lora',Georgia,serif;color:#1a1a1a;background:#fff;}
-.no-print{position:sticky;top:0;z-index:99;background:#1e3a8a;color:white;padding:0.75rem 1.5rem;display:flex;align-items:center;gap:1rem;}
-.no-print span{flex:1;font-size:0.9rem;}
-.no-print button{border:none;padding:0.55rem 1.25rem;border-radius:7px;font-weight:700;cursor:pointer;font-size:0.88rem;}
-/* FRONT COVER */
-.bk-front{page-break-after:always;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:5rem 3rem;${coverStyle}color:white;}
-.bk-front-title{font-size:clamp(2rem,5vw,3.5rem);font-weight:700;line-height:1.15;margin-bottom:1rem;text-shadow:0 2px 12px rgba(0,0,0,0.5);}
-.bk-front-sub{font-size:1.2rem;font-style:italic;opacity:0.8;margin-bottom:2.5rem;}
-.bk-front-rule{width:60px;height:2px;background:rgba(255,255,255,0.4);margin:0 auto 2rem;}
-.bk-front-author{font-size:1rem;letter-spacing:0.15em;text-transform:uppercase;opacity:0.65;}
-.bk-front-year{font-size:0.85rem;opacity:0.35;margin-top:0.4rem;}
-/* TOC */
-.bk-toc{page-break-after:always;padding:5rem 4rem;background:white;min-height:60vh;}
-.bk-toc h2{font-size:2rem;color:#1e3a8a;margin-bottom:2.5rem;padding-bottom:1rem;border-bottom:3px solid #6366f1;}
-.bk-toc-row{display:flex;gap:1.5rem;padding:0.7rem 0;border-bottom:1px dotted #e5e7eb;align-items:baseline;}
-.bk-toc-num{font-size:0.72rem;color:#8b5cf6;text-transform:uppercase;letter-spacing:0.12em;white-space:nowrap;min-width:72px;}
-.bk-toc-title{font-size:1rem;color:#1e3a8a;}
-/* CHAPTERS */
-.bk-chapter{page-break-before:always;padding:5rem 4rem;max-width:740px;margin:0 auto;background:white;}
-.bk-chnum{font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;color:#8b5cf6;margin-bottom:0.5rem;}
-.bk-chtitle{font-size:2.4rem;color:#1e3a8a;margin-bottom:2.5rem;line-height:1.2;padding-bottom:1.25rem;border-bottom:2px solid #ede9fe;}
-.bk-chbody{font-size:1.05rem;line-height:1.95;color:#374151;}
-.bk-para{margin-top:1.1em;text-indent:1.8em;}
-/* BACK COVER */
-.bk-back{page-break-before:always;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:5rem 3rem;background:linear-gradient(160deg,#1e1b4b,#0f172a);color:white;}
-.bk-back-label{font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:#a5b4fc;margin-bottom:1.25rem;}
-.bk-back-bio{font-size:1.05rem;line-height:1.85;max-width:500px;font-style:italic;opacity:0.88;margin-bottom:3rem;}
-.bk-back-brand{font-size:0.8rem;opacity:0.35;letter-spacing:0.1em;}
-.bk-back-tag{font-size:0.7rem;opacity:0.25;font-style:italic;margin-top:0.3rem;}
-@media print{
-    .no-print{display:none!important;}
-    body{background:white;}
-    .bk-front,.bk-back{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-}
-</style></head><body>
-<div class="no-print">
-    <span>📖 ${esc(d.title)} — ${d.chapters.length} chapters</span>
-    <button onclick="window.print()" style="background:#6366f1;color:white;">🖨 Print / Save as PDF</button>
-    <button onclick="window.close()" style="background:rgba(255,255,255,0.15);color:white;">✕ Close</button>
-</div>
-<div class="bk-front">
-    <div class="bk-front-title">${esc(d.title)}</div>
-    ${d.subtitle ? `<div class="bk-front-sub">${esc(d.subtitle)}</div>` : ''}
-    <div class="bk-front-rule"></div>
-    <div class="bk-front-author">By ${esc(d.author)}</div>
-    <div class="bk-front-year">${d.date}</div>
-</div>
-<div class="bk-toc">
-    <h2>Table of Contents</h2>
-    ${tocRows}
-</div>
-${chaptersHTML}
-<div class="bk-back">
-    ${backThumb}
-    <div class="bk-back-label">About the Author</div>
-    <div class="bk-back-bio">${esc(d.bio || d.author + ' wrote this memoir to preserve their story for the people they love.')}</div>
-    <div class="bk-back-brand">We Loved Life</div>
-    <div class="bk-back-tag">A time capsule for the people you'll never meet.</div>
-</div>
-</body></html>`
+            const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&display=swap');
+                *{margin:0;padding:0;box-sizing:border-box;}
+                body{font-family:'Lora',Georgia,serif;background:#f1f5f9;}
+                /* FRONT COVER */
+                .pdf-front{width:100%;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:5rem 3rem;${coverBg}color:white;page-break-after:always;}
+                .pdf-front-title{font-size:3.2rem;font-weight:700;line-height:1.2;margin-bottom:1rem;text-shadow:0 2px 8px rgba(0,0,0,0.4);}
+                .pdf-front-subtitle{font-size:1.25rem;font-style:italic;opacity:0.8;margin-bottom:2rem;}
+                .pdf-front-author{font-size:1rem;letter-spacing:0.15em;text-transform:uppercase;opacity:0.6;margin-bottom:0.4rem;}
+                .pdf-front-year{font-size:0.9rem;opacity:0.35;}
+                /* TOC */
+                .pdf-toc{page-break-after:always;padding:5rem 4rem;background:white;min-height:100vh;}
+                .pdf-toc h2{font-size:2rem;color:#1e3a8a;margin-bottom:2.5rem;padding-bottom:1rem;border-bottom:3px solid #6366f1;}
+                .pdf-toc-row{display:flex;gap:1rem;padding:0.65rem 0;border-bottom:1px dotted #e5e7eb;align-items:baseline;}
+                .pdf-toc-num{font-size:0.78rem;color:#8b5cf6;text-transform:uppercase;letter-spacing:0.1em;white-space:nowrap;min-width:80px;}
+                .pdf-toc-title{font-size:1rem;color:#1e3a8a;}
+                /* CHAPTERS */
+                .pdf-chapter{page-break-before:always;padding:5rem 4rem;max-width:720px;margin:0 auto;min-height:100vh;background:white;}
+                .pdf-chnum{font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;color:#8b5cf6;margin-bottom:0.6rem;}
+                .pdf-chtitle{font-size:2.4rem;color:#1e3a8a;margin-bottom:2.5rem;line-height:1.25;padding-bottom:1.25rem;border-bottom:2px solid #ede9fe;}
+                .pdf-chtext{font-size:1.05rem;line-height:1.95;color:#374151;}
+                .pdf-para{margin-top:1em;text-indent:1.5em;}
+                .pdf-para:first-child{text-indent:0;}
+                /* BACK COVER */
+                .pdf-back{page-break-before:always;width:100%;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:5rem 3rem;background:linear-gradient(160deg,#1e1b4b,#0f172a);color:white;}
+                .pdf-back-label{font-size:0.75rem;letter-spacing:0.15em;text-transform:uppercase;color:#a5b4fc;margin-bottom:1.25rem;}
+                .pdf-back-bio{font-size:1.05rem;line-height:1.85;max-width:500px;font-style:italic;opacity:0.88;margin-bottom:3rem;}
+                .pdf-back-brand{font-size:0.8rem;opacity:0.35;letter-spacing:0.1em;}
+                .pdf-back-tag{font-size:0.7rem;opacity:0.25;font-style:italic;margin-top:0.3rem;}
+                /* PRINT */
+                @media print{
+                    body{background:white;}
+                    .pdf-front,.pdf-back{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+                    .no-print{display:none!important;}
+                }
+            </style></head><body>
 
-            // Try new tab, fallback to blob download (Safari blocks window.open)
+            <div class="no-print" style="position:sticky;top:0;z-index:99;background:#1e3a8a;color:white;padding:0.75rem 1.5rem;display:flex;align-items:center;justify-content:between;gap:1rem;">
+                <span style="flex:1;font-size:0.9rem;">📖 ${d.title} — ${d.chapters.length} chapters compiled</span>
+                <button onclick="window.print()" style="background:#6366f1;color:white;border:none;padding:0.6rem 1.5rem;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem;">🖨️ Print / Save as PDF</button>
+                <button onclick="window.close()" style="background:rgba(255,255,255,0.15);color:white;border:none;padding:0.6rem 1rem;border-radius:8px;cursor:pointer;font-size:0.9rem;">✕ Close</button>
+            </div>
+
+            <!-- FRONT COVER -->
+            <div class="pdf-front">
+                <div class="pdf-front-title">${d.title}</div>
+                ${d.subtitle ? `<div class="pdf-front-subtitle">${d.subtitle}</div>` : ''}
+                <div class="pdf-front-author">By ${d.author}</div>
+                <div class="pdf-front-year">${d.date}</div>
+            </div>
+
+            <!-- TABLE OF CONTENTS -->
+            <div class="pdf-toc">
+                <h2>Table of Contents</h2>
+                ${tocHTML}
+            </div>
+
+            <!-- CHAPTERS -->
+            ${chaptersHTML}
+
+            <!-- BACK COVER -->
+            <div class="pdf-back">
+                ${authorThumb}
+                <div class="pdf-back-label">About the Author</div>
+                <div class="pdf-back-bio">${d.bio || d.author + ' wrote this memoir to preserve their story for the people they love.'}</div>
+                <div class="pdf-back-brand">We Loved Life</div>
+                <div class="pdf-back-tag">A time capsule for the people you'll never meet.</div>
+            </div>
+
+            </body></html>`
+
+            // Open in new tab — if blocked, fallback to blob download
             try {
-                const win = window.open('', '_blank')
-                if (!win || win.closed) throw new Error('blocked')
+                const win = window.open('about:blank', '_blank')
+                if (!win) throw new Error('blocked')
                 win.document.write(html)
                 win.document.close()
             } catch(e) {
-                const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+                // Fallback: download as HTML file user can open
+                const blob = new Blob([html], { type: 'text/html' })
                 const url = URL.createObjectURL(blob)
                 const a = document.createElement('a')
                 a.href = url
-                a.download = d.title.replace(/[^a-zA-Z0-9 ]/g,'_') + '.html'
-                document.body.appendChild(a)
+                a.download = d.title.replace(/[^a-zA-Z0-9 ]/g,'_') + '_book.html'
                 a.click()
-                document.body.removeChild(a)
                 URL.revokeObjectURL(url)
-                showNotification('📄 Saved as HTML — open it and Print → Save as PDF')
+                showNotification('📄 Book saved as HTML — open it and print to PDF')
             }
         }
 
 
-        // ── EPUB EXPORT ─────────────────────────────────────────────────
+        // ── EPUB EXPORT ────────────────────────────────────────────────
         async function exportBookEPUB() {
             const d = getExportData()
-            if (!d.chapters.length) { showNotification('No chapters to export!'); return }
             showNotification('Building EPUB...')
-
+            
+            // Build EPUB structure as a ZIP using JSZip loaded dynamically
             const script = document.createElement('script')
             script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'
             document.head.appendChild(script)
-            await new Promise(r => { script.onload = r; script.onerror = r })
+            await new Promise(r => script.onload = r)
 
             const zip = new JSZip()
+
+            // mimetype (must be first, uncompressed)
             zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' })
+
+            // META-INF/container.xml
             zip.folder('META-INF').file('container.xml', `<?xml version="1.0"?>
 <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
-  <rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles>
+  <rootfiles>
+    <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
+  </rootfiles>
 </container>`)
 
             const oebps = zip.folder('OEBPS')
-            const uid = 'urn:uuid:' + ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16))
 
-            // Cover image
+            // content.opf
             const hasCover = !!d.coverImage
             const coverExt = d.coverImage && d.coverImage.includes('png') ? 'png' : 'jpg'
-            if (hasCover) {
-                oebps.file('cover.' + coverExt, d.coverImage.split(',')[1], { base64: true })
+            const manifestItems = [
+                hasCover ? `<item id="cover-img" href="cover.${coverExt}" media-type="image/${coverExt === 'png' ? 'png' : 'jpeg'}" properties="cover-image"/>` : '',
+                hasCover ? `<item id="cover-page" href="cover.xhtml" media-type="application/xhtml+xml"/>` : '',
+                ...d.chapters.map((ch,i) => `<item id="ch${i}" href="ch${i}.xhtml" media-type="application/xhtml+xml"/>`),
+                `<item id="back-cover" href="back-cover.xhtml" media-type="application/xhtml+xml"/>`
+            ].filter(Boolean).join('\n    ')
+            const spineItems = [
+                hasCover ? `<itemref idref="cover-page"/>` : '',
+                ...d.chapters.map((_,i) => `<itemref idref="ch${i}"/>`),
+                `<itemref idref="back-cover"/>`
+            ].filter(Boolean).join('\n    ')
+            oebps.file('content.opf', `<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>${d.title}</dc:title>
+    <dc:creator>${d.author}</dc:creator>
+    <dc:language>en</dc:language>
+    <dc:date>${d.date}-01-01</dc:date>
+    <dc:identifier id="uid">urn:uuid:${crypto.randomUUID()}</dc:identifier>
+    <meta property="dcterms:modified">${new Date().toISOString().split('.')[0]}Z</meta>
+  </metadata>
+  <manifest>
+    <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
+    <item id="toc" href="toc.xhtml" media-type="application/xhtml+xml" properties="nav"/>
+    ${manifestItems}
+  </manifest>
+  <spine toc="ncx">
+    <itemref idref="toc"/>
+    ${spineItems}
+  </spine>
+</package>`)
+
+            // toc.ncx
+            const navPoints = d.chapters.map((ch,i) => `<navPoint id="np${i}" playOrder="${i+2}">
+    <navLabel><text>${ch.title}</text></navLabel>
+    <content src="ch${i}.xhtml"/>
+  </navPoint>`).join('\n  ')
+            oebps.file('toc.ncx', `<?xml version="1.0" encoding="UTF-8"?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
+  <head><meta name="dtb:uid" content="uid"/></head>
+  <docTitle><text>${d.title}</text></docTitle>
+  <navMap>
+    <navPoint id="np0" playOrder="1"><navLabel><text>Table of Contents</text></navLabel><content src="toc.xhtml"/></navPoint>
+    ${navPoints}
+  </navMap>
+</ncx>`)
+
+            // Cover image
+            if (d.coverImage) {
+                const base64Data = d.coverImage.split(',')[1]
+                const mimeType = d.coverImage.split(';')[0].split(':')[1]
+                const ext = mimeType.includes('png') ? 'png' : 'jpg'
+                oebps.file('cover.' + ext, base64Data, { base64: true })
+                // cover.xhtml
                 oebps.file('cover.xhtml', `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head><meta charset="UTF-8"/><title>Cover</title>
-<style>body{margin:0;padding:0;background:#0f172a;}img{width:100%;min-height:100vh;object-fit:cover;display:block;}</style>
-</head><body><img src="cover.${coverExt}" alt="${d.title}"/></body></html>`)
+<style>body{margin:0;padding:0;} img{width:100%;height:100vh;object-fit:cover;display:block;}</style>
+</head><body>
+<img src="cover.${ext}" alt="${d.title}"/>
+</body></html>`)
             }
 
-            // Chapter files
-            d.chapters.forEach((ch, i) => {
-                const paras = ch.text.split('\n').filter(p => p.trim())
-                    .map(p => `<p>${p.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>`).join('\n')
-                oebps.file(`ch${i}.xhtml`, `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
-<head><meta charset="UTF-8"/><title>${ch.title}</title>
-<style>
-  body{font-family:Georgia,serif;padding:2.5em;max-width:620px;margin:0 auto;line-height:1.9;color:#1a1a1a;}
-  .chnum{font-size:0.7em;letter-spacing:0.15em;text-transform:uppercase;color:#8b5cf6;margin-bottom:0.5em;}
-  h1{color:#1e3a8a;font-size:2em;margin-bottom:1.5em;padding-bottom:0.5em;border-bottom:1px solid #ede9fe;line-height:1.25;}
-  p{margin-bottom:1em;text-indent:1.5em;}p:first-of-type{text-indent:0;}
-</style>
-</head><body>
-<div class="chnum">Chapter ${i+1}</div>
-<h1>${ch.title.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</h1>
-${paras}
-</body></html>`)
-            })
-
-            // Back cover
-            oebps.file('back.xhtml', `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+            // back-cover.xhtml
+            oebps.file('back-cover.xhtml', `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head><meta charset="UTF-8"/><title>About the Author</title>
 <style>
   body{font-family:Georgia,serif;padding:3em;background:#0f172a;color:white;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
-  h2{font-size:0.9em;letter-spacing:0.12em;text-transform:uppercase;color:#a5b4fc;margin-bottom:1.5em;font-weight:400;}
-  p{font-size:1em;line-height:1.8;max-width:500px;font-style:italic;opacity:0.88;margin-bottom:2.5em;}
-  .brand{font-size:0.72em;opacity:0.35;letter-spacing:0.1em;}
-  .tag{font-size:0.65em;opacity:0.25;font-style:italic;margin-top:0.3em;}
+  h2{font-size:1.2em;letter-spacing:0.1em;text-transform:uppercase;color:#a5b4fc;margin-bottom:1em;font-weight:400;}
+  p{font-size:1em;line-height:1.8;max-width:480px;font-style:italic;opacity:0.9;margin-bottom:2em;}
+  .brand{font-size:0.75em;opacity:0.4;letter-spacing:0.1em;}
+  .tagline{font-size:0.65em;opacity:0.3;font-style:italic;margin-top:0.3em;}
 </style>
 </head><body>
 <h2>About the Author</h2>
-<p>${(d.bio || d.author + ' wrote this memoir to preserve their story for future generations.').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
+<p>${d.bio || d.author + ' wrote this memoir to preserve their story for future generations.'}</p>
 <div class="brand">We Loved Life</div>
-<div class="tag">A time capsule for the people you'll never meet.</div>
+<div class="tagline">A time capsule for the people you'll never meet.</div>
 </body></html>`)
 
-            // TOC nav
-            const tocLinks = d.chapters.map((ch,i) => `<li><a href="ch${i}.xhtml">Chapter ${i+1} — ${ch.title.replace(/&/g,'&amp;')}</a></li>`).join('\n      ')
+            // toc.xhtml
+            const tocLinks = d.chapters.map((ch,i) => `<li><a href="ch${i}.xhtml">${ch.title}</a></li>`).join('\n      ')
             oebps.file('toc.xhtml', `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
-<head><meta charset="UTF-8"/><title>Contents</title>
-<style>body{font-family:Georgia,serif;padding:2em;}h1{color:#1e3a8a;margin-bottom:1.5em;}ol{line-height:2.2;}a{color:#8b5cf6;}</style>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+<head><meta charset="UTF-8"/><title>Table of Contents</title>
+<style>body{font-family:Georgia,serif;padding:2em;} h1{color:#1e3a8a;margin-bottom:1em;} ol{line-height:2;} a{color:#8b5cf6;}</style>
 </head><body>
 <h1>Table of Contents</h1>
 <nav epub:type="toc"><ol>${tocLinks}</ol></nav>
 </body></html>`)
 
-            // Manifest and spine
-            const manifestItems = [
-                hasCover ? `<item id="cover-img" href="cover.${coverExt}" media-type="image/${coverExt==='png'?'png':'jpeg'}" properties="cover-image"/>` : '',
-                hasCover ? `<item id="cover-page" href="cover.xhtml" media-type="application/xhtml+xml"/>` : '',
-                `<item id="toc-nav" href="toc.xhtml" media-type="application/xhtml+xml" properties="nav"/>`,
-                ...d.chapters.map((_,i) => `<item id="ch${i}" href="ch${i}.xhtml" media-type="application/xhtml+xml"/>`),
-                `<item id="back" href="back.xhtml" media-type="application/xhtml+xml"/>`
-            ].filter(Boolean).join('\n    ')
+            // Chapter files
+            d.chapters.forEach((ch, i) => {
+                const paragraphs = ch.text.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('\n    ')
+                oebps.file(`ch${i}.xhtml`, `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta charset="UTF-8"/><title>${ch.title}</title>
+<style>
+  body{font-family:Georgia,serif;padding:2em;max-width:600px;margin:0 auto;line-height:1.9;color:#1a1a1a;}
+  h1{color:#1e3a8a;font-size:2em;margin-bottom:1.5em;padding-bottom:0.5em;border-bottom:1px solid #e5e7eb;}
+  p{margin-bottom:1em;text-indent:1.5em;}
+  p:first-of-type{text-indent:0;}
+</style>
+</head><body>
+<h1>${ch.title}</h1>
+${paragraphs}
+</body></html>`)
+            })
 
-            const spineItems = [
-                hasCover ? `<itemref idref="cover-page"/>` : '',
-                `<itemref idref="toc-nav"/>`,
-                ...d.chapters.map((_,i) => `<itemref idref="ch${i}"/>`),
-                `<itemref idref="back"/>`
-            ].filter(Boolean).join('\n    ')
-
-            oebps.file('content.opf', `<?xml version="1.0" encoding="UTF-8"?>
-<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">
-  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-    <dc:title>${d.title.replace(/&/g,'&amp;')}</dc:title>
-    <dc:creator>${d.author.replace(/&/g,'&amp;')}</dc:creator>
-    <dc:language>en</dc:language>
-    <dc:identifier id="uid">${uid}</dc:identifier>
-    <meta property="dcterms:modified">${new Date().toISOString().split('.')[0]}Z</meta>
-  </metadata>
-  <manifest>${manifestItems}</manifest>
-  <spine>${spineItems}</spine>
-</package>`)
-
+            // Generate and download
             const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' })
             const url = URL.createObjectURL(blob)
             const a = document.createElement('a')
             a.href = url
             a.download = d.title.replace(/[^a-zA-Z0-9 ]/g,'_') + '.epub'
-            document.body.appendChild(a); a.click(); document.body.removeChild(a)
+            a.click()
             URL.revokeObjectURL(url)
             showNotification('📱 EPUB downloaded! Upload to kdp.amazon.com to publish on Kindle.')
         }
 
-        // ── DOCX EXPORT ─────────────────────────────────────────────────
+        // ── DOCX EXPORT ────────────────────────────────────────────────
         async function exportBookDOCX() {
             const d = getExportData()
-            if (!d.chapters.length) { showNotification('No chapters to export!'); return }
             showNotification('Building Word document...')
 
+            // Use docx.js from CDN
             const script = document.createElement('script')
             script.src = 'https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js'
             document.head.appendChild(script)
-            await new Promise(r => { script.onload = r; script.onerror = r })
+            await new Promise(r => script.onload = r)
 
             const { Document, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak, Packer } = docx
+
             const children = []
 
             // Cover page
-            children.push(new Paragraph({ children: [new TextRun({ text: d.title, bold: true, size: 72, color: '1e3a8a' })], alignment: AlignmentType.CENTER, spacing: { before: 2880, after: 480 } }))
-            if (d.subtitle) children.push(new Paragraph({ children: [new TextRun({ text: d.subtitle, italics: true, size: 36, color: '6b7280' })], alignment: AlignmentType.CENTER, spacing: { after: 480 } }))
-            children.push(new Paragraph({ children: [new TextRun({ text: 'By ' + d.author, size: 28 })], alignment: AlignmentType.CENTER, spacing: { after: 240 } }))
-            children.push(new Paragraph({ children: [new TextRun({ text: String(d.date), size: 24, color: '9ca3af' })], alignment: AlignmentType.CENTER, spacing: { after: 2880 } }))
+            children.push(new Paragraph({
+                children: [new TextRun({ text: d.title, bold: true, size: 72, color: '1e3a8a' })],
+                heading: HeadingLevel.TITLE,
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 2000, after: 400 }
+            }))
+            if (d.subtitle) children.push(new Paragraph({
+                children: [new TextRun({ text: d.subtitle, italics: true, size: 36, color: '6b7280' })],
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 400 }
+            }))
+            children.push(new Paragraph({
+                children: [new TextRun({ text: 'By ' + d.author, size: 28, color: '374151' })],
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 200 }
+            }))
+            children.push(new Paragraph({
+                children: [new TextRun({ text: String(d.date), size: 24, color: '9ca3af' })],
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 2000 }
+            }))
             children.push(new Paragraph({ children: [new PageBreak()] }))
 
-            // TOC
-            children.push(new Paragraph({ children: [new TextRun({ text: 'Table of Contents', bold: true, size: 40, color: '1e3a8a' })], spacing: { before: 480, after: 480 } }))
+            // Table of Contents header
+            children.push(new Paragraph({
+                text: 'Table of Contents',
+                heading: HeadingLevel.HEADING_1,
+                spacing: { before: 400, after: 400 }
+            }))
             d.chapters.forEach((ch, i) => {
-                children.push(new Paragraph({ children: [new TextRun({ text: `Chapter ${i+1}  —  ${ch.title}`, size: 24, color: '374151' })], spacing: { after: 160 } }))
+                children.push(new Paragraph({
+                    children: [new TextRun({ text: `Chapter ${i+1}  —  ${ch.title}`, size: 24 })],
+                    spacing: { after: 200 }
+                }))
             })
             children.push(new Paragraph({ children: [new PageBreak()] }))
 
             // Chapters
             d.chapters.forEach((ch, i) => {
-                children.push(new Paragraph({ children: [new TextRun({ text: 'Chapter ' + (i+1), size: 20, color: '8b5cf6', italics: true })], spacing: { before: 0, after: 120 } }))
-                children.push(new Paragraph({ children: [new TextRun({ text: ch.title, bold: true, size: 48, color: '1e3a8a' })], spacing: { before: 0, after: 720 } }))
+                children.push(new Paragraph({
+                    children: [new TextRun({ text: 'Chapter ' + (i+1), size: 22, color: '8b5cf6', italics: true })],
+                    spacing: { before: 400, after: 100 }
+                }))
+                children.push(new Paragraph({
+                    text: ch.title,
+                    heading: HeadingLevel.HEADING_1,
+                    spacing: { before: 0, after: 600 }
+                }))
                 ch.text.split('\n').filter(p => p.trim()).forEach(para => {
-                    children.push(new Paragraph({ children: [new TextRun({ text: para, size: 24 })], spacing: { after: 240 }, indent: { firstLine: 720 } }))
+                    children.push(new Paragraph({
+                        children: [new TextRun({ text: para, size: 24 })],
+                        spacing: { after: 240 },
+                        indent: { firstLine: 720 }
+                    }))
                 })
                 children.push(new Paragraph({ children: [new PageBreak()] }))
             })
 
-            // Back cover / About the author
-            children.push(new Paragraph({ children: [new TextRun({ text: 'About the Author', bold: true, size: 36, color: '1e3a8a' })], alignment: AlignmentType.CENTER, spacing: { before: 1440, after: 480 } }))
-            children.push(new Paragraph({ children: [new TextRun({ text: d.bio || d.author + ' wrote this memoir to preserve their story for future generations.', italics: true, size: 24 })], alignment: AlignmentType.CENTER, spacing: { after: 480 } }))
-            children.push(new Paragraph({ children: [new TextRun({ text: 'Preserved with We Loved Life', size: 20, color: '9ca3af' })], alignment: AlignmentType.CENTER }))
+            const doc = new Document({
+                creator: d.author,
+                title: d.title,
+                description: d.subtitle,
+                sections: [{ children }]
+            })
 
-            const doc = new Document({ creator: d.author, title: d.title, sections: [{ children }] })
             const blob = await Packer.toBlob(doc)
             const url = URL.createObjectURL(blob)
             const a = document.createElement('a')
             a.href = url
             a.download = d.title.replace(/[^a-zA-Z0-9 ]/g,'_') + '.docx'
-            document.body.appendChild(a); a.click(); document.body.removeChild(a)
+            a.click()
             URL.revokeObjectURL(url)
             showNotification('📝 Word document downloaded!')
         }
+
+
+        function renameChapter(key, defaultTitle) {
+            const current = savedLifebook[key + '_title'] || defaultTitle
+            const newName = prompt('Rename this chapter:', current)
+            if (!newName || !newName.trim()) return
+            savedLifebook[key + '_title'] = newName.trim()
+            localStorage.setItem('vault_lifebook', JSON.stringify(savedLifebook))
+            syncVaultToSupabase('vault_lifebook', savedLifebook)
+            const titleEl = document.getElementById('lb-title-' + key)
+            if (titleEl) {
+                // Show without emoji prefix in the card heading
+                const stripped = newName.trim().replace(/^[^a-zA-Z0-9]+/, '').trim()
+                titleEl.textContent = stripped || newName.trim()
+            }
+            showNotification('✏️ Chapter renamed!')
+        }
+
+        // ── Expose lifebook functions globally (Cloudflare scope fix) ──
+        window.openLifebookEditor = function(key, title, promptText) {
+            currentLifebookKey = key
+            document.getElementById('lifebook-editor-title').textContent = title
+            document.getElementById('lifebook-editor-prompt').textContent = promptText
+            document.getElementById('lifebook-editor-text').value = savedLifebook[key] || ''
+            document.getElementById('lifebook-editor').style.display = 'block'
+            document.getElementById('lifebook-editor').scrollIntoView({ behavior: 'smooth' })
+        }
+        window.closeLifebookEditor = function() {
+            document.getElementById('lifebook-editor').style.display = 'none'
+            currentLifebookKey = ''
+        }
+        window.saveLifebook = function() {
+            const text = document.getElementById('lifebook-editor-text').value.trim()
+            if (!text) { showNotification('Please write something first!'); return }
+            savedLifebook[currentLifebookKey] = text
+            localStorage.setItem('vault_lifebook', JSON.stringify(savedLifebook))
+            syncVaultToSupabase('vault_lifebook', savedLifebook)
+            const indicator = document.getElementById('indicator-lb-' + currentLifebookKey)
+            if (indicator) indicator.style.display = 'block'
+            const count = Object.keys(savedLifebook).filter(k => !k.endsWith('_title') && !k.startsWith('_')).length
+            const header = document.getElementById('lifebook-count-header')
+            if (header) header.textContent = count + ' chapter' + (count !== 1 ? 's' : '') + ' written'
+            const viewAll = document.getElementById('lifebook-view-all')
+            if (viewAll) viewAll.style.display = 'block'
+            window.closeLifebookEditor()
+            refreshDashboardStats()
+            showNotification('📖 Chapter saved!')
+        }
+        window.renameChapter = function(key, defaultTitle) {
+            const current = savedLifebook[key + '_title'] || defaultTitle
+            const existing = document.getElementById('rename-chapter-modal')
+            if (existing) existing.remove()
+            const modal = document.createElement('div')
+            modal.id = 'rename-chapter-modal'
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:20000;display:flex;align-items:center;justify-content:center;padding:1rem;'
+            modal.innerHTML = `<div style="background:white;border-radius:14px;padding:2rem;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                <h4 style="color:#1e3a8a;margin-bottom:0.5rem;font-family:Georgia,serif;">✏️ Rename Chapter</h4>
+                <p style="color:#9ca3af;font-size:0.85rem;margin-bottom:1rem;">Give this chapter your own title</p>
+                <input id="rename-chapter-input" type="text" value="${current.replace(/"/g,'&quot;')}"
+                    style="width:100%;padding:0.75rem;border:2px solid #6366f1;border-radius:8px;font-size:1rem;box-sizing:border-box;margin-bottom:1rem;">
+                <div style="display:flex;gap:0.5rem;">
+                    <button onclick="window.doRenameChapter('${key}')" style="flex:1;background:#6366f1;color:white;border:none;padding:0.75rem;border-radius:8px;font-weight:700;cursor:pointer;">Save</button>
+                    <button onclick="document.getElementById('rename-chapter-modal').remove()" style="flex:1;background:#f1f5f9;color:#374151;border:none;padding:0.75rem;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
+                </div></div>`
+            document.body.appendChild(modal)
+            setTimeout(() => { const inp = document.getElementById('rename-chapter-input'); if(inp){inp.focus();inp.select()} }, 50)
+            modal.onclick = e => { if(e.target===modal) modal.remove() }
+            const inp = modal.querySelector('#rename-chapter-input')
+            if (inp) inp.addEventListener('keydown', e => { if(e.key==='Enter') window.doRenameChapter(key) })
+        }
+        window.doRenameChapter = function(key) {
+            const inp = document.getElementById('rename-chapter-input')
+            if (!inp) return
+            const newName = inp.value.trim()
+            if (!newName) return
+            savedLifebook[key + '_title'] = newName
+            localStorage.setItem('vault_lifebook', JSON.stringify(savedLifebook))
+            syncVaultToSupabase('vault_lifebook', savedLifebook)
+            const el = document.getElementById('lb-title-' + key)
+            if (el) el.textContent = newName
+            document.getElementById('rename-chapter-modal').remove()
+            showNotification('✏️ Chapter renamed!')
+        }
+        window.openCustomChapterModal = function() {
+            const existing = document.getElementById('custom-chapter-modal')
+            if (existing) existing.remove()
+            const modal = document.createElement('div')
+            modal.id = 'custom-chapter-modal'
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;padding:1rem;display:flex;align-items:center;justify-content:center;'
+            modal.innerHTML = `<div style="background:white;border-radius:14px;padding:2rem;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;">
+                <h3 style="color:#1e3a8a;margin-bottom:0.25rem;font-family:Georgia,serif;">✍️ Your Own Chapter</h3>
+                <p style="color:#9ca3af;font-size:0.9rem;margin-bottom:1.25rem;">Write about anything that matters to you.</p>
+                <label style="font-size:0.85rem;font-weight:600;color:#374151;display:block;margin-bottom:0.3rem;">Chapter Title</label>
+                <input id="custom-chapter-title" type="text" placeholder="e.g. My Faith, My Passions..."
+                    style="width:100%;padding:0.75rem;border:1px solid #e5e7eb;border-radius:8px;font-size:1rem;margin-bottom:1rem;box-sizing:border-box;">
+                <label style="font-size:0.85rem;font-weight:600;color:#374151;display:block;margin-bottom:0.3rem;">Your Story</label>
+                <textarea id="custom-chapter-text" placeholder="Write this chapter of your life..."
+                    style="width:100%;padding:1rem;border:1px solid #e5e7eb;border-radius:8px;font-size:1rem;min-height:280px;resize:vertical;line-height:1.8;margin-bottom:1rem;font-family:inherit;box-sizing:border-box;"></textarea>
+                <div style="display:flex;gap:0.5rem;">
+                    <button onclick="window.saveCustomChapter()" style="flex:1;background:#8b5cf6;color:white;border:none;padding:0.75rem;border-radius:8px;font-weight:700;cursor:pointer;">📖 Save Chapter</button>
+                    <button onclick="document.getElementById('custom-chapter-modal').remove()" style="flex:1;background:#f1f5f9;color:#374151;border:none;padding:0.75rem;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
+                </div></div>`
+            document.body.appendChild(modal)
+            modal.onclick = e => { if(e.target===modal) modal.remove() }
+        }
+        window.saveCustomChapter = function() {
+            const title = document.getElementById('custom-chapter-title').value.trim()
+            const text = document.getElementById('custom-chapter-text').value.trim()
+            if (!title) { showNotification('Please enter a chapter title'); return }
+            if (!text) { showNotification('Please write something first!'); return }
+            const key = 'custom_' + Date.now()
+            savedLifebook[key] = text
+            savedLifebook[key + '_title'] = title
+            localStorage.setItem('vault_lifebook', JSON.stringify(savedLifebook))
+            syncVaultToSupabase('vault_lifebook', savedLifebook)
+            document.getElementById('custom-chapter-modal').remove()
+            const container = document.getElementById('custom-chapters-grid')
+            if (container) {
+                const card = document.createElement('div')
+                card.className = 'lifebook-prompt'
+                card.style.cssText = 'background:white;border-radius:10px;padding:1.25rem;border:1px solid #8b5cf6;cursor:pointer;position:relative;'
+                card.innerHTML = `<button onclick="event.stopPropagation();window.renameChapter('${key}','${title.replace(/'/g,"\'")}');" style="position:absolute;top:0.6rem;right:0.6rem;background:none;border:none;color:#d1d5db;cursor:pointer;font-size:0.75rem;padding:0.2rem 0.3rem;border-radius:4px;" title="Rename">✏️</button>
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">✍️</div>
+                    <h5 style="color:#8b5cf6;margin-bottom:0.3rem;" id="lb-title-${key}">${title}</h5>
+                    <div style="margin-top:0.5rem;"><span style="background:#ede9fe;color:#5b21b6;padding:0.2rem 0.5rem;border-radius:4px;font-size:0.75rem;">✓ Written</span></div>`
+                card.onclick = () => window.openLifebookEditor(key, title, 'Edit your chapter')
+                container.appendChild(card)
+            }
+            const count = Object.keys(savedLifebook).filter(k => !k.endsWith('_title') && !k.startsWith('_')).length
+            const header = document.getElementById('lifebook-count-header')
+            if (header) header.textContent = count + ' chapter' + (count!==1?'s':'') + ' written'
+            const viewAll = document.getElementById('lifebook-view-all')
+            if (viewAll) viewAll.style.display = 'block'
+            refreshDashboardStats()
+            showNotification('✍️ Custom chapter saved!')
+        }
+        window.viewAllChapters = function() {
+            const chapters = getAllChapters()
+            let html = '<div style="background:white;border-radius:10px;padding:2rem;max-width:800px;margin:0 auto;max-height:85vh;overflow-y:auto;">'
+            html += '<h3 style="color:#1e3a8a;text-align:center;margin-bottom:0.5rem;font-family:Georgia,serif;">📖 My Life Book</h3>'
+            html += `<p style="text-align:center;color:#9ca3af;margin-bottom:2rem;font-size:0.9rem;">${chapters.length} chapter${chapters.length!==1?'s':''} written</p>`
+            chapters.forEach((ch, i) => {
+                html += '<div style="margin-bottom:2rem;padding-bottom:2rem;border-bottom:1px solid #e5e7eb;">'
+                html += `<div style="font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:#8b5cf6;margin-bottom:0.3rem;">Chapter ${i+1}</div>`
+                html += `<h4 style="color:#1e3a8a;margin-bottom:1rem;font-size:1.5rem;font-family:Georgia,serif;">${ch.title}</h4>`
+                html += `<p style="white-space:pre-wrap;line-height:1.8;color:#374151;">${ch.text}</p>`
+                html += '</div>'
+            })
+            if (!chapters.length) html += '<p style="text-align:center;color:#9ca3af;padding:2rem;">No chapters written yet.</p>'
+            html += '<div style="text-align:center;margin-top:2rem;display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;">'
+            html += `<button class="action-button secondary" onclick="document.getElementById('lifebook-view-modal').remove()">Close</button>`
+            html += `<button class="action-button" onclick="window.compileAndExport()" style="background:#1e3a8a;">📤 Export Book</button>`
+            html += '</div></div>'
+            const modal = document.createElement('div')
+            modal.id = 'lifebook-view-modal'
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;overflow-y:auto;padding:2rem;'
+            modal.innerHTML = html
+            document.body.appendChild(modal)
+            modal.onclick = e => { if(e.target===modal) modal.remove() }
+        }
+        window.compileAndExport = compileAndExport
+        window.loadCoverImage = loadCoverImage
+        window.clearCoverImage = clearCoverImage
+        window.exportBookPDF = exportBookPDF
+        window.exportBookEPUB = exportBookEPUB
+        window.exportBookDOCX = exportBookDOCX
 
         function checkExistingSpotifyData() {
             const musicData = localStorage.getItem('spotify_music_data')
@@ -3502,8 +3660,8 @@ ${paras}
                 <div id="tab-lifebook" style="display:none; padding-top:1rem;"><div id="lifebook-prompts" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
                             
                                                         <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer; position:relative;"
-                                 onclick="window.openLifebookEditor('childhood', savedLifebook['childhood_title'] || '👶 Childhood', 'Where did you grow up? What are your earliest memories?')">
-                                <button onclick="event.stopPropagation(); window.renameChapter('childhood', '👶 Childhood')"
+                                 onclick="openLifebookEditor('childhood', savedLifebook['childhood_title'] || '👶 Childhood', 'Where did you grow up? What are your earliest memories?')">
+                                <button onclick="event.stopPropagation(); renameChapter('childhood', '👶 Childhood')"
                                     style="position:absolute; top:0.6rem; right:0.6rem; background:none; border:none; color:#d1d5db; cursor:pointer; font-size:0.75rem; padding:0.2rem 0.3rem; border-radius:4px;"
                                     title="Rename chapter">✏️</button>
                                 <div style="font-size:2rem; margin-bottom:0.5rem;">👶</div>
@@ -3515,8 +3673,8 @@ ${paras}
                             </div>
 
                             <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer; position:relative;"
-                                 onclick="window.openLifebookEditor('school_years', savedLifebook['school_years_title'] || '🎓 School Years', 'Tell us about your education, friends, and formative experiences.')">
-                                <button onclick="event.stopPropagation(); window.renameChapter('school_years', '🎓 School Years')"
+                                 onclick="openLifebookEditor('school_years', savedLifebook['school_years_title'] || '🎓 School Years', 'Tell us about your education, friends, and formative experiences.')">
+                                <button onclick="event.stopPropagation(); renameChapter('school_years', '🎓 School Years')"
                                     style="position:absolute; top:0.6rem; right:0.6rem; background:none; border:none; color:#d1d5db; cursor:pointer; font-size:0.75rem; padding:0.2rem 0.3rem; border-radius:4px;"
                                     title="Rename chapter">✏️</button>
                                 <div style="font-size:2rem; margin-bottom:0.5rem;">🎓</div>
@@ -3528,8 +3686,8 @@ ${paras}
                             </div>
 
                             <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer; position:relative;"
-                                 onclick="window.openLifebookEditor('first_love', savedLifebook['first_love_title'] || '💕 First Love', 'Tell the story of your first romantic relationship.')">
-                                <button onclick="event.stopPropagation(); window.renameChapter('first_love', '💕 First Love')"
+                                 onclick="openLifebookEditor('first_love', savedLifebook['first_love_title'] || '💕 First Love', 'Tell the story of your first romantic relationship.')">
+                                <button onclick="event.stopPropagation(); renameChapter('first_love', '💕 First Love')"
                                     style="position:absolute; top:0.6rem; right:0.6rem; background:none; border:none; color:#d1d5db; cursor:pointer; font-size:0.75rem; padding:0.2rem 0.3rem; border-radius:4px;"
                                     title="Rename chapter">✏️</button>
                                 <div style="font-size:2rem; margin-bottom:0.5rem;">💕</div>
@@ -3541,8 +3699,8 @@ ${paras}
                             </div>
 
                             <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer; position:relative;"
-                                 onclick="window.openLifebookEditor('career', savedLifebook['career_title'] || '💼 Career Journey', 'How did you build your career? What were the highlights and challenges?')">
-                                <button onclick="event.stopPropagation(); window.renameChapter('career', '💼 Career Journey')"
+                                 onclick="openLifebookEditor('career', savedLifebook['career_title'] || '💼 Career Journey', 'How did you build your career? What were the highlights and challenges?')">
+                                <button onclick="event.stopPropagation(); renameChapter('career', '💼 Career Journey')"
                                     style="position:absolute; top:0.6rem; right:0.6rem; background:none; border:none; color:#d1d5db; cursor:pointer; font-size:0.75rem; padding:0.2rem 0.3rem; border-radius:4px;"
                                     title="Rename chapter">✏️</button>
                                 <div style="font-size:2rem; margin-bottom:0.5rem;">💼</div>
@@ -3554,8 +3712,8 @@ ${paras}
                             </div>
 
                             <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer; position:relative;"
-                                 onclick="window.openLifebookEditor('family', savedLifebook['family_title'] || '👪 Family Life', 'Tell us about your spouse, children, and family relationships.')">
-                                <button onclick="event.stopPropagation(); window.renameChapter('family', '👪 Family Life')"
+                                 onclick="openLifebookEditor('family', savedLifebook['family_title'] || '👪 Family Life', 'Tell us about your spouse, children, and family relationships.')">
+                                <button onclick="event.stopPropagation(); renameChapter('family', '👪 Family Life')"
                                     style="position:absolute; top:0.6rem; right:0.6rem; background:none; border:none; color:#d1d5db; cursor:pointer; font-size:0.75rem; padding:0.2rem 0.3rem; border-radius:4px;"
                                     title="Rename chapter">✏️</button>
                                 <div style="font-size:2rem; margin-bottom:0.5rem;">👪</div>
@@ -3567,8 +3725,8 @@ ${paras}
                             </div>
 
                             <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer; position:relative;"
-                                 onclick="window.openLifebookEditor('travels', savedLifebook['travels_title'] || '✈️ Adventures', 'Where have you traveled? What adventures stand out?')">
-                                <button onclick="event.stopPropagation(); window.renameChapter('travels', '✈️ Adventures')"
+                                 onclick="openLifebookEditor('travels', savedLifebook['travels_title'] || '✈️ Adventures', 'Where have you traveled? What adventures stand out?')">
+                                <button onclick="event.stopPropagation(); renameChapter('travels', '✈️ Adventures')"
                                     style="position:absolute; top:0.6rem; right:0.6rem; background:none; border:none; color:#d1d5db; cursor:pointer; font-size:0.75rem; padding:0.2rem 0.3rem; border-radius:4px;"
                                     title="Rename chapter">✏️</button>
                                 <div style="font-size:2rem; margin-bottom:0.5rem;">✈️</div>
@@ -3580,8 +3738,8 @@ ${paras}
                             </div>
 
                             <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer; position:relative;"
-                                 onclick="window.openLifebookEditor('challenges', savedLifebook['challenges_title'] || '⛰️ Challenges', 'What obstacles have you faced? How did you overcome them?')">
-                                <button onclick="event.stopPropagation(); window.renameChapter('challenges', '⛰️ Challenges')"
+                                 onclick="openLifebookEditor('challenges', savedLifebook['challenges_title'] || '⛰️ Challenges', 'What obstacles have you faced? How did you overcome them?')">
+                                <button onclick="event.stopPropagation(); renameChapter('challenges', '⛰️ Challenges')"
                                     style="position:absolute; top:0.6rem; right:0.6rem; background:none; border:none; color:#d1d5db; cursor:pointer; font-size:0.75rem; padding:0.2rem 0.3rem; border-radius:4px;"
                                     title="Rename chapter">✏️</button>
                                 <div style="font-size:2rem; margin-bottom:0.5rem;">⛰️</div>
@@ -3593,8 +3751,8 @@ ${paras}
                             </div>
 
                             <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:1px solid #e5e7eb; cursor:pointer; position:relative;"
-                                 onclick="window.openLifebookEditor('wisdom', savedLifebook['wisdom_title'] || '🧠 Life Lessons', 'What wisdom have you gained? What advice would you give?')">
-                                <button onclick="event.stopPropagation(); window.renameChapter('wisdom', '🧠 Life Lessons')"
+                                 onclick="openLifebookEditor('wisdom', savedLifebook['wisdom_title'] || '🧠 Life Lessons', 'What wisdom have you gained? What advice would you give?')">
+                                <button onclick="event.stopPropagation(); renameChapter('wisdom', '🧠 Life Lessons')"
                                     style="position:absolute; top:0.6rem; right:0.6rem; background:none; border:none; color:#d1d5db; cursor:pointer; font-size:0.75rem; padding:0.2rem 0.3rem; border-radius:4px;"
                                     title="Rename chapter">✏️</button>
                                 <div style="font-size:2rem; margin-bottom:0.5rem;">🧠</div>
@@ -3605,20 +3763,9 @@ ${paras}
                                 </div>
                             </div>
 
-                            <!-- Custom chapter card - INSIDE grid -->
-                            <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:2px dashed #8b5cf6; cursor:pointer; position:relative;"
-                                 onclick="window.openCustomChapterModal()">
-                                <div style="font-size:2rem; margin-bottom:0.5rem;">✍️</div>
-                                <h5 style="color:#8b5cf6; margin-bottom:0.3rem;">Your Own Chapter</h5>
-                                <p style="color:#9ca3af; font-size:0.85rem;">Add a custom topic</p>
-                            </div>
+</div>
 
-                            <!-- Saved custom chapters rendered here by JS -->
-                            <div id="custom-chapters-grid"></div>
-
-                        </div>
-
-                        <div id="lifebook-editor" style="display:none; background:white; border-radius:10px; padding:1.5rem; border:1px solid #8b5cf6; margin-top:1rem;">
+                        <div id="lifebook-editor" style="display:none; background:white; border-radius:10px; padding:1.5rem; border:1px solid #8b5cf6;">
                             <h4 id="lifebook-editor-title" style="color:#1e3a8a; margin-bottom:0.5rem;"></h4>
                             <p id="lifebook-editor-prompt" style="color:#6b7280; font-size:0.9rem; margin-bottom:1rem; font-style:italic;"></p>
                             <textarea id="lifebook-editor-text" 
@@ -3628,17 +3775,25 @@ ${paras}
                                 💡 <strong>Tip:</strong> Write as much as you want. This is your autobiography—tell your full story.
                             </div>
                             <div style="display:flex; gap:0.5rem;">
-                                <button class="action-button" onclick="window.saveLifebook()" style="background:#8b5cf6;">📖 Save Chapter</button>
-                                <button class="action-button secondary" onclick="window.closeLifebookEditor()">Cancel</button>
+                                <button class="action-button" onclick="saveLifebook()" style="background:#8b5cf6;">📖 Save Chapter</button>
+                                <button class="action-button secondary" onclick="closeLifebookEditor()">Cancel</button>
                             </div>
+                        </div>
+
+                        <!-- Custom chapter card -->
+                        <div class="lifebook-prompt" style="background:white; border-radius:10px; padding:1.25rem; border:2px dashed #8b5cf6; cursor:pointer; margin-top:0;"
+                             onclick="openCustomChapterModal()">
+                            <div style="font-size:2rem; margin-bottom:0.5rem;">✍️</div>
+                            <h5 style="color:#8b5cf6; margin-bottom:0.3rem;">Your Own Chapter</h5>
+                            <p style="color:#9ca3af; font-size:0.85rem;">Add a custom topic</p>
                         </div>
 
                         <div id="lifebook-view-all" style="display:none; margin-top:1.5rem; text-align:center;">
                             <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
-                                <button class="action-button" onclick="window.viewAllChapters()" style="background:#8b5cf6;">
+                                <button class="action-button" onclick="viewAllChapters()" style="background:#8b5cf6;">
                                     📚 View All Chapters
                                 </button>
-                                <button class="action-button" onclick="window.compileAndExport()" style="background:#1e3a8a;">
+                                <button class="action-button" onclick="compileAndExport()" style="background:#1e3a8a;">
                                     📤 Compile &amp; Export Book
                                 </button>
                             </div>
@@ -6110,7 +6265,7 @@ ${paras}
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v5.0</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v5.2</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
@@ -6952,396 +7107,6 @@ document.addEventListener('DOMContentLoaded', function() {
         tabVideos.insertBefore(progDiv, firstChild)
     }, 500)
 })
-</script>
-
-<!-- ── LIFEBOOK FUNCTIONS OVERRIDE — defined last so always available globally ── -->
-<script>
-// Expose all lifebook functions globally so inline onclick attributes can reach them
-
-window.renameChapter = function(key, defaultTitle) {
-    var current = (window.savedLifebook && window.savedLifebook[key + '_title']) || defaultTitle
-    var existing = document.getElementById('rename-chapter-modal')
-    if (existing) existing.remove()
-    var modal = document.createElement('div')
-    modal.id = 'rename-chapter-modal'
-    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:20000;display:flex;align-items:center;justify-content:center;padding:1rem;'
-    modal.innerHTML = '<div style="background:white;border-radius:14px;padding:2rem;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">' +
-        '<h4 style="color:#1e3a8a;margin-bottom:0.5rem;font-family:Georgia,serif;">✏️ Rename Chapter</h4>' +
-        '<p style="color:#9ca3af;font-size:0.85rem;margin-bottom:1rem;">Give this chapter your own title</p>' +
-        '<input id="rename-chapter-input" type="text" value="' + current.replace(/"/g, '&quot;') + '" ' +
-        'style="width:100%;padding:0.75rem;border:2px solid #6366f1;border-radius:8px;font-size:1rem;box-sizing:border-box;margin-bottom:1rem;outline:none;">' +
-        '<div style="display:flex;gap:0.5rem;">' +
-        '<button onclick="window.doRenameChapter('' + key + '')" style="flex:1;background:#6366f1;color:white;border:none;padding:0.75rem;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.95rem;">Save</button>' +
-        '<button onclick="document.getElementById('rename-chapter-modal').remove()" style="flex:1;background:#f1f5f9;color:#374151;border:none;padding:0.75rem;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>' +
-        '</div></div>'
-    document.body.appendChild(modal)
-    setTimeout(function() {
-        var inp = document.getElementById('rename-chapter-input')
-        if (inp) { inp.focus(); inp.select() }
-    }, 50)
-    modal.onclick = function(e) { if (e.target === modal) modal.remove() }
-    var inp = modal.querySelector('#rename-chapter-input')
-    if (inp) inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') window.doRenameChapter(key) })
-}
-
-window.doRenameChapter = function(key) {
-    var inp = document.getElementById('rename-chapter-input')
-    if (!inp) return
-    var newName = inp.value.trim()
-    if (!newName) return
-    if (!window.savedLifebook) window.savedLifebook = {}
-    window.savedLifebook[key + '_title'] = newName
-    localStorage.setItem('vault_lifebook', JSON.stringify(window.savedLifebook))
-    if (typeof syncVaultToSupabase === 'function') syncVaultToSupabase('vault_lifebook', window.savedLifebook)
-    var titleEl = document.getElementById('lb-title-' + key)
-    if (titleEl) titleEl.textContent = newName
-    document.getElementById('rename-chapter-modal').remove()
-    if (typeof showNotification === 'function') showNotification('✏️ Chapter renamed!')
-}
-
-window.openCustomChapterModal = function() {
-    var existing = document.getElementById('custom-chapter-modal')
-    if (existing) existing.remove()
-    var modal = document.createElement('div')
-    modal.id = 'custom-chapter-modal'
-    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;padding:1rem;display:flex;align-items:center;justify-content:center;'
-    modal.innerHTML = '<div style="background:white;border-radius:14px;padding:2rem;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;">' +
-        '<h3 style="color:#1e3a8a;margin-bottom:0.25rem;font-family:Georgia,serif;">✍️ Your Own Chapter</h3>' +
-        '<p style="color:#9ca3af;font-size:0.9rem;margin-bottom:1.25rem;">Write about anything that matters to you.</p>' +
-        '<label style="font-size:0.85rem;font-weight:600;color:#374151;display:block;margin-bottom:0.3rem;">Chapter Title</label>' +
-        '<input id="custom-chapter-title" type="text" placeholder="e.g. My Faith, My Philosophy, Growing Up..." ' +
-        'style="width:100%;padding:0.75rem;border:1px solid #e5e7eb;border-radius:8px;font-size:1rem;margin-bottom:1rem;box-sizing:border-box;">' +
-        '<label style="font-size:0.85rem;font-weight:600;color:#374151;display:block;margin-bottom:0.3rem;">Your Story</label>' +
-        '<textarea id="custom-chapter-text" placeholder="Write this chapter of your life..." ' +
-        'style="width:100%;padding:1rem;border:1px solid #e5e7eb;border-radius:8px;font-size:1rem;min-height:280px;resize:vertical;line-height:1.8;margin-bottom:1rem;font-family:inherit;box-sizing:border-box;"></textarea>' +
-        '<div style="display:flex;gap:0.5rem;">' +
-        '<button onclick="window.saveCustomChapter()" style="flex:1;background:#8b5cf6;color:white;border:none;padding:0.75rem;border-radius:8px;font-weight:700;cursor:pointer;">📖 Save Chapter</button>' +
-        '<button onclick="document.getElementById('custom-chapter-modal').remove()" style="flex:1;background:#f1f5f9;color:#374151;border:none;padding:0.75rem;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>' +
-        '</div></div>'
-    document.body.appendChild(modal)
-    modal.onclick = function(e) { if (e.target === modal) modal.remove() }
-}
-
-window.saveCustomChapter = function() {
-    var title = document.getElementById('custom-chapter-title').value.trim()
-    var text = document.getElementById('custom-chapter-text').value.trim()
-    if (!title) { if (typeof showNotification==='function') showNotification('Please enter a chapter title'); return }
-    if (!text) { if (typeof showNotification==='function') showNotification('Please write something first!'); return }
-    if (!window.savedLifebook) window.savedLifebook = {}
-    var key = 'custom_' + Date.now()
-    window.savedLifebook[key] = text
-    window.savedLifebook[key + '_title'] = title
-    localStorage.setItem('vault_lifebook', JSON.stringify(window.savedLifebook))
-    if (typeof syncVaultToSupabase === 'function') syncVaultToSupabase('vault_lifebook', window.savedLifebook)
-    document.getElementById('custom-chapter-modal').remove()
-    if (typeof renderCustomChapterCards === 'function') renderCustomChapterCards()
-    var count = typeof getAllChapters === 'function' ? getAllChapters().length : 0
-    var header = document.getElementById('lifebook-count-header')
-    if (header) header.textContent = count + ' chapter' + (count!==1?'s':'') + ' written'
-    var viewAll = document.getElementById('lifebook-view-all')
-    if (viewAll) viewAll.style.display = 'block'
-    if (typeof refreshDashboardStats === 'function') refreshDashboardStats()
-    if (typeof showNotification === 'function') showNotification('✍️ Custom chapter saved!')
-}
-
-window.openLifebookEditor = function(key, title, promptText) {
-    window.currentLifebookKey = key
-    document.getElementById('lifebook-editor-title').textContent = title
-    document.getElementById('lifebook-editor-prompt').textContent = promptText
-    document.getElementById('lifebook-editor-text').value = (window.savedLifebook && window.savedLifebook[key]) || ''
-    document.getElementById('lifebook-editor').style.display = 'block'
-    document.getElementById('lifebook-editor').scrollIntoView({ behavior: 'smooth' })
-}
-
-window.saveLifebook = function() {
-    var text = document.getElementById('lifebook-editor-text').value.trim()
-    if (!text) { if (typeof showNotification==='function') showNotification('Please write something first!'); return }
-    if (!window.savedLifebook) window.savedLifebook = {}
-    window.savedLifebook[window.currentLifebookKey] = text
-    localStorage.setItem('vault_lifebook', JSON.stringify(window.savedLifebook))
-    if (typeof syncVaultToSupabase === 'function') syncVaultToSupabase('vault_lifebook', window.savedLifebook)
-    var indicator = document.getElementById('indicator-lb-' + window.currentLifebookKey)
-    if (indicator) indicator.style.display = 'block'
-    var count = typeof getAllChapters === 'function' ? getAllChapters().length : Object.keys(window.savedLifebook).filter(k=>!k.endsWith('_title')).length
-    var header = document.getElementById('lifebook-count-header')
-    if (header) header.textContent = count + ' chapter' + (count!==1?'s':'') + ' written'
-    var viewAll = document.getElementById('lifebook-view-all')
-    if (viewAll) viewAll.style.display = 'block'
-    window.closeLifebookEditor()
-    if (typeof refreshDashboardStats === 'function') refreshDashboardStats()
-    if (typeof showNotification === 'function') showNotification('📖 Chapter saved!')
-}
-
-window.closeLifebookEditor = function() {
-    document.getElementById('lifebook-editor').style.display = 'none'
-    window.currentLifebookKey = ''
-}
-
-window.compileAndExport = function() {
-    if (typeof compileAndExport_inner === 'function') { compileAndExport_inner(); return }
-    // Fallback: call the function defined earlier
-    var existing = document.getElementById('export-modal')
-    if (existing) existing.remove()
-    var chapters = typeof getAllChapters === 'function' ? getAllChapters() : []
-    if (!chapters.length) { if (typeof showNotification==='function') showNotification('Write some chapters first!'); return }
-    var userName = JSON.parse(localStorage.getItem('user') || '{}').name || 'My'
-    var modal = document.createElement('div')
-    modal.id = 'export-modal'
-    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:10000;overflow-y:auto;padding:1rem;'
-    var coverPreviewHtml = ''
-    var savedCover = window.savedLifebook && window.savedLifebook['_cover_image']
-    if (savedCover) {
-        coverPreviewHtml = '<img id="cover-preview-img" src="' + savedCover + '" style="width:100%;height:100%;object-fit:cover;display:block;">'
-        window._bookCoverImage = savedCover
-    } else {
-        coverPreviewHtml = '<span id="cover-preview-placeholder" style="color:white;font-size:2rem;opacity:0.4;">📷</span><img id="cover-preview-img" style="width:100%;height:100%;object-fit:cover;display:none;">'
-    }
-    modal.innerHTML = '<div style="background:white;border-radius:14px;padding:2rem;max-width:560px;width:100%;margin:1rem auto;">' +
-        '<h3 style="color:#1e3a8a;margin-bottom:0.25rem;font-family:Georgia,serif;">📖 Design Your Book</h3>' +
-        '<p style="color:#6b7280;font-size:0.9rem;margin-bottom:1.5rem;">' + chapters.length + ' chapter' + (chapters.length!==1?'s':'') + ' ready</p>' +
-        '<div style="background:#f8fafc;border-radius:10px;padding:1.25rem;margin-bottom:1rem;">' +
-        '<p style="font-size:0.75rem;font-weight:700;color:#6366f1;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.75rem;">📚 Chapters</p>' +
-        chapters.map(function(ch,i){ return '<div style="padding:0.3rem 0;border-bottom:1px solid #f1f5f9;font-size:0.85rem;color:#374151;display:flex;gap:0.5rem;"><span style="color:#8b5cf6;font-size:0.7rem;min-width:65px;">Chapter '+(i+1)+'</span>'+ch.title+'</div>'}).join('') +
-        '</div>' +
-        '<div style="background:#f8fafc;border-radius:10px;padding:1.25rem;margin-bottom:1rem;">' +
-        '<p style="font-size:0.75rem;font-weight:700;color:#6366f1;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.75rem;">Book Details</p>' +
-        '<label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:0.3rem;">Title</label>' +
-        '<input id="export-book-title" type="text" value="' + userName + ''s Life Book" style="width:100%;padding:0.7rem;border:1px solid #e5e7eb;border-radius:8px;font-size:0.95rem;margin-bottom:0.75rem;box-sizing:border-box;">' +
-        '<label style="font-size:0.82rem;font-weight:600;color:#374151;display:block;margin-bottom:0.3rem;">Subtitle (optional)</label>' +
-        '<input id="export-book-subtitle" type="text" placeholder="A memoir for my family" style="width:100%;padding:0.7rem;border:1px solid #e5e7eb;border-radius:8px;font-size:0.95rem;box-sizing:border-box;">' +
-        '</div>' +
-        '<div style="background:#f8fafc;border-radius:10px;padding:1.25rem;margin-bottom:1rem;">' +
-        '<p style="font-size:0.75rem;font-weight:700;color:#6366f1;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.75rem;">Front Cover Photo</p>' +
-        '<div style="display:flex;gap:1rem;align-items:flex-start;">' +
-        '<div id="cover-preview" style="width:90px;min-width:90px;height:126px;background:linear-gradient(135deg,#0f172a,#1e1b4b);border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid #e5e7eb;">' + coverPreviewHtml + '</div>' +
-        '<div style="flex:1;"><p style="font-size:0.82rem;color:#6b7280;margin-bottom:0.75rem;line-height:1.5;">Upload a photo for the front cover.</p>' +
-        '<label style="background:#6366f1;color:white;padding:0.6rem 1rem;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;display:inline-block;">📷 Choose Photo<input type="file" accept="image/*" onchange="window.loadCoverImage(this)" style="display:none;"></label>' +
-        (savedCover ? '<button onclick="window.clearCoverImage()" style="background:none;border:1px solid #e5e7eb;color:#6b7280;padding:0.6rem 1rem;border-radius:8px;font-size:0.85rem;cursor:pointer;margin-left:0.5rem;">Remove</button>' : '') +
-        '</div></div></div>' +
-        '<div style="background:#f8fafc;border-radius:10px;padding:1.25rem;margin-bottom:1.5rem;">' +
-        '<p style="font-size:0.75rem;font-weight:700;color:#6366f1;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.75rem;">Back Cover — About the Author</p>' +
-        '<textarea id="export-book-bio" placeholder="2–3 sentences about yourself..." style="width:100%;padding:0.75rem;border:1px solid #e5e7eb;border-radius:8px;font-size:0.9rem;min-height:90px;resize:vertical;line-height:1.6;font-family:inherit;box-sizing:border-box;"></textarea>' +
-        '</div>' +
-        '<div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1.25rem;">' +
-        '<button onclick="window.exportBookPDF()" style="background:#dc2626;color:white;border:none;padding:0.9rem 1.25rem;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:0.75rem;"><span style="font-size:1.4rem;">📄</span><div><div>Download as PDF</div><div style="font-size:0.72rem;font-weight:400;opacity:0.85;">Front cover · Chapters · Back cover</div></div></button>' +
-        '<button onclick="window.exportBookEPUB()" style="background:#f59e0b;color:white;border:none;padding:0.9rem 1.25rem;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:0.75rem;"><span style="font-size:1.4rem;">📱</span><div><div>Download as EPUB</div><div style="font-size:0.72rem;font-weight:400;opacity:0.85;">Kindle, iBooks, Kobo</div></div></button>' +
-        '<button onclick="window.exportBookDOCX()" style="background:#2563eb;color:white;border:none;padding:0.9rem 1.25rem;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:0.75rem;"><span style="font-size:1.4rem;">📝</span><div><div>Download as Word (.docx)</div><div style="font-size:0.72rem;font-weight:400;opacity:0.85;">Edit further · Send to publisher</div></div></button>' +
-        '</div>' +
-        '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:0.75rem;font-size:0.78rem;color:#166534;margin-bottom:1rem;">💡 <strong>Kindle:</strong> Download EPUB → kdp.amazon.com → Create New Title → Upload.</div>' +
-        '<button onclick="document.getElementById('export-modal').remove()" style="width:100%;background:#f1f5f9;color:#374151;border:none;padding:0.75rem;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>' +
-        '</div>'
-    document.body.appendChild(modal)
-    modal.onclick = function(e) { if (e.target === modal) modal.remove() }
-}
-
-window.loadCoverImage = function(input) {
-    var file = input.files[0]
-    if (!file) return
-    var reader = new FileReader()
-    reader.onload = function(e) {
-        window._bookCoverImage = e.target.result
-        if (!window.savedLifebook) window.savedLifebook = {}
-        window.savedLifebook['_cover_image'] = e.target.result
-        localStorage.setItem('vault_lifebook', JSON.stringify(window.savedLifebook))
-        var img = document.getElementById('cover-preview-img')
-        var ph = document.getElementById('cover-preview-placeholder')
-        if (img) { img.src = e.target.result; img.style.display = 'block' }
-        if (ph) ph.style.display = 'none'
-    }
-    reader.readAsDataURL(file)
-}
-
-window.clearCoverImage = function() {
-    window._bookCoverImage = null
-    if (window.savedLifebook) { delete window.savedLifebook['_cover_image']; localStorage.setItem('vault_lifebook', JSON.stringify(window.savedLifebook)) }
-    var img = document.getElementById('cover-preview-img')
-    var ph = document.getElementById('cover-preview-placeholder')
-    if (img) { img.src=''; img.style.display='none' }
-    if (ph) ph.style.display = 'block'
-}
-
-window.exportBookPDF = function() {
-    var chapters = typeof getAllChapters === 'function' ? getAllChapters() : []
-    if (!chapters.length) { if (typeof showNotification==='function') showNotification('No chapters to export!'); return }
-    var title = document.getElementById('export-book-title')?.value.trim() || 'My Life Book'
-    var subtitle = document.getElementById('export-book-subtitle')?.value.trim() || ''
-    var bio = document.getElementById('export-book-bio')?.value.trim() || ''
-    var author = JSON.parse(localStorage.getItem('user') || '{}').name || 'Unknown'
-    var year = new Date().getFullYear()
-    var coverImage = window._bookCoverImage || (window.savedLifebook && window.savedLifebook['_cover_image']) || null
-    var esc = function(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
-    var chaptersHTML = chapters.map(function(ch,i){
-        return '<div class="bk-chapter"><div class="bk-chnum">Chapter '+(i+1)+'</div><h2 class="bk-chtitle">'+esc(ch.title)+'</h2><div class="bk-chbody">'+esc(ch.text).replace(/
-
-/g,'</p><p class="bk-para">').replace(/
-/g,'<br>')+'</div></div>'
-    }).join('')
-    var tocRows = chapters.map(function(ch,i){ return '<div class="bk-toc-row"><span class="bk-toc-num">Chapter '+(i+1)+'</span><span class="bk-toc-title">'+esc(ch.title)+'</span></div>' }).join('')
-    var coverStyle = coverImage ? 'background:linear-gradient(rgba(5,5,20,0.6),rgba(5,5,20,0.75)),url(''+coverImage+'') center/cover no-repeat;' : 'background:linear-gradient(160deg,#0f172a,#1e1b4b);'
-    var backThumb = coverImage ? '<img src="'+coverImage+'" style="width:110px;height:110px;object-fit:cover;border-radius:50%;border:4px solid rgba(255,255,255,0.25);margin-bottom:1.5rem;">' : '<div style="width:90px;height:90px;background:rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin-bottom:1.5rem;">'+author.charAt(0).toUpperCase()+'</div>'
-    var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+esc(title)+'</title><style>'+
-        '@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&display=swap');'+
-        '*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Lora',Georgia,serif;color:#1a1a1a;background:#fff;}'+
-        '.no-print{position:sticky;top:0;z-index:99;background:#1e3a8a;color:white;padding:0.75rem 1.5rem;display:flex;align-items:center;gap:1rem;}'+
-        '.no-print span{flex:1;font-size:0.9rem;}.no-print button{border:none;padding:0.55rem 1.25rem;border-radius:7px;font-weight:700;cursor:pointer;font-size:0.88rem;}'+
-        '.bk-front{page-break-after:always;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:5rem 3rem;'+coverStyle+'color:white;}'+
-        '.bk-front-title{font-size:clamp(2rem,5vw,3.5rem);font-weight:700;line-height:1.15;margin-bottom:1rem;text-shadow:0 2px 12px rgba(0,0,0,0.5);}'+
-        '.bk-front-sub{font-size:1.2rem;font-style:italic;opacity:0.8;margin-bottom:2.5rem;}'+
-        '.bk-front-rule{width:60px;height:2px;background:rgba(255,255,255,0.4);margin:0 auto 2rem;}'+
-        '.bk-front-author{font-size:1rem;letter-spacing:0.15em;text-transform:uppercase;opacity:0.65;}'+
-        '.bk-front-year{font-size:0.85rem;opacity:0.35;margin-top:0.4rem;}'+
-        '.bk-toc{page-break-after:always;padding:5rem 4rem;background:white;min-height:60vh;}'+
-        '.bk-toc h2{font-size:2rem;color:#1e3a8a;margin-bottom:2.5rem;padding-bottom:1rem;border-bottom:3px solid #6366f1;}'+
-        '.bk-toc-row{display:flex;gap:1.5rem;padding:0.7rem 0;border-bottom:1px dotted #e5e7eb;}'+
-        '.bk-toc-num{font-size:0.72rem;color:#8b5cf6;text-transform:uppercase;letter-spacing:0.12em;white-space:nowrap;min-width:72px;}'+
-        '.bk-toc-title{font-size:1rem;color:#1e3a8a;}'+
-        '.bk-chapter{page-break-before:always;padding:5rem 4rem;max-width:740px;margin:0 auto;background:white;}'+
-        '.bk-chnum{font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;color:#8b5cf6;margin-bottom:0.5rem;}'+
-        '.bk-chtitle{font-size:2.4rem;color:#1e3a8a;margin-bottom:2.5rem;line-height:1.2;padding-bottom:1.25rem;border-bottom:2px solid #ede9fe;}'+
-        '.bk-chbody{font-size:1.05rem;line-height:1.95;color:#374151;}.bk-para{margin-top:1.1em;text-indent:1.8em;}'+
-        '.bk-back{page-break-before:always;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:5rem 3rem;background:linear-gradient(160deg,#1e1b4b,#0f172a);color:white;}'+
-        '.bk-back-label{font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:#a5b4fc;margin-bottom:1.25rem;}'+
-        '.bk-back-bio{font-size:1.05rem;line-height:1.85;max-width:500px;font-style:italic;opacity:0.88;margin-bottom:3rem;}'+
-        '.bk-back-brand{font-size:0.8rem;opacity:0.35;letter-spacing:0.1em;}.bk-back-tag{font-size:0.7rem;opacity:0.25;font-style:italic;margin-top:0.3rem;}'+
-        '@media print{.no-print{display:none!important;}body{background:white;}.bk-front,.bk-back{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}'+
-        '</style></head><body>'+
-        '<div class="no-print"><span>📖 '+esc(title)+' — '+chapters.length+' chapters</span>'+
-        '<button onclick="window.print()" style="background:#6366f1;color:white;">🖨 Print / Save as PDF</button>'+
-        '<button onclick="window.close()" style="background:rgba(255,255,255,0.15);color:white;">✕ Close</button></div>'+
-        '<div class="bk-front"><div class="bk-front-title">'+esc(title)+'</div>'+
-        (subtitle?'<div class="bk-front-sub">'+esc(subtitle)+'</div>':'')+
-        '<div class="bk-front-rule"></div><div class="bk-front-author">By '+esc(author)+'</div><div class="bk-front-year">'+year+'</div></div>'+
-        '<div class="bk-toc"><h2>Table of Contents</h2>'+tocRows+'</div>'+
-        chaptersHTML+
-        '<div class="bk-back">'+backThumb+
-        '<div class="bk-back-label">About the Author</div>'+
-        '<div class="bk-back-bio">'+esc(bio||author+' wrote this memoir to preserve their story for the people they love.')+'</div>'+
-        '<div class="bk-back-brand">We Loved Life</div><div class="bk-back-tag">A time capsule for the people you'll never meet.</div></div>'+
-        '</body></html>'
-    try {
-        var win = window.open('', '_blank')
-        if (!win || win.closed) throw new Error('blocked')
-        win.document.write(html); win.document.close()
-    } catch(e) {
-        var blob = new Blob([html], {type:'text/html;charset=utf-8'})
-        var url = URL.createObjectURL(blob)
-        var a = document.createElement('a'); a.href=url; a.download=title.replace(/[^a-zA-Z0-9 ]/g,'_')+'.html'
-        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url)
-        if (typeof showNotification==='function') showNotification('📄 Saved as HTML — open and Print → Save as PDF')
-    }
-}
-
-window.exportBookEPUB = async function() {
-    var chapters = typeof getAllChapters === 'function' ? getAllChapters() : []
-    if (!chapters.length) { if (typeof showNotification==='function') showNotification('No chapters to export!'); return }
-    if (typeof showNotification==='function') showNotification('Building EPUB...')
-    var title = document.getElementById('export-book-title')?.value.trim() || 'My Life Book'
-    var subtitle = document.getElementById('export-book-subtitle')?.value.trim() || ''
-    var bio = document.getElementById('export-book-bio')?.value.trim() || ''
-    var author = JSON.parse(localStorage.getItem('user') || '{}').name || 'Unknown'
-    var coverImage = window._bookCoverImage || (window.savedLifebook && window.savedLifebook['_cover_image']) || null
-    var script = document.createElement('script')
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'
-    document.head.appendChild(script)
-    await new Promise(function(r){ script.onload=r; script.onerror=r })
-    var zip = new JSZip()
-    zip.file('mimetype','application/epub+zip',{compression:'STORE'})
-    zip.folder('META-INF').file('container.xml','<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>')
-    var oebps = zip.folder('OEBPS')
-    var hasCover = !!coverImage
-    var coverExt = coverImage && coverImage.includes('png') ? 'png' : 'jpg'
-    if (hasCover) {
-        oebps.file('cover.'+coverExt, coverImage.split(',')[1], {base64:true})
-        oebps.file('cover.xhtml','<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="UTF-8"/><title>Cover</title><style>body{margin:0;padding:0;background:#0f172a;}img{width:100%;min-height:100vh;object-fit:cover;display:block;}</style></head><body><img src="cover.'+coverExt+'" alt="'+title+'"/></body></html>')
-    }
-    chapters.forEach(function(ch,i){
-        var paras = ch.text.split('
-').filter(function(p){return p.trim()}).map(function(p){return '<p>'+p.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</p>'}).join('
-')
-        oebps.file('ch'+i+'.xhtml','<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="UTF-8"/><title>'+ch.title+'</title><style>body{font-family:Georgia,serif;padding:2.5em;max-width:620px;margin:0 auto;line-height:1.9;color:#1a1a1a;}.chnum{font-size:0.7em;letter-spacing:0.15em;text-transform:uppercase;color:#8b5cf6;margin-bottom:0.5em;}h1{color:#1e3a8a;font-size:2em;margin-bottom:1.5em;padding-bottom:0.5em;border-bottom:1px solid #ede9fe;line-height:1.25;}p{margin-bottom:1em;text-indent:1.5em;}p:first-of-type{text-indent:0;}</style></head><body><div class="chnum">Chapter '+(i+1)+'</div><h1>'+ch.title.replace(/&/g,'&amp;')+'</h1>'+paras+'</body></html>')
-    })
-    oebps.file('back.xhtml','<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="UTF-8"/><title>About the Author</title><style>body{font-family:Georgia,serif;padding:3em;background:#0f172a;color:white;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}h2{font-size:0.9em;letter-spacing:0.12em;text-transform:uppercase;color:#a5b4fc;margin-bottom:1.5em;font-weight:400;}p{font-size:1em;line-height:1.8;max-width:500px;font-style:italic;opacity:0.88;margin-bottom:2.5em;}.brand{font-size:0.72em;opacity:0.35;letter-spacing:0.1em;}.tag{font-size:0.65em;opacity:0.25;font-style:italic;margin-top:0.3em;}</style></head><body><h2>About the Author</h2><p>'+(bio||author+' wrote this memoir to preserve their story for future generations.')+'</p><div class="brand">We Loved Life</div><div class="tag">A time capsule for the people you'll never meet.</div></body></html>')
-    var tocLinks = chapters.map(function(ch,i){return '<li><a href="ch'+i+'.xhtml">Chapter '+(i+1)+' — '+ch.title.replace(/&/g,'&amp;')+'</a></li>'}).join('
-')
-    oebps.file('toc.xhtml','<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><meta charset="UTF-8"/><title>Contents</title><style>body{font-family:Georgia,serif;padding:2em;}h1{color:#1e3a8a;margin-bottom:1.5em;}ol{line-height:2.2;}a{color:#8b5cf6;}</style></head><body><h1>Table of Contents</h1><nav epub:type="toc"><ol>'+tocLinks+'</ol></nav></body></html>')
-    var uid = 'urn:uuid:xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){var r=Math.random()*16|0;return(c=='x'?r:(r&0x3|0x8)).toString(16)})
-    var manifestItems = [(hasCover?'<item id="cover-img" href="cover.'+coverExt+'" media-type="image/'+(coverExt==='png'?'png':'jpeg')+'" properties="cover-image"/>':''),(hasCover?'<item id="cover-page" href="cover.xhtml" media-type="application/xhtml+xml"/>':''),'<item id="toc-nav" href="toc.xhtml" media-type="application/xhtml+xml" properties="nav"/>'].filter(Boolean).concat(chapters.map(function(_,i){return'<item id="ch'+i+'" href="ch'+i+'.xhtml" media-type="application/xhtml+xml"/>'})).concat(['<item id="back" href="back.xhtml" media-type="application/xhtml+xml"/>']).join('
-    ')
-    var spineItems = [(hasCover?'<itemref idref="cover-page"/>':''),'<itemref idref="toc-nav"/>'].filter(Boolean).concat(chapters.map(function(_,i){return'<itemref idref="ch'+i+'"/>'})).concat(['<itemref idref="back"/>']).join('
-    ')
-    oebps.file('content.opf','<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>'+title+'</dc:title><dc:creator>'+author+'</dc:creator><dc:language>en</dc:language><dc:identifier id="uid">'+uid+'</dc:identifier><meta property="dcterms:modified">'+new Date().toISOString().split('.')[0]+'Z</meta></metadata><manifest>'+manifestItems+'</manifest><spine>'+spineItems+'</spine></package>')
-    var blob = await zip.generateAsync({type:'blob',mimeType:'application/epub+zip'})
-    var url = URL.createObjectURL(blob)
-    var a = document.createElement('a'); a.href=url; a.download=title.replace(/[^a-zA-Z0-9 ]/g,'_')+'.epub'
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url)
-    if (typeof showNotification==='function') showNotification('📱 EPUB downloaded! Upload to kdp.amazon.com to publish on Kindle.')
-}
-
-window.exportBookDOCX = async function() {
-    var chapters = typeof getAllChapters === 'function' ? getAllChapters() : []
-    if (!chapters.length) { if (typeof showNotification==='function') showNotification('No chapters to export!'); return }
-    if (typeof showNotification==='function') showNotification('Building Word document...')
-    var title = document.getElementById('export-book-title')?.value.trim() || 'My Life Book'
-    var subtitle = document.getElementById('export-book-subtitle')?.value.trim() || ''
-    var bio = document.getElementById('export-book-bio')?.value.trim() || ''
-    var author = JSON.parse(localStorage.getItem('user') || '{}').name || 'Unknown'
-    var script = document.createElement('script')
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js'
-    document.head.appendChild(script)
-    await new Promise(function(r){ script.onload=r; script.onerror=r })
-    var D=docx, children=[]
-    children.push(new D.Paragraph({children:[new D.TextRun({text:title,bold:true,size:72,color:'1e3a8a'})],alignment:D.AlignmentType.CENTER,spacing:{before:2880,after:480}}))
-    if(subtitle) children.push(new D.Paragraph({children:[new D.TextRun({text:subtitle,italics:true,size:36,color:'6b7280'})],alignment:D.AlignmentType.CENTER,spacing:{after:480}}))
-    children.push(new D.Paragraph({children:[new D.TextRun({text:'By '+author,size:28})],alignment:D.AlignmentType.CENTER,spacing:{after:240}}))
-    children.push(new D.Paragraph({children:[new D.TextRun({text:String(new Date().getFullYear()),size:24,color:'9ca3af'})],alignment:D.AlignmentType.CENTER,spacing:{after:2880}}))
-    children.push(new D.Paragraph({children:[new D.PageBreak()]}))
-    children.push(new D.Paragraph({children:[new D.TextRun({text:'Table of Contents',bold:true,size:40,color:'1e3a8a'})],spacing:{before:480,after:480}}))
-    chapters.forEach(function(ch,i){ children.push(new D.Paragraph({children:[new D.TextRun({text:'Chapter '+(i+1)+'  —  '+ch.title,size:24,color:'374151'})],spacing:{after:160}})) })
-    children.push(new D.Paragraph({children:[new D.PageBreak()]}))
-    chapters.forEach(function(ch,i){
-        children.push(new D.Paragraph({children:[new D.TextRun({text:'Chapter '+(i+1),size:20,color:'8b5cf6',italics:true})],spacing:{before:0,after:120}}))
-        children.push(new D.Paragraph({children:[new D.TextRun({text:ch.title,bold:true,size:48,color:'1e3a8a'})],spacing:{before:0,after:720}}))
-        ch.text.split('
-').filter(function(p){return p.trim()}).forEach(function(para){ children.push(new D.Paragraph({children:[new D.TextRun({text:para,size:24})],spacing:{after:240},indent:{firstLine:720}})) })
-        children.push(new D.Paragraph({children:[new D.PageBreak()]}))
-    })
-    children.push(new D.Paragraph({children:[new D.TextRun({text:'About the Author',bold:true,size:36,color:'1e3a8a'})],alignment:D.AlignmentType.CENTER,spacing:{before:1440,after:480}}))
-    children.push(new D.Paragraph({children:[new D.TextRun({text:bio||author+' wrote this memoir to preserve their story for future generations.',italics:true,size:24})],alignment:D.AlignmentType.CENTER,spacing:{after:480}}))
-    children.push(new D.Paragraph({children:[new D.TextRun({text:'Preserved with We Loved Life',size:20,color:'9ca3af'})],alignment:D.AlignmentType.CENTER}))
-    var doc = new D.Document({creator:author,title:title,sections:[{children:children}]})
-    var blob = await D.Packer.toBlob(doc)
-    var url = URL.createObjectURL(blob)
-    var a = document.createElement('a'); a.href=url; a.download=title.replace(/[^a-zA-Z0-9 ]/g,'_')+'.docx'
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url)
-    if (typeof showNotification==='function') showNotification('📝 Word document downloaded!')
-}
-
-window.viewAllChapters = function() {
-    var chapters = typeof getAllChapters === 'function' ? getAllChapters() : []
-    var html = '<div style="background:white;border-radius:10px;padding:2rem;max-width:800px;margin:0 auto;max-height:85vh;overflow-y:auto;">'
-    html += '<h3 style="color:#1e3a8a;text-align:center;margin-bottom:0.5rem;font-family:Georgia,serif;">📖 My Life Book</h3>'
-    html += '<p style="text-align:center;color:#9ca3af;margin-bottom:2rem;font-size:0.9rem;">'+chapters.length+' chapter'+(chapters.length!==1?'s':'')+' written</p>'
-    chapters.forEach(function(ch,i){
-        html += '<div style="margin-bottom:2rem;padding-bottom:2rem;border-bottom:1px solid #e5e7eb;">'
-        html += '<div style="font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:#8b5cf6;margin-bottom:0.3rem;">Chapter '+(i+1)+'</div>'
-        html += '<h4 style="color:#1e3a8a;margin-bottom:1rem;font-size:1.5rem;font-family:Georgia,serif;">'+ch.title+'</h4>'
-        html += '<p style="white-space:pre-wrap;line-height:1.8;color:#374151;">'+ch.text+'</p>'
-        html += '</div>'
-    })
-    if(!chapters.length) html += '<p style="text-align:center;color:#9ca3af;padding:2rem;">No chapters written yet.</p>'
-    html += '<div style="text-align:center;margin-top:2rem;display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;">'
-    html += '<button class="action-button secondary" onclick="document.getElementById(\'lifebook-view-modal\').remove()">Close</button>'
-    html += '<button class="action-button" onclick="window.compileAndExport()" style="background:#1e3a8a;">📤 Export Book</button>'
-    html += '</div></div>'
-    var modal = document.createElement('div')
-    modal.id = 'lifebook-view-modal'
-    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;overflow-y:auto;padding:2rem;'
-    modal.innerHTML = html
-    document.body.appendChild(modal)
-    modal.onclick = function(e){ if(e.target===modal) modal.remove() }
-}
-
-console.log('✅ Lifebook functions loaded globally')
 </script>
 </body>
 </html>
