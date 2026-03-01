@@ -1715,7 +1715,19 @@
         }
 
         async function loadSavedPhotos() {
-            photoCaptions = JSON.parse(localStorage.getItem('vault_photo_captions') || '{}')
+            try {
+                var _rawCaptions = JSON.parse(localStorage.getItem('vault_photo_captions') || '{}');
+                if (Array.isArray(_rawCaptions)) {
+                    // Old array format - convert to object keyed by filename
+                    photoCaptions = {};
+                    _rawCaptions.forEach(function(item) {
+                        if (item && item.filename) photoCaptions[item.filename] = item;
+                        else if (item && item.name) photoCaptions[item.name] = item;
+                    });
+                } else {
+                    photoCaptions = _rawCaptions;
+                }
+            } catch(e) { photoCaptions = {}; }
             const grid = document.getElementById('photo-grid')
             const photoCount = document.getElementById('photo-count')
             const currentUser = JSON.parse(localStorage.getItem('user') || 'null')
@@ -5782,7 +5794,7 @@ docx:async function(){LB._notify('DOCX coming soon - use PDF for now.');}
         // === END CF BLOCK EXPORTS ===
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v6.6</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v6.7</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
