@@ -2376,15 +2376,15 @@
                 <!-- Export buttons -->
                 <p style="font-size:0.85rem; font-weight:600; color:#374151; margin-bottom:0.75rem;">Choose format:</p>
                 <div style="display:flex; flex-direction:column; gap:0.6rem; margin-bottom:1.25rem;">
-                    <button onclick="exportBookPDF()" style="background:#dc2626; color:white; border:none; padding:0.9rem 1.25rem; border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer; text-align:left; display:flex; align-items:center; gap:0.75rem;">
+                    <button onclick="LB.pdf()" style="background:#dc2626; color:white; border:none; padding:0.9rem 1.25rem; border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer; text-align:left; display:flex; align-items:center; gap:0.75rem;">
                         <span style="font-size:1.4rem;">📄</span>
                         <div><div>Download as PDF</div><div style="font-size:0.72rem; font-weight:400; opacity:0.85;">Print-ready · Share anywhere</div></div>
                     </button>
-                    <button onclick="exportBookEPUB()" style="background:#f59e0b; color:white; border:none; padding:0.9rem 1.25rem; border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer; text-align:left; display:flex; align-items:center; gap:0.75rem;">
+                    <button onclick="LB.epub()" style="background:#f59e0b; color:white; border:none; padding:0.9rem 1.25rem; border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer; text-align:left; display:flex; align-items:center; gap:0.75rem;">
                         <span style="font-size:1.4rem;">📱</span>
                         <div><div>Download as EPUB</div><div style="font-size:0.72rem; font-weight:400; opacity:0.85;">For Kindle, iBooks, Kobo · Upload to KDP</div></div>
                     </button>
-                    <button onclick="exportBookDOCX()" style="background:#2563eb; color:white; border:none; padding:0.9rem 1.25rem; border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer; text-align:left; display:flex; align-items:center; gap:0.75rem;">
+                    <button onclick="LB.docx()" style="background:#2563eb; color:white; border:none; padding:0.9rem 1.25rem; border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer; text-align:left; display:flex; align-items:center; gap:0.75rem;">
                         <span style="font-size:1.4rem;">📝</span>
                         <div><div>Download as Word (.docx)</div><div style="font-size:0.72rem; font-weight:400; opacity:0.85;">Edit further · Send to publisher</div></div>
                     </button>
@@ -6161,7 +6161,7 @@ ${paragraphs}
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v5.6</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v5.7</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
