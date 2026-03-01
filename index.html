@@ -2343,14 +2343,44 @@
 
         function renameChapter(key, defaultTitle) {
             const current = savedLifebook[key + '_title'] || defaultTitle
-            const newName = prompt('Rename this chapter:', current)
-            if (!newName || !newName.trim()) return
-            savedLifebook[key + '_title'] = newName.trim()
+            const existing = document.getElementById('rename-chapter-modal')
+            if (existing) existing.remove()
+            const modal = document.createElement('div')
+            modal.id = 'rename-chapter-modal'
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:20000;display:flex;align-items:center;justify-content:center;padding:1rem;'
+            modal.innerHTML = `
+            <div style="background:white;border-radius:14px;padding:2rem;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                <h4 style="color:#1e3a8a;margin-bottom:0.5rem;font-family:Georgia,serif;">✏️ Rename Chapter</h4>
+                <p style="color:#9ca3af;font-size:0.85rem;margin-bottom:1rem;">Give this chapter your own title</p>
+                <input id="rename-chapter-input" type="text" value="${current}"
+                    style="width:100%;padding:0.75rem;border:2px solid #6366f1;border-radius:8px;font-size:1rem;box-sizing:border-box;margin-bottom:1rem;outline:none;">
+                <div style="display:flex;gap:0.5rem;">
+                    <button onclick="doRenameChapter('${key}')" style="flex:1;background:#6366f1;color:white;border:none;padding:0.75rem;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.95rem;">Save</button>
+                    <button onclick="document.getElementById('rename-chapter-modal').remove()" style="flex:1;background:#f1f5f9;color:#374151;border:none;padding:0.75rem;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
+                </div>
+            </div>`
+            document.body.appendChild(modal)
+            setTimeout(() => {
+                const inp = document.getElementById('rename-chapter-input')
+                if (inp) { inp.focus(); inp.select() }
+            }, 50)
+            modal.onclick = (e) => { if (e.target === modal) modal.remove() }
+            // Allow Enter key to save
+            const inp = modal.querySelector('#rename-chapter-input')
+            if (inp) inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') doRenameChapter(key) })
+        }
+
+        function doRenameChapter(key) {
+            const inp = document.getElementById('rename-chapter-input')
+            if (!inp) return
+            const newName = inp.value.trim()
+            if (!newName) return
+            savedLifebook[key + '_title'] = newName
             localStorage.setItem('vault_lifebook', JSON.stringify(savedLifebook))
             syncVaultToSupabase('vault_lifebook', savedLifebook)
-            // Update the card heading
             const titleEl = document.getElementById('lb-title-' + key)
-            if (titleEl) titleEl.textContent = newName.trim().replace(/^[^\u0041-\u005A\u0061-\u007A0-9]+/, '').trim() || newName.trim()
+            if (titleEl) titleEl.textContent = newName
+            document.getElementById('rename-chapter-modal').remove()
             showNotification('✏️ Chapter renamed!')
         }
 
@@ -2432,6 +2462,18 @@
             </div>`
             document.body.appendChild(modal)
             modal.onclick = (e) => { if (e.target === modal) modal.remove() }
+            // Restore cover preview if image already uploaded previously
+            if (savedLifebook['_cover_image']) {
+                window._bookCoverImage = savedLifebook['_cover_image']
+                setTimeout(() => {
+                    const img = document.getElementById('cover-preview-img')
+                    const ph = document.getElementById('cover-preview-placeholder')
+                    const btn = document.getElementById('cover-clear-btn')
+                    if (img) { img.src = savedLifebook['_cover_image']; img.style.display = 'block' }
+                    if (ph) ph.style.display = 'none'
+                    if (btn) btn.style.display = 'inline-block'
+                }, 50)
+            }
         }
 
         function loadCoverImage(input) {
@@ -2440,6 +2482,9 @@
             const reader = new FileReader()
             reader.onload = (e) => {
                 window._bookCoverImage = e.target.result
+                // Persist cover image in savedLifebook so it survives modal reopen
+                savedLifebook['_cover_image'] = e.target.result
+                localStorage.setItem('vault_lifebook', JSON.stringify(savedLifebook))
                 const img = document.getElementById('cover-preview-img')
                 const ph = document.getElementById('cover-preview-placeholder')
                 const btn = document.getElementById('cover-clear-btn')
@@ -2452,6 +2497,8 @@
 
         function clearCoverImage() {
             window._bookCoverImage = null
+            delete savedLifebook['_cover_image']
+            localStorage.setItem('vault_lifebook', JSON.stringify(savedLifebook))
             const img = document.getElementById('cover-preview-img')
             const ph = document.getElementById('cover-preview-placeholder')
             const btn = document.getElementById('cover-clear-btn')
@@ -2461,6 +2508,10 @@
         }
 
         function getExportData() {
+            // Restore cover image from storage if not in memory
+            if (!window._bookCoverImage && savedLifebook['_cover_image']) {
+                window._bookCoverImage = savedLifebook['_cover_image']
+            }
             return {
                 title: document.getElementById('export-book-title')?.value.trim() || 'My Life Book',
                 subtitle: document.getElementById('export-book-subtitle')?.value.trim() || '',
@@ -6059,7 +6110,7 @@ ${paras}
         }
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.97</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v4.98</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
