@@ -5762,8 +5762,27 @@ docx:async function(){LB._notify('DOCX coming soon - use PDF for now.');}
         try { window.openShareModal = openShareModal; } catch(e) {}
         try { window.closeShareModal = closeShareModal; } catch(e) {}
 
+
+        // === CLOUDFLARE FIX: export CF-block functions to window ===
+        try { window.savePhotoCaption = savePhotoCaption; } catch(e) {}
+        try { window.closePhotoCaptionModal = closePhotoCaptionModal; } catch(e) {}
+        try { window.lightboxAddCaption = lightboxAddCaption; } catch(e) {}
+        try { window.openPhotoLightbox = openPhotoLightbox; } catch(e) {}
+        try { window.updateUIForLoggedIn = updateUIForLoggedIn; } catch(e) {}
+        try { window.syncVaultToSupabase = syncVaultToSupabase; } catch(e) {}
+        try { window.showNotification = showNotification; } catch(e) {}
+        try { window.refreshDashboardStats = refreshDashboardStats; } catch(e) {}
+        try { window.loadEssentials = loadEssentials; } catch(e) {}
+        try { window.loadKeys = loadKeys; } catch(e) {}
+        try { window.loadCustomEssentials = loadCustomEssentials; } catch(e) {}
+        try { window.showVaultHero = showVaultHero; } catch(e) {}
+        try { window.openShareModal = openShareModal; } catch(e) {}
+        try { window.closeShareModal = closeShareModal; } catch(e) {}
+        try { window.checkLogin = checkLogin; } catch(e) {}
+        // === END CF BLOCK EXPORTS ===
+
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v6.5</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v6.6</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
