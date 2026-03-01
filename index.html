@@ -2418,6 +2418,17 @@
                 }
             }
         }
+
+        // Export block-1 functions to window for cross-block access
+        try { window.loadContacts = loadContacts; } catch(e) {}
+        try { window.loadStories = loadStories; } catch(e) {}
+        try { window.loadLifebook = loadLifebook; } catch(e) {}
+        try { window.loadSavedPhotos = loadSavedPhotos; } catch(e) {}
+        try { window.loadSavedMusic = loadSavedMusic; } catch(e) {}
+        try { window.loadInheritors = loadInheritors; } catch(e) {}
+        try { window.renderContacts = renderContacts; } catch(e) {}
+        try { window.showVaultHero = showVaultHero; } catch(e) {}
+
     </script>
     
     <!-- Google Analytics -->
@@ -5723,8 +5734,23 @@ docx:async function(){LB._notify('DOCX coming soon - use PDF for now.');}
             updateHeroVideoPicker()
         }
 
+
+        // Export block-2 functions to window
+        try { window.updateUIForLoggedIn = updateUIForLoggedIn; } catch(e) {}
+        try { window.loadCustomEssentials = loadCustomEssentials; } catch(e) {}
+        try { window.loadEssentials = loadEssentials; } catch(e) {}
+        try { window.loadKeys = loadKeys; } catch(e) {}
+        try { window.syncVaultToSupabase = syncVaultToSupabase; } catch(e) {}
+        try { window.showNotification = showNotification; } catch(e) {}
+        try { window.refreshDashboardStats = refreshDashboardStats; } catch(e) {}
+        try { window.checkLogin = checkLogin; } catch(e) {}
+        try { window.updateDashboardStats = updateDashboardStats; } catch(e) {}
+        try { window.showAdminControls = showAdminControls; } catch(e) {}
+        try { window.openShareModal = openShareModal; } catch(e) {}
+        try { window.closeShareModal = closeShareModal; } catch(e) {}
+
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v6.0</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v6.1</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
