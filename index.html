@@ -2467,7 +2467,162 @@ cover:function(input){var file=input.files[0];if(!file)return;var r=new FileRead
 clearCover:function(){var lb=LB._get();delete lb['_cover_image'];window._lb=lb;window._bookCoverImage=null;LB._save();},
 pdf:function(){var chapters=LB.getChapters();if(!chapters.length){alert('No chapters!');return;}var lb=LB._get();var title=(document.getElementById('_ext')||document.getElementById('export-book-title')||{}).value||'My Life Book';title=title.trim();var subtitle=(document.getElementById('_exs')||document.getElementById('export-book-subtitle')||{}).value||'';subtitle=subtitle.trim();var bio=(document.getElementById('_exb')||document.getElementById('export-book-bio')||{}).value||'';bio=bio.trim();var author=JSON.parse(localStorage.getItem('user')||'{}').name||'Unknown';var yr=new Date().getFullYear();var img=window._bookCoverImage||lb['_cover_image']||null;var esc=function(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};var cs=img?'background:linear-gradient(rgba(5,5,20,0.6),rgba(5,5,20,0.75)),url('+JSON.stringify(img)+') center/cover no-repeat;':'background:linear-gradient(160deg,#0f172a,#1e1b4b);';var bt=img?'<img src="'+img+'" style="width:110px;height:110px;object-fit:cover;border-radius:50%;border:4px solid rgba(255,255,255,0.25);margin-bottom:1.5rem;">':'<div style="width:90px;height:90px;background:rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin-bottom:1.5rem;">'+author.charAt(0).toUpperCase()+'</div>';var toc=chapters.map(function(ch,i){return'<div style="display:flex;gap:1.5rem;padding:0.7rem 0;border-bottom:1px dotted #e5e7eb;"><span style="font-size:0.72rem;color:#8b5cf6;text-transform:uppercase;letter-spacing:0.12em;white-space:nowrap;min-width:72px;">Chapter '+(i+1)+'</span><span style="font-size:1rem;color:#1e3a8a;">'+esc(ch.title)+'</span></div>';}).join('');var chs=chapters.map(function(ch,i){return'<div style="page-break-before:always;padding:5rem 4rem;max-width:740px;margin:0 auto;"><div style="font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;color:#8b5cf6;margin-bottom:0.5rem;">Chapter '+(i+1)+'</div><h2 style="font-size:2.4rem;color:#1e3a8a;margin-bottom:2.5rem;line-height:1.2;padding-bottom:1.25rem;border-bottom:2px solid #ede9fe;font-family:Georgia,serif;">'+esc(ch.title)+'</h2><div style="font-size:1.05rem;line-height:1.95;color:#374151;">'+esc(ch.text).replace(/\n\n/g,'</p><p style="margin-top:1.1em;text-indent:1.8em;">').replace(/\n/g,'<br>')+'</div></div>';}).join('');var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+esc(title)+'</title><link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Lora,Georgia,serif;color:#1a1a1a;}.np{position:sticky;top:0;z-index:99;background:#1e3a8a;color:white;padding:0.75rem 1.5rem;display:flex;align-items:center;gap:1rem;}.np span{flex:1;}.np button{border:none;padding:0.55rem 1.25rem;border-radius:7px;font-weight:700;cursor:pointer;}@media print{.np{display:none!important;}.fc,.bc{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
 
-</head><body><div class="np"><span>'+esc(title)+'</span><button onclick="window.print()" style="background:#6366f1;color:white;">Print / Save as PDF</button><button onclick="window.close()" style="background:rgba(255,255,255,0.15);color:white;">Close</button></div><div class="fc" style="page-break-after:always;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:5rem 3rem;'+cs+'color:white;"><div style="font-size:clamp(2rem,5vw,3.5rem);font-weight:700;line-height:1.15;margin-bottom:1rem;font-family:Lora,Georgia,serif;text-shadow:0 2px 12px rgba(0,0,0,0.5);">'+esc(title)+'</div>'+(subtitle?'<div style="font-size:1.2rem;font-style:italic;opacity:0.8;margin-bottom:2.5rem;">'+esc(subtitle)+'</div>':'')+'<div style="width:60px;height:2px;background:rgba(255,255,255,0.4);margin:0 auto 2rem;"></div><div style="font-size:1rem;letter-spacing:0.15em;text-transform:uppercase;opacity:0.65;">By '+esc(author)+'</div><div style="font-size:0.85rem;opacity:0.35;margin-top:0.4rem;">'+yr+'</div></div><div style="page-break-after:always;padding:5rem 4rem;min-height:60vh;"><h2 style="font-size:2rem;color:#1e3a8a;margin-bottom:2.5rem;padding-bottom:1rem;border-bottom:3px solid #6366f1;font-family:Georgia,serif;">Table of Contents</h2>'+toc+'</div>'+chs+'<div class="bc" style="page-break-before:always;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:5rem 3rem;background:linear-gradient(160deg,#1e1b4b,#0f172a);color:white;">'+bt+'<div style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:#a5b4fc;margin-bottom:1.25rem;">About the Author</div><div style="font-size:1.05rem;line-height:1.85;max-width:500px;font-style:italic;opacity:0.88;margin-bottom:3rem;">'+esc(bio||author+' wrote this memoir to preserve their story.')+'</div><div style="font-size:0.8rem;opacity:0.35;">We Loved Life</div></div></body></html>';try{var w=window.open('','_blank');if(!w||w.closed)throw 1;w.document.write(html);w.document.close();}catch(e){var b=new Blob([html],{type:'text/html'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=title.replace(/[^a-zA-Z0-9 ]/g,'_')+'.html';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u);}},
+<script>
+function openProfileModal() {
+    var u = JSON.parse(localStorage.getItem('user') || '{}');
+    document.getElementById('profile-name').value = u.name || '';
+    document.getElementById('profile-email').value = u.email || '';
+    document.getElementById('profile-email-display').textContent = u.email || '';
+    var since = u.registeredAt ? new Date(u.registeredAt).toLocaleDateString('en-GB', {month:'long', year:'numeric'}) : 'Unknown';
+    document.getElementById('profile-since-display').textContent = since;
+    var m = document.getElementById('profile-modal');
+    m.style.display = 'flex';
+}
+
+function closeProfileModal() {
+    document.getElementById('profile-modal').style.display = 'none';
+}
+
+function saveProfileName() {
+    var name = document.getElementById('profile-name').value.trim();
+    if (!name) { alert('Please enter a name'); return; }
+    var u = JSON.parse(localStorage.getItem('user') || '{}');
+    u.name = name;
+    localStorage.setItem('user', JSON.stringify(u));
+    // Update all users store
+    var users = JSON.parse(localStorage.getItem('wll_users') || '{}');
+    if (u.email && users[u.email]) { users[u.email].name = name; localStorage.setItem('wll_users', JSON.stringify(users)); }
+    // Update display
+    var el = document.getElementById('user-name');
+    if (el) el.textContent = name;
+    // Sync to Supabase
+    try { (window.syncVaultToSupabase || function(){})('user_profile', {name: name, email: u.email}); } catch(e) {}
+    (window.showNotification || alert)('✅ Name updated!');
+}
+
+function saveProfileEmail() {
+    var email = document.getElementById('profile-email').value.trim().toLowerCase();
+    if (!email || !email.includes('@')) { alert('Please enter a valid email address'); return; }
+    var u = JSON.parse(localStorage.getItem('user') || '{}');
+    var oldEmail = u.email;
+    // Update users store
+    var users = JSON.parse(localStorage.getItem('wll_users') || '{}');
+    if (oldEmail && users[oldEmail]) {
+        users[email] = users[oldEmail];
+        users[email].email = email;
+        delete users[oldEmail];
+        localStorage.setItem('wll_users', JSON.stringify(users));
+    }
+    u.email = email;
+    localStorage.setItem('user', JSON.stringify(u));
+    document.getElementById('profile-email-display').textContent = email;
+    document.getElementById('profile-email').value = email;
+    (window.showNotification || alert)('✅ Email updated!');
+}
+
+function saveProfilePassword() {
+    var current = document.getElementById('profile-password-current').value;
+    var newPw = document.getElementById('profile-password-new').value;
+    var confirm = document.getElementById('profile-password-confirm').value;
+    if (!current || !newPw || !confirm) { alert('Please fill in all password fields'); return; }
+    if (newPw !== confirm) { alert('New passwords do not match'); return; }
+    if (newPw.length < 6) { alert('Password must be at least 6 characters'); return; }
+    // Verify current password
+    var u = JSON.parse(localStorage.getItem('user') || '{}');
+    var users = JSON.parse(localStorage.getItem('wll_users') || '{}');
+    var stored = users[u.email];
+    if (!stored || stored.password !== current) { alert('Current password is incorrect'); return; }
+    // Update password
+    users[u.email].password = newPw;
+    localStorage.setItem('wll_users', JSON.stringify(users));
+    document.getElementById('profile-password-current').value = '';
+    document.getElementById('profile-password-new').value = '';
+    document.getElementById('profile-password-confirm').value = '';
+    (window.showNotification || alert)('✅ Password updated!');
+}
+
+function deleteAccount() {
+    var confirm = document.getElementById('profile-delete-confirm').value;
+    if (confirm !== 'DELETE') { alert('Please type DELETE to confirm'); return; }
+    var u = JSON.parse(localStorage.getItem('user') || '{}');
+    // Remove from users store
+    var users = JSON.parse(localStorage.getItem('wll_users') || '{}');
+    if (u.email) delete users[u.email];
+    localStorage.setItem('wll_users', JSON.stringify(users));
+    // Clear all vault data
+    ['vault_contacts','vault_essentials','vault_custom_essentials','vault_keys',
+     'vault_stories','vault_lifebook','vault_hero','vault_photo_captions',
+     'spotify_music_data','vault_inheritors','user'].forEach(function(k) {
+        localStorage.removeItem(k);
+    });
+    alert('Your account has been deleted. You will now be logged out.');
+    window.location.reload();
+}
+
+// Close on backdrop click
+document.addEventListener('click', function(e) {
+    var m = document.getElementById('profile-modal');
+    if (m && e.target === m) closeProfileModal();
+});
+</script>
+
+</head><body><div class="np"><span>'+esc(title)+'</span><button onclick="window.print()" style="background:#6366f1;color:white;">Print / Save as PDF</button><button onclick="window.close()" style="background:rgba(255,255,255,0.15);color:white;">Close</button></div><div class="fc" style="page-break-after:always;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:5rem 3rem;'+cs+'color:white;"><div style="font-size:clamp(2rem,5vw,3.5rem);font-weight:700;line-height:1.15;margin-bottom:1rem;font-family:Lora,Georgia,serif;text-shadow:0 2px 12px rgba(0,0,0,0.5);">'+esc(title)+'</div>'+(subtitle?'<div style="font-size:1.2rem;font-style:italic;opacity:0.8;margin-bottom:2.5rem;">'+esc(subtitle)+'</div>':'')+'<div style="width:60px;height:2px;background:rgba(255,255,255,0.4);margin:0 auto 2rem;"></div><div style="font-size:1rem;letter-spacing:0.15em;text-transform:uppercase;opacity:0.65;">By '+esc(author)+'</div><div style="font-size:0.85rem;opacity:0.35;margin-top:0.4rem;">'+yr+'</div></div><div style="page-break-after:always;padding:5rem 4rem;min-height:60vh;"><h2 style="font-size:2rem;color:#1e3a8a;margin-bottom:2.5rem;padding-bottom:1rem;border-bottom:3px solid #6366f1;font-family:Georgia,serif;">Table of Contents</h2>'+toc+'</div>'+chs+'<div class="bc" style="page-break-before:always;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:5rem 3rem;background:linear-gradient(160deg,#1e1b4b,#0f172a);color:white;">'+bt+'<div style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:#a5b4fc;margin-bottom:1.25rem;">About the Author</div><div style="font-size:1.05rem;line-height:1.85;max-width:500px;font-style:italic;opacity:0.88;margin-bottom:3rem;">'+esc(bio||author+' wrote this memoir to preserve their story.')+'</div><div style="font-size:0.8rem;opacity:0.35;">We Loved Life</div></div>
+<!-- ===== PROFILE / ACCOUNT SETTINGS MODAL ===== -->
+<div id="profile-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:20000; align-items:center; justify-content:center; padding:1rem;">
+    <div style="background:white; border-radius:16px; padding:2rem; max-width:440px; width:100%; box-shadow:0 24px 64px rgba(0,0,0,0.3);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
+            <h3 style="color:#1e3a8a; font-family:Georgia,serif; font-size:1.3rem;">👤 Account Settings</h3>
+            <button onclick="closeProfileModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#9ca3af; line-height:1;">×</button>
+        </div>
+
+        <!-- Display Name -->
+        <div style="margin-bottom:1.25rem;">
+            <label style="font-size:0.82rem; font-weight:600; color:#374151; display:block; margin-bottom:0.4rem;">Display Name</label>
+            <div style="display:flex; gap:0.5rem;">
+                <input id="profile-name" type="text" style="flex:1; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem;">
+                <button onclick="saveProfileName()" style="background:#6366f1; color:white; border:none; padding:0.7rem 1rem; border-radius:8px; font-weight:600; cursor:pointer; white-space:nowrap;">Save</button>
+            </div>
+        </div>
+
+        <!-- Change Email -->
+        <div style="margin-bottom:1.25rem;">
+            <label style="font-size:0.82rem; font-weight:600; color:#374151; display:block; margin-bottom:0.4rem;">Email Address</label>
+            <div style="display:flex; gap:0.5rem;">
+                <input id="profile-email" type="email" style="flex:1; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem;">
+                <button onclick="saveProfileEmail()" style="background:#6366f1; color:white; border:none; padding:0.7rem 1rem; border-radius:8px; font-weight:600; cursor:pointer; white-space:nowrap;">Save</button>
+            </div>
+        </div>
+
+        <!-- Change Password -->
+        <div style="margin-bottom:1.25rem;">
+            <label style="font-size:0.82rem; font-weight:600; color:#374151; display:block; margin-bottom:0.4rem;">Change Password</label>
+            <input id="profile-password-current" type="password" placeholder="Current password" style="width:100%; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem; margin-bottom:0.5rem; box-sizing:border-box;">
+            <input id="profile-password-new" type="password" placeholder="New password" style="width:100%; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem; margin-bottom:0.5rem; box-sizing:border-box;">
+            <input id="profile-password-confirm" type="password" placeholder="Confirm new password" style="width:100%; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem; margin-bottom:0.5rem; box-sizing:border-box;">
+            <button onclick="saveProfilePassword()" style="width:100%; background:#6366f1; color:white; border:none; padding:0.7rem; border-radius:8px; font-weight:600; cursor:pointer;">Update Password</button>
+        </div>
+
+        <!-- Account Info -->
+        <div style="background:#f8fafc; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1.25rem; font-size:0.85rem; color:#6b7280;">
+            <div style="margin-bottom:0.25rem;">📧 <span id="profile-email-display"></span></div>
+            <div>📅 Member since <span id="profile-since-display"></span></div>
+        </div>
+
+        <!-- Delete Account -->
+        <details style="margin-top:0.5rem;">
+            <summary style="font-size:0.82rem; color:#ef4444; cursor:pointer; font-weight:600;">⚠️ Delete Account</summary>
+            <div style="margin-top:0.75rem; padding:0.75rem; background:#fef2f2; border-radius:8px; border:1px solid #fecaca;">
+                <p style="font-size:0.82rem; color:#991b1b; margin-bottom:0.75rem;">This will permanently delete your account and all your data. This cannot be undone.</p>
+                <input id="profile-delete-confirm" type="text" placeholder='Type "DELETE" to confirm' style="width:100%; padding:0.6rem; border:1px solid #fca5a5; border-radius:6px; font-size:0.85rem; margin-bottom:0.5rem; box-sizing:border-box;">
+                <button onclick="deleteAccount()" style="width:100%; background:#ef4444; color:white; border:none; padding:0.6rem; border-radius:6px; font-weight:600; cursor:pointer;">Delete My Account</button>
+            </div>
+        </details>
+
+        <button onclick="closeProfileModal()" style="width:100%; margin-top:1rem; background:#f1f5f9; color:#374151; border:none; padding:0.7rem; border-radius:8px; font-weight:600; cursor:pointer;">Close</button>
+    </div>
+</div>
+
+</body></html>';try{var w=window.open('','_blank');if(!w||w.closed)throw 1;w.document.write(html);w.document.close();}catch(e){var b=new Blob([html],{type:'text/html'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=title.replace(/[^a-zA-Z0-9 ]/g,'_')+'.html';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u);}},
 epub:async function(){LB._notify('EPUB coming soon - use PDF for now.');},
 docx:async function(){LB._notify('DOCX coming soon - use PDF for now.');}
 };
@@ -2838,7 +2993,7 @@ docx:async function(){LB._notify('DOCX coming soon - use PDF for now.');}
             <!-- Compact header -->
             <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem; padding-top:0.5rem;">
                 <span onclick="showVaultHero()" style="font-size:1.1rem; font-weight:700; color:#6366f1; cursor:pointer; font-family:Georgia,serif;" title="Back to opening screen">We Loved Life</span>
-                <span style="color:#9ca3af; font-size:0.85rem;">· <span id="user-name">User</span></span>
+                <span style="color:#9ca3af; font-size:0.85rem;">· <span id="user-name" onclick="openProfileModal()" style="cursor:pointer; text-decoration:underline; text-underline-offset:2px;" title="Account settings">User</span></span>
             </div>
 
             <!-- Sticky nav - single flat row -->
@@ -5782,7 +5937,7 @@ docx:async function(){LB._notify('DOCX coming soon - use PDF for now.');}
         // === END CF BLOCK EXPORTS ===
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v6.8</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v7.0</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
@@ -6054,7 +6209,63 @@ docx:async function(){LB._notify('DOCX coming soon - use PDF for now.');}
 
 <!-- ============================================================
      WE LOVED LIFE — VIDEO + SHARE PATCH  v1.0
-     Drop this block just before </body>
+     Drop this block just before 
+<!-- ===== PROFILE / ACCOUNT SETTINGS MODAL ===== -->
+<div id="profile-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:20000; align-items:center; justify-content:center; padding:1rem;">
+    <div style="background:white; border-radius:16px; padding:2rem; max-width:440px; width:100%; box-shadow:0 24px 64px rgba(0,0,0,0.3);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
+            <h3 style="color:#1e3a8a; font-family:Georgia,serif; font-size:1.3rem;">👤 Account Settings</h3>
+            <button onclick="closeProfileModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#9ca3af; line-height:1;">×</button>
+        </div>
+
+        <!-- Display Name -->
+        <div style="margin-bottom:1.25rem;">
+            <label style="font-size:0.82rem; font-weight:600; color:#374151; display:block; margin-bottom:0.4rem;">Display Name</label>
+            <div style="display:flex; gap:0.5rem;">
+                <input id="profile-name" type="text" style="flex:1; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem;">
+                <button onclick="saveProfileName()" style="background:#6366f1; color:white; border:none; padding:0.7rem 1rem; border-radius:8px; font-weight:600; cursor:pointer; white-space:nowrap;">Save</button>
+            </div>
+        </div>
+
+        <!-- Change Email -->
+        <div style="margin-bottom:1.25rem;">
+            <label style="font-size:0.82rem; font-weight:600; color:#374151; display:block; margin-bottom:0.4rem;">Email Address</label>
+            <div style="display:flex; gap:0.5rem;">
+                <input id="profile-email" type="email" style="flex:1; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem;">
+                <button onclick="saveProfileEmail()" style="background:#6366f1; color:white; border:none; padding:0.7rem 1rem; border-radius:8px; font-weight:600; cursor:pointer; white-space:nowrap;">Save</button>
+            </div>
+        </div>
+
+        <!-- Change Password -->
+        <div style="margin-bottom:1.25rem;">
+            <label style="font-size:0.82rem; font-weight:600; color:#374151; display:block; margin-bottom:0.4rem;">Change Password</label>
+            <input id="profile-password-current" type="password" placeholder="Current password" style="width:100%; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem; margin-bottom:0.5rem; box-sizing:border-box;">
+            <input id="profile-password-new" type="password" placeholder="New password" style="width:100%; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem; margin-bottom:0.5rem; box-sizing:border-box;">
+            <input id="profile-password-confirm" type="password" placeholder="Confirm new password" style="width:100%; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem; margin-bottom:0.5rem; box-sizing:border-box;">
+            <button onclick="saveProfilePassword()" style="width:100%; background:#6366f1; color:white; border:none; padding:0.7rem; border-radius:8px; font-weight:600; cursor:pointer;">Update Password</button>
+        </div>
+
+        <!-- Account Info -->
+        <div style="background:#f8fafc; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1.25rem; font-size:0.85rem; color:#6b7280;">
+            <div style="margin-bottom:0.25rem;">📧 <span id="profile-email-display"></span></div>
+            <div>📅 Member since <span id="profile-since-display"></span></div>
+        </div>
+
+        <!-- Delete Account -->
+        <details style="margin-top:0.5rem;">
+            <summary style="font-size:0.82rem; color:#ef4444; cursor:pointer; font-weight:600;">⚠️ Delete Account</summary>
+            <div style="margin-top:0.75rem; padding:0.75rem; background:#fef2f2; border-radius:8px; border:1px solid #fecaca;">
+                <p style="font-size:0.82rem; color:#991b1b; margin-bottom:0.75rem;">This will permanently delete your account and all your data. This cannot be undone.</p>
+                <input id="profile-delete-confirm" type="text" placeholder='Type "DELETE" to confirm' style="width:100%; padding:0.6rem; border:1px solid #fca5a5; border-radius:6px; font-size:0.85rem; margin-bottom:0.5rem; box-sizing:border-box;">
+                <button onclick="deleteAccount()" style="width:100%; background:#ef4444; color:white; border:none; padding:0.6rem; border-radius:6px; font-weight:600; cursor:pointer;">Delete My Account</button>
+            </div>
+        </details>
+
+        <button onclick="closeProfileModal()" style="width:100%; margin-top:1rem; background:#f1f5f9; color:#374151; border:none; padding:0.7rem; border-radius:8px; font-weight:600; cursor:pointer;">Close</button>
+    </div>
+</div>
+
+</body>
      ============================================================ -->
 <script>
 // ─── 1. updateVaultCounts (was missing, caused ReferenceErrors) ───────────────
@@ -6625,6 +6836,61 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 500)
 })
 </script>
+
+<!-- ===== PROFILE / ACCOUNT SETTINGS MODAL ===== -->
+<div id="profile-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:20000; align-items:center; justify-content:center; padding:1rem;">
+    <div style="background:white; border-radius:16px; padding:2rem; max-width:440px; width:100%; box-shadow:0 24px 64px rgba(0,0,0,0.3);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
+            <h3 style="color:#1e3a8a; font-family:Georgia,serif; font-size:1.3rem;">👤 Account Settings</h3>
+            <button onclick="closeProfileModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#9ca3af; line-height:1;">×</button>
+        </div>
+
+        <!-- Display Name -->
+        <div style="margin-bottom:1.25rem;">
+            <label style="font-size:0.82rem; font-weight:600; color:#374151; display:block; margin-bottom:0.4rem;">Display Name</label>
+            <div style="display:flex; gap:0.5rem;">
+                <input id="profile-name" type="text" style="flex:1; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem;">
+                <button onclick="saveProfileName()" style="background:#6366f1; color:white; border:none; padding:0.7rem 1rem; border-radius:8px; font-weight:600; cursor:pointer; white-space:nowrap;">Save</button>
+            </div>
+        </div>
+
+        <!-- Change Email -->
+        <div style="margin-bottom:1.25rem;">
+            <label style="font-size:0.82rem; font-weight:600; color:#374151; display:block; margin-bottom:0.4rem;">Email Address</label>
+            <div style="display:flex; gap:0.5rem;">
+                <input id="profile-email" type="email" style="flex:1; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem;">
+                <button onclick="saveProfileEmail()" style="background:#6366f1; color:white; border:none; padding:0.7rem 1rem; border-radius:8px; font-weight:600; cursor:pointer; white-space:nowrap;">Save</button>
+            </div>
+        </div>
+
+        <!-- Change Password -->
+        <div style="margin-bottom:1.25rem;">
+            <label style="font-size:0.82rem; font-weight:600; color:#374151; display:block; margin-bottom:0.4rem;">Change Password</label>
+            <input id="profile-password-current" type="password" placeholder="Current password" style="width:100%; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem; margin-bottom:0.5rem; box-sizing:border-box;">
+            <input id="profile-password-new" type="password" placeholder="New password" style="width:100%; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem; margin-bottom:0.5rem; box-sizing:border-box;">
+            <input id="profile-password-confirm" type="password" placeholder="Confirm new password" style="width:100%; padding:0.7rem; border:1px solid #e5e7eb; border-radius:8px; font-size:0.95rem; margin-bottom:0.5rem; box-sizing:border-box;">
+            <button onclick="saveProfilePassword()" style="width:100%; background:#6366f1; color:white; border:none; padding:0.7rem; border-radius:8px; font-weight:600; cursor:pointer;">Update Password</button>
+        </div>
+
+        <!-- Account Info -->
+        <div style="background:#f8fafc; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1.25rem; font-size:0.85rem; color:#6b7280;">
+            <div style="margin-bottom:0.25rem;">📧 <span id="profile-email-display"></span></div>
+            <div>📅 Member since <span id="profile-since-display"></span></div>
+        </div>
+
+        <!-- Delete Account -->
+        <details style="margin-top:0.5rem;">
+            <summary style="font-size:0.82rem; color:#ef4444; cursor:pointer; font-weight:600;">⚠️ Delete Account</summary>
+            <div style="margin-top:0.75rem; padding:0.75rem; background:#fef2f2; border-radius:8px; border:1px solid #fecaca;">
+                <p style="font-size:0.82rem; color:#991b1b; margin-bottom:0.75rem;">This will permanently delete your account and all your data. This cannot be undone.</p>
+                <input id="profile-delete-confirm" type="text" placeholder='Type "DELETE" to confirm' style="width:100%; padding:0.6rem; border:1px solid #fca5a5; border-radius:6px; font-size:0.85rem; margin-bottom:0.5rem; box-sizing:border-box;">
+                <button onclick="deleteAccount()" style="width:100%; background:#ef4444; color:white; border:none; padding:0.6rem; border-radius:6px; font-weight:600; cursor:pointer;">Delete My Account</button>
+            </div>
+        </details>
+
+        <button onclick="closeProfileModal()" style="width:100%; margin-top:1rem; background:#f1f5f9; color:#374151; border:none; padding:0.7rem; border-radius:8px; font-weight:600; cursor:pointer;">Close</button>
+    </div>
+</div>
+
 </body>
 </html>
-    
