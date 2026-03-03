@@ -1665,7 +1665,7 @@
 
                     try {
                         const currentUser = JSON.parse(localStorage.getItem('user') || 'null')
-                        const userEmail = currentUser ? currentUser.email.replace('@','_').replace(/\./g,'_') : 'anonymous'
+                        const userEmail = currentUser ? currentUser.email.replace(String.fromCharCode(64),'_').replace(/\./g,'_') : 'anonymous'
                         const fileName = userEmail + '/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
                         
                         const { data, error } = await supabaseClient.storage
@@ -1722,7 +1722,7 @@
             if (!grid || !currentUser) return
 
             try {
-                const userEmail = currentUser.email.replace('@','_').replace(/\./g,'_')
+                const userEmail = currentUser.email.replace(String.fromCharCode(64),'_').replace(/\./g,'_')
                 
                 const { data, error } = await supabaseClient.storage
                     .from('vault-photos')
@@ -3595,7 +3595,7 @@ docx:async function(){LB._notify('DOCX coming soon - use PDF for now.');}
                 </div>
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" id="email" required placeholder="you@example.com" autocomplete="email">
+                    <input type="email" id="email" required placeholder="your email address" autocomplete="email">
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
@@ -3971,7 +3971,7 @@ docx:async function(){LB._notify('DOCX coming soon - use PDF for now.');}
         </div>
     </footer>
 
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
         // Auth state
         let authMode = 'signup' // 'signup' or 'login'
         let selectedPlan = 'monthly'
@@ -5854,7 +5854,7 @@ docx:async function(){LB._notify('DOCX coming soon - use PDF for now.');}
         // === END CF BLOCK EXPORTS ===
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v9.0</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v9.1</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
@@ -6027,7 +6027,7 @@ docx:async function(){LB._notify('DOCX coming soon - use PDF for now.');}
         </div>
     </footer>
 
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
         // Footer visibility - show when logged in
         function showFooterSection(section) {
             ['security','about','terms','contact','privacy'].forEach(s => {
@@ -6206,7 +6206,7 @@ async function handleVideoUpload(input) {
 
     const currentUser = JSON.parse(localStorage.getItem('user') || 'null')
     if (!currentUser) { showNotification('Please log in first'); return }
-    const userFolder = currentUser.email.replace('@','_').replace(/\./g,'_')
+    const userFolder = currentUser.email.replace(String.fromCharCode(64),'_').replace(/\./g,'_')
 
     // Show progress bar
     const prog = document.getElementById('video-upload-progress')
@@ -6269,7 +6269,7 @@ async function saveRecording() {
 
     showNotification('Saving recording...')
 
-    const userFolder = currentUser.email.replace('@','_').replace(/\./g,'_')
+    const userFolder = currentUser.email.replace(String.fromCharCode(64),'_').replace(/\./g,'_')
     const fileName = userFolder + '/rec_' + Date.now() + '.webm'
 
     try {
@@ -6811,4 +6811,3 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </body>
 </html>
-                    
