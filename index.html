@@ -4267,6 +4267,9 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
                     users[email] = { password, name, plan: selectedPlan, registeredAt: new Date().toISOString() }
                     saveUsers(users)
 
+                    // Fire Google Ads signup conversion
+                    try { gtag('event', 'conversion', { 'send_to': 'AW-17996185965/TpVlCJ29xoMcEO2CoIVD', 'value': 1.0, 'currency': 'AUD' }); } catch(e) {}
+
                     // Write registration record to Supabase so admin can see all users cross-device
                     try {
                         await supabaseClient.from('vault_data').upsert({
@@ -5881,7 +5884,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
         // === END CF BLOCK EXPORTS ===
 
 </script>
-    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v11.0</div>
+    <div style="position:fixed;top:60px;right:10px;background:#1e3a8a;color:white;padding:3px 8px;border-radius:4px;font-size:11px;z-index:9999;opacity:0.8;">v11.1</div>
 
     <!-- Photo Lightbox -->
     <div id="photo-lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; overflow-y:auto;" onclick="closePhotoLightbox()">
