@@ -4321,6 +4321,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
             var navLogout = document.getElementById('nav-logout');
             var navDash = document.getElementById('nav-dashboard');
             if (homeEl) homeEl.style.display = 'none';
+            document.querySelectorAll('.home-page-section, #faq, #pricing, #evolution-section').forEach(function(s) { s.style.display = 'none'; });
             if (dashEl) { dashEl.style.display = 'block'; dashEl.classList.add('active'); }
             if (bannerEl) bannerEl.style.display = 'flex';
             if (navLogin) navLogin.style.display = 'none';
