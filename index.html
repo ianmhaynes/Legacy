@@ -2573,7 +2573,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
                 <li><a href="#pricing" onclick="scrollToSection('pricing'); closeMobileNav()">Pricing</a></li>
                 <li id="nav-share" class="hidden"><a href="#" onclick="openShareModal(); closeMobileNav()">🔗 Share</a></li>
                 <li id="nav-dashboard" class="hidden"><a href="#dashboard" onclick="showSection('dashboard'); closeMobileNav()">My Capsule</a></li>
-                <li id="nav-login"><a href="javascript:void(0)" onclick="enterGuestMode(); closeMobileNav()" class="btn-nav" style="display:inline-block!important;">Open your capsule</a></li>
+                <li id="nav-login"><a href="javascript:void(0)" onclick="user ? showSection('dashboard') : window.enterGuestMode(); closeMobileNav()" class="btn-nav">Open your capsule</a></li>
                 <li id="nav-logout" class="hidden"><a href="#" onclick="logout(); closeMobileNav()">Logout</a></li>
                 <li id="nav-admin"><a href="#" onclick="showSection('admin'); closeMobileNav()" style="color:#9ca3af;font-size:1rem;line-height:1;" title="Admin">⚙️</a></li>
             </ul>
@@ -4536,7 +4536,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
         }
 
         function updateUIForLoggedIn() {
-            try { document.getElementById('nav-login').classList.add('hidden'); } catch(e) { console.error('nav-login fail',e) }
+            try { /* keep nav-login visible always */ void(0); } catch(e) { console.error('nav-login fail',e) }
             try { document.getElementById('nav-logout').classList.remove('hidden'); } catch(e) { console.error('nav-logout fail',e) }
             try { document.getElementById('nav-dashboard').classList.remove('hidden'); } catch(e) { console.error('nav-dashboard fail',e) }
             try { document.getElementById('nav-share').classList.remove('hidden'); } catch(e) { console.error('nav-share fail',e) }
