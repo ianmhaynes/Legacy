@@ -6589,6 +6589,11 @@ function showVaultHero() {
     var photoWrap = document.getElementById('vault-hero-photo-wrap')
     var videoWrap = document.getElementById('vault-hero-video-wrap')
 
+    // Always hide video wrap initially
+    if (videoWrap) videoWrap.style.display = 'none'
+    if (photoWrap) photoWrap.style.display = 'none'
+    if (emptyEl) emptyEl.style.display = 'block'
+
     if (hConfig.mode === 'video' && hasVideo) {
         if (emptyEl) emptyEl.style.display = 'none'
         if (photoWrap) photoWrap.style.display = 'none'
