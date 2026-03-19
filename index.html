@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- WLL-GUESTMODE-V3 -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1155,6 +1156,7 @@
         async function connectSpotify() {
             if (!user) {
                 showNotification('Please log in first!')
+                userInitiatedLogin = true
                 showLogin()
                 return
             }
@@ -2571,7 +2573,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
                 <li><a href="#pricing" onclick="scrollToSection('pricing'); closeMobileNav()">Pricing</a></li>
                 <li id="nav-share" class="hidden"><a href="#" onclick="openShareModal(); closeMobileNav()">🔗 Share</a></li>
                 <li id="nav-dashboard" class="hidden"><a href="#dashboard" onclick="showSection('dashboard'); closeMobileNav()">My Capsule</a></li>
-                <li id="nav-login"><a href="#" onclick="showLogin(); closeMobileNav()" class="btn-nav">Open your capsule</a></li>
+                <li id="nav-login"><a href="#" onclick="enterGuestMode(); closeMobileNav()" class="btn-nav">Open your capsule</a></li>
                 <li id="nav-logout" class="hidden"><a href="#" onclick="logout(); closeMobileNav()">Logout</a></li>
                 <li id="nav-admin"><a href="#" onclick="showSection('admin'); closeMobileNav()" style="color:#9ca3af;font-size:1rem;line-height:1;" title="Admin">⚙️</a></li>
             </ul>
@@ -2612,7 +2614,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
                 </p>
 
                 <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-                    <button onclick="showLogin()" style="background:#6366f1;color:white;border:none;padding:0.9rem 2.2rem;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'Georgia',serif;letter-spacing:0.01em;transition:all 0.2s;" onmouseover="this.style.background='#4f46e5'" onmouseout="this.style.background='#6366f1'">Open your capsule — start today, it's free →</button>
+                    <button onclick="enterGuestMode()" style="background:#6366f1;color:white;border:none;padding:0.9rem 2.2rem;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'Georgia',serif;letter-spacing:0.01em;transition:all 0.2s;" onmouseover="this.style.background='#4f46e5'" onmouseout="this.style.background='#6366f1'">Open your capsule — start today, it's free →</button>
                     <button onclick="document.getElementById('evolution-section').scrollIntoView({behavior:'smooth'})" style="background:transparent;color:#94a3b8;border:1px solid rgba(255,255,255,0.15);padding:0.9rem 2rem;border-radius:10px;font-size:1rem;cursor:pointer;font-family:'Georgia',serif;" onmouseover="this.style.borderColor='rgba(255,255,255,0.4)';this.style.color='#f1f5f9'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='#94a3b8'">See the story</button>
                 </div>
 
@@ -2905,7 +2907,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
                         </div>
 
                         <div style="text-align:center;margin-top:1.5rem;">
-                            <button onclick="showLogin()" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border:none;padding:0.75rem 2rem;border-radius:10px;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:'Georgia',serif;">Create your capsule →</button>
+                            <button onclick="enterGuestMode()" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border:none;padding:0.75rem 2rem;border-radius:10px;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:'Georgia',serif;">Create your capsule →</button>
                         </div>
                     </div>
                 </div>
@@ -3022,7 +3024,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
             <div style="max-width:600px;margin:0 auto;">
                 <h2 style="font-family:'Georgia',serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:400;color:#f8fafc;margin:0 0 1rem;line-height:1.15;font-style:italic;">"A time capsule for the people you'll never meet."</h2>
                 <p style="color:#94a3b8;font-size:1rem;font-family:'Georgia',serif;margin:0 0 2.5rem;line-height:1.7;">When we started, we offered the site free for the first 10,000 users. Well, that didn't take long — so we're extending it to the first 100,000 users. If you're reading this, you're still in.</p>
-                <button onclick="showLogin()" style="background:#6366f1;color:white;border:none;padding:1rem 2.5rem;border-radius:12px;font-size:1.05rem;font-weight:700;cursor:pointer;font-family:'Georgia',serif;letter-spacing:0.01em;" onmouseover="this.style.background='#4f46e5'" onmouseout="this.style.background='#6366f1'">Start preserving — it's free →</button>
+                <button onclick="enterGuestMode()" style="background:#6366f1;color:white;border:none;padding:1rem 2.5rem;border-radius:12px;font-size:1.05rem;font-weight:700;cursor:pointer;font-family:'Georgia',serif;letter-spacing:0.01em;" onmouseover="this.style.background='#4f46e5'" onmouseout="this.style.background='#6366f1'">Start preserving — it's free →</button>
             </div>
         </section>
 
@@ -3030,6 +3032,18 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
 
     <!-- Dashboard Section -->
     <section id="dashboard-section" class="dashboard">
+
+    <!-- Guest mode banner -->
+    <div id="guest-banner" style="display:none; background:linear-gradient(135deg,#1e1b4b,#312e81); border-radius:12px; padding:1rem 1.5rem; margin-bottom:1.5rem; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; border:1px solid rgba(99,102,241,0.3);">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+            <span style="font-size:1.5rem;">👋</span>
+            <div>
+                <p style="color:#e2e8f0; font-size:0.92rem; font-weight:600; margin:0 0 0.15rem; font-family:Georgia,serif;">You're in guest mode</p>
+                <p style="color:#a5b4fc; font-size:0.82rem; margin:0; font-family:Georgia,serif;">Feel free to explore — but nothing will be saved after this session unless you create a free account. All we need is your name and email.</p>
+            </div>
+        </div>
+        <button onclick="userInitiatedLogin=true; showLogin()" style="background:#6366f1; color:white; border:none; padding:0.6rem 1.4rem; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.88rem; font-family:Georgia,serif; white-space:nowrap; flex-shrink:0;">Save my capsule →</button>
+    </div>
         <div class="container">
             <!-- Compact header -->
             <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem; padding-top:0.5rem;">
@@ -3700,7 +3714,6 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
             </div>
             <h2 id="login-modal-title" style="text-align:center;font-family:'Georgia',serif;font-weight:400;font-size:1.5rem;color:#1e293b;margin-bottom:0.5rem;">Create your free account</h2>
             <p style="text-align:center;color:#64748b; font-size:0.88rem; margin-bottom:1.5rem;font-family:'Georgia',serif;font-style:italic;" id="login-modal-subtitle">Start preserving your story — it takes under a minute.</p>
-
             <!-- Tab switcher -->
             <div style="display:flex; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; margin-bottom:1.5rem;">
                 <button id="tab-signup" onclick="switchAuthTab('signup')" style="flex:1; padding:0.6rem; border:none; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; font-weight:700; cursor:pointer; font-size:0.88rem; font-family:Georgia,serif;">Sign Up</button>
@@ -4121,6 +4134,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
             label.textContent = plan === 'lifetime' ? '💎 Lifetime Plan Selected' : '📅 Monthly Plan Selected'
             label.style.background = plan === 'lifetime' ? '#1e3a8a' : '#059669'
             switchAuthTab('signup')
+            userInitiatedLogin = true
             showLogin()
         }
 
@@ -4167,6 +4181,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
         // Save vault data to Supabase (with localStorage fallback)
         async function syncVaultToSupabase(key, data) {
             if (!user) return
+            if (user.isGuest) return // guest mode — don't save to cloud
             try {
                 await supabaseClient.from('vault_data').upsert({
                     user_email: user.email,
@@ -4268,7 +4283,8 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
                     if (fab) fab.style.display = 'block'
                     try { maybeShowFooter() } catch(e) {}
                     try { showVaultHero() } catch(e) {}
-                } else {
+                } else if (!guestMode) {
+                    userInitiatedLogin = true;
                     showLogin();
                 }
             } else if (section === 'admin') {
@@ -4291,7 +4307,30 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
             }
         }
 
+        let userInitiatedLogin = false;
+        let guestMode = false;
+
+        function enterGuestMode() {
+            guestMode = true;
+            user = { email: 'guest@guest', name: 'Guest', plan: 'monthly', isGuest: true };
+            // Hide home, show dashboard
+            var homeEl = document.getElementById('home-section');
+            var dashEl = document.getElementById('dashboard-section');
+            var bannerEl = document.getElementById('guest-banner');
+            var navLogin = document.getElementById('nav-login');
+            var navLogout = document.getElementById('nav-logout');
+            var navDash = document.getElementById('nav-dashboard');
+            if (homeEl) homeEl.style.display = 'none';
+            if (dashEl) { dashEl.style.display = 'block'; dashEl.classList.add('active'); }
+            if (bannerEl) bannerEl.style.display = 'flex';
+            if (navLogin) navLogin.style.display = 'none';
+            if (navLogout) navLogout.style.display = '';
+            if (navDash) navDash.style.display = '';
+            try { document.getElementById('user-name').textContent = 'Guest'; } catch(e) {}
+        }
+
         function showLogin() {
+            if (!userInitiatedLogin) return; // never auto-popup on page load
             document.getElementById('login-modal').classList.add('active');
         }
 
@@ -4422,6 +4461,9 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
                 await loadAllVaultData()
 
                 updateUIForLoggedIn();
+                guestMode = false;
+                const banner = document.getElementById('guest-banner');
+                if (banner) banner.style.display = 'none';
                 closeLogin();
                 showSection('dashboard');
                 showNotification(authMode === 'signup' ? '🎉 Welcome to We Loved Life!' : '👋 Welcome back, ' + user.name + '!');
@@ -4457,6 +4499,8 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
         }
 
         async function checkLogin() {
+            // If user clicked "Open your capsule" and entered guest mode, don't interfere
+            if (guestMode) return;
             // Try Supabase session first
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession()
@@ -4488,9 +4532,6 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
             if (stored) {
                 user = JSON.parse(stored);
                 updateUIForLoggedIn();
-            } else {
-                // No session — just show the home page, do nothing else
-                showSection('home');
             }
         }
 
@@ -4530,6 +4571,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
         function openShareModal() {
             if (!user || !user.email) {
                 showNotification('Please log in first!')
+                userInitiatedLogin = true
                 showLogin()
                 return
             }
