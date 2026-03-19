@@ -3698,13 +3698,8 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
                     <span style="color:#6366f1;font-size:0.75rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;font-family:'Georgia',serif;">We Loved Life</span>
                 </div>
             </div>
-            <h2 id="login-modal-title" style="text-align:center;font-family:'Georgia',serif;font-weight:400;font-size:1.5rem;color:#1e293b;margin-bottom:0.5rem;">Begin your capsule</h2>
-            <p style="text-align:center;color:#64748b; font-size:0.88rem; margin-bottom:1.5rem;font-family:'Georgia',serif;font-style:italic;" id="login-modal-subtitle">Preserved for the people you'll never meet.</p>
-
-            <!-- Beta tester notice -->
-            <div style="background:#fef9c3; border:1px solid #fbbf24; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1.5rem; font-size:0.85rem; color:#92400e;">
-                🧪 <strong>Beta Testing:</strong> Your data is saved to this browser only. Don't clear your browser cache while testing.
-            </div>
+            <h2 id="login-modal-title" style="text-align:center;font-family:'Georgia',serif;font-weight:400;font-size:1.5rem;color:#1e293b;margin-bottom:0.5rem;">Create your free account</h2>
+            <p style="text-align:center;color:#64748b; font-size:0.88rem; margin-bottom:1.5rem;font-family:'Georgia',serif;font-style:italic;" id="login-modal-subtitle">Start preserving your story — it takes under a minute.</p>
 
             <!-- Tab switcher -->
             <div style="display:flex; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; margin-bottom:1.5rem;">
@@ -3728,7 +3723,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
                 <div id="password-hint" style="font-size:0.8rem; color:#9ca3af; margin-top:-1rem; margin-bottom:1rem;">At least 8 characters</div>
                 <div id="login-error" style="display:none; background:#fee2e2; color:#dc2626; padding:0.75rem; border-radius:8px; font-size:0.85rem; margin-bottom:1rem;"></div>
                 <div class="modal-buttons">
-                    <button type="submit" class="btn-primary" id="login-submit-btn">Begin my capsule</button>
+                    <button type="submit" class="btn-primary" id="login-submit-btn">Create my free account</button>
                     <button type="button" class="btn-secondary" onclick="closeLogin()">Cancel</button>
                 </div>
             </form>
@@ -3782,7 +3777,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
             <div style="text-align:center; margin-bottom:2rem;">
                 <div style="font-size:2.5rem; margin-bottom:0.5rem;">⚙️</div>
                 <h2 style="color:white; font-size:1.5rem; margin-bottom:0.25rem;">Admin Panel</h2>
-                <p style="color:#64748b; font-size:0.9rem;">We Loved Life • Beta Dashboard</p>
+                <p style="color:#64748b; font-size:0.9rem;">We Loved Life • Admin Dashboard</p>
             </div>
             <div style="margin-bottom:1rem;">
                 <input type="password" id="admin-password-input" placeholder="Enter admin password" 
@@ -3802,7 +3797,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem;">
                 <div>
                     <h1 style="color:white; font-size:1.8rem; font-weight:700; margin-bottom:0.25rem;">⚙️ Admin Panel</h1>
-                    <p style="color:#64748b; font-size:0.9rem;">We Loved Life Beta • <span id="admin-last-refresh"></span> • <a href="https://analytics.google.com" target="_blank" style="color:#38bdf8; text-decoration:none; font-weight:600;">📊 Analytics →</a></p>
+                    <p style="color:#64748b; font-size:0.9rem;">We Loved Life • <span id="admin-last-refresh"></span> • <a href="https://analytics.google.com" target="_blank" style="color:#38bdf8; text-decoration:none; font-weight:600;">📊 Analytics →</a></p>
                 </div>
                 <div style="display:flex; gap:0.75rem;">
                     <button onclick="refreshAdminData()" style="background:#1e293b; color:#94a3b8; border:1px solid #334155; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer; font-size:0.9rem;">
@@ -3975,7 +3970,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
     <!-- Feedback Modal -->
     <div id="feedback-modal" class="modal">
         <div class="modal-content">
-            <h2 style="margin-bottom:0.5rem;">💬 Beta Feedback</h2>
+            <h2 style="margin-bottom:0.5rem;">💬 Share Feedback</h2>
             <p style="color:#6b7280; font-size:0.9rem; margin-bottom:1.5rem;">Help us improve We Loved Life. What's working? What's broken?</p>
             <div style="margin-bottom:1rem;">
                 <label style="display:block; font-weight:600; color:#4b5563; margin-bottom:0.5rem; font-size:0.9rem;">Rating</label>
@@ -4082,7 +4077,6 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
                     <p>We Loved Life was founded by a team of senior technologists spanning Europe and Australia — people who have spent careers building software that millions rely on. Between us we've led engineering teams, shipped AI products, and helped scale companies from startup to enterprise.</p>
                     <p>But this project started with something personal. The realisation that the people we love most leave the smallest digital trace. A few photos. Some messages that will one day vanish from someone's phone. Nothing that captures who they actually were — their laugh, their advice, the songs that soundtracked their life, the lessons they'd have wanted to pass on.</p>
                     <p>Our ethos is simple: make great software that people actually want to use. No dark patterns, no attention traps, no data selling. Just a beautifully crafted space to tell your story — built with the same rigour and care we'd bring to any enterprise product, but designed for something far more important.</p>
-                    <p style="color:#e2e8f0;">We Loved Life is currently in free beta. We're building it in the open, listening to every piece of feedback, and we'd love to hear from you.</p>
                     <p style="margin-bottom:0;"><a href="javascript:void(0)" onclick="window.location='mailto:'+('admin'+String.fromCharCode(64)+'welovedlife.com')" style="color:#38bdf8; text-decoration:none; font-weight:600; font-family:sans-serif;">✉️ Get in touch → admin [at] welovedlife.com</a></p>
                 </div>
             </div>
@@ -4109,10 +4103,10 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
             document.getElementById('tab-login').style.color = isSignup ? '#6b7280' : 'white'
             document.getElementById('name-group').style.display = isSignup ? 'block' : 'none'
             document.getElementById('password-hint').style.display = isSignup ? 'block' : 'none'
-            document.getElementById('login-submit-btn').textContent = isSignup ? 'Begin my capsule' : 'Log In'
-            document.getElementById('login-modal-title').textContent = isSignup ? 'Start Your We Loved Life' : 'Welcome Back'
+            document.getElementById('login-submit-btn').textContent = isSignup ? 'Create my free account' : 'Log In'
+            document.getElementById('login-modal-title').textContent = isSignup ? 'Create your free account' : 'Welcome Back'
             document.getElementById('login-modal-subtitle').textContent = isSignup
-                ? 'Create your account to start preserving your story.'
+                ? 'Start preserving your story — it takes under a minute.'
                 : 'Log in to access your capsule.'
             document.getElementById('password').placeholder = isSignup ? 'Min. 8 characters' : '••••••••'
             document.getElementById('password').minLength = isSignup ? 8 : 1
@@ -4322,7 +4316,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
                 return;
             }
 
-            submitBtn.textContent = authMode === 'signup' ? 'Creating vault...' : 'Logging in...';
+            submitBtn.textContent = authMode === 'signup' ? 'Creating your capsule...' : 'Logging in...';
             submitBtn.disabled = true;
 
             try {
@@ -4330,7 +4324,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
                     if (password.length < 8) {
                         errorEl.textContent = 'Password must be at least 8 characters.';
                         errorEl.style.display = 'block';
-                        submitBtn.textContent = 'Begin my capsule';
+                        submitBtn.textContent = 'Create my free account';
                         submitBtn.disabled = false;
                         return;
                     }
@@ -4388,7 +4382,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
                             errorEl.textContent = 'No account found. Please sign up first.';
                             errorEl.style.display = 'block';
                             switchAuthTab('signup');
-                            submitBtn.textContent = 'Begin my capsule';
+                            submitBtn.textContent = 'Create my free account';
                             submitBtn.disabled = false;
                             return;
                         }
@@ -4438,7 +4432,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
                 errorEl.style.display = 'block';
             }
 
-            submitBtn.textContent = authMode === 'signup' ? 'Begin my capsule' : 'Log In';
+            submitBtn.textContent = authMode === 'signup' ? 'Create my free account' : 'Log In';
             submitBtn.disabled = false;
         }
 
@@ -6087,21 +6081,21 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
             <div style="max-width:600px;">
                 <p style="font-size:0.9rem; line-height:1.8; color:#cbd5e1; margin:0 0 1rem;">We Loved Life was built for one reason — to make sure the people you love know what matters to you, long after you're gone.</p>
                 <p style="font-size:0.9rem; line-height:1.8; color:#94a3b8; margin:0 0 1rem;">Store your contacts, memories, music, stories, essential documents, passwords, and final wishes in one secure place. Designate who gets access. Rest easy.</p>
-                <p style="font-size:0.9rem; line-height:1.8; color:#94a3b8; margin:0;">Currently in free beta. We'd love your feedback.</p>
+                <p style="font-size:0.9rem; line-height:1.8; color:#94a3b8; margin:0;">We'd love to hear from you — get in touch anytime.</p>
             </div>
         </div>
 
         <!-- Terms section -->
         <div id="footer-section-terms" style="display:none; max-width:960px; margin:0 auto; padding:2.5rem 2rem;">
             <h2 style="color:#f1f5f9; font-size:1.4rem; font-weight:700; margin:0 0 0.3rem;">Terms of Use</h2>
-            <p style="color:#64748b; font-size:0.8rem; margin:0 0 2rem; letter-spacing:0.05em; text-transform:uppercase;">Beta — last updated February 2026</p>
+            <p style="color:#64748b; font-size:0.8rem; margin:0 0 2rem; letter-spacing:0.05em; text-transform:uppercase;">Last updated March 2026</p>
             <div style="max-width:600px; font-size:0.875rem; line-height:1.8; color:#94a3b8;">
-                <p style="color:#cbd5e1; font-weight:600; margin:0 0 0.5rem;">Free Beta</p>
+                <p style="color:#cbd5e1; font-weight:600; margin:0 0 0.5rem;">Free to Use</p>
                 <p style="margin:0 0 1rem;">We Loved Life is currently free. We reserve the right to introduce pricing in future. We will always give you advance notice and the ability to export your data.</p>
                 <p style="color:#cbd5e1; font-weight:600; margin:0 0 0.5rem;">Your Data</p>
                 <p style="margin:0 0 1rem;">You own everything you store. We do not access, sell, or share your capsule contents. You can delete your account and all data at any time.</p>
                 <p style="color:#cbd5e1; font-weight:600; margin:0 0 0.5rem;">No Guarantees</p>
-                <p style="margin:0;">This is a beta product. While we take security seriously, we recommend keeping copies of critical information in multiple places. We are not liable for data loss.</p>
+                <p style="margin:0;">While we take security seriously, we recommend keeping copies of critical information in multiple places. We are not liable for data loss.</p>
             </div>
         </div>
 
@@ -6150,7 +6144,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
         <!-- Bottom bar -->
         <div style="border-top:1px solid #1e293b; padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
             <span style="font-size:0.75rem; color:#475569;">© 2026 We Loved Life · All rights reserved</span>
-            <span style="font-size:0.75rem; color:#334155;">Free Beta</span>
+            <span style="font-size:0.75rem; color:#334155;">Free to use</span>
         </div>
     </footer>
 
