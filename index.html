@@ -2573,7 +2573,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
                 <li><a href="#pricing" onclick="scrollToSection('pricing'); closeMobileNav()">Pricing</a></li>
                 <li id="nav-share" class="hidden"><a href="#" onclick="openShareModal(); closeMobileNav()">🔗 Share</a></li>
                 <li id="nav-dashboard" class="hidden"><a href="#dashboard" onclick="showSection('dashboard'); closeMobileNav()">My Capsule</a></li>
-                <li id="nav-login"><a href="javascript:void(0)" onclick="enterGuestMode(); closeMobileNav()" class="btn-nav">Open your capsule</a></li>
+                <li id="nav-login"><a href="javascript:void(0)" onclick="enterGuestMode(); closeMobileNav()" class="btn-nav" style="display:inline-block!important;">Open your capsule</a></li>
                 <li id="nav-logout" class="hidden"><a href="#" onclick="logout(); closeMobileNav()">Logout</a></li>
                 <li id="nav-admin"><a href="#" onclick="showSection('admin'); closeMobileNav()" style="color:#9ca3af;font-size:1rem;line-height:1;" title="Admin">⚙️</a></li>
             </ul>
@@ -4283,9 +4283,9 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
                     if (fab) fab.style.display = 'block'
                     try { maybeShowFooter() } catch(e) {}
                     try { showVaultHero() } catch(e) {}
-                } else if (!window.guestMode) {
-                    window.userInitiatedLogin = true;
-                    showLogin();
+                } else {
+                    // No user - enter guest mode automatically
+                    window.enterGuestMode();
                 }
             } else if (section === 'admin') {
                 showAdminSection();
@@ -4310,7 +4310,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
         window.userInitiatedLogin = false;
         window.guestMode = false;
 
-        function enterGuestMode() {
+        window.enterGuestMode = function enterGuestMode() {
             window.guestMode = true;
             user = { email: 'guest@guest', name: 'Guest', plan: 'monthly', isGuest: true };
             // Hide home, show dashboard
@@ -4327,7 +4327,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
             if (navLogout) navLogout.style.display = '';
             if (navDash) navDash.style.display = '';
             try { document.getElementById('user-name').textContent = 'Guest'; } catch(e) {}
-        }
+        };
 
         function showLogin() {
             if (!window.userInitiatedLogin) return; // never auto-popup on page load
