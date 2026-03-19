@@ -4327,6 +4327,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
             if (navLogout) navLogout.style.display = '';
             if (navDash) navDash.style.display = '';
             try { document.getElementById('user-name').textContent = 'Guest'; } catch(e) {}
+            window.scrollTo({top: 0, behavior: 'instant'});
         };
 
         function showLogin() {
