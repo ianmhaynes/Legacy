@@ -4538,7 +4538,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
         }
 
         function updateUIForLoggedIn() {
-            try { /* keep nav-login visible always */ void(0); } catch(e) { console.error('nav-login fail',e) }
+            try { document.getElementById("nav-login").classList.add("hidden"); } catch(e) { console.error('nav-login fail',e) }
             try { document.getElementById('nav-logout').classList.remove('hidden'); } catch(e) { console.error('nav-logout fail',e) }
             try { document.getElementById('nav-dashboard').classList.remove('hidden'); } catch(e) { console.error('nav-dashboard fail',e) }
             try { document.getElementById('nav-share').classList.remove('hidden'); } catch(e) { console.error('nav-share fail',e) }
