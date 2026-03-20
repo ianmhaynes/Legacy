@@ -4312,7 +4312,7 @@ document.addEventListener('click',function(e){var m=document.getElementById('pro
 
         window.enterGuestMode = function enterGuestMode() {
             try { gtag('event', 'open_capsule', { 'event_category': 'engagement', 'event_label': 'guest_mode' }); } catch(e) {}
-            window.guestMode = true;
+            window.guestMode = true; try { var _oc=parseInt(localStorage.getItem("wll_opens")||"0")+1; localStorage.setItem("wll_opens",_oc); } catch(e) {}
             user = { email: 'guest@guest', name: 'Guest', plan: 'monthly', isGuest: true };
             // Hide home, show dashboard
             var homeEl = document.getElementById('home-section');
